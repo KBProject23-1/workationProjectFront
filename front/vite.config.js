@@ -2,10 +2,13 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import vueDevTools from 'vite-plugin-vue-devtools'
+import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
   plugins: [
     vue(),
+    vueDevTools(),
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -16,19 +19,23 @@ export default defineConfig({
         display: 'standalone',
         background_color: '#ffffff',
         theme_color: '#ffffff',
-        icons: [
-          {
-            src: '/icon-192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: '/icon-512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
+      },
+      workbox: {
+        navigateFallbackDenylist: [/^\/api/]
       }
     })
-  ]
+  ],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      }
+    }
+  }
 })
