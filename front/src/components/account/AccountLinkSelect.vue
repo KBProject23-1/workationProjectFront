@@ -3,11 +3,12 @@ import { ref } from 'vue';
 import AccountSelectCard from '@/components/account/AccountSelectCard.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 
-defineProps({
+const props = defineProps({
   accounts: { type: Array, default: () => [] },
+  isLoading: { type: Boolean, default: false },
 });
 
-defineEmits(['complete']);
+defineEmits(['complete', 'back']);
 
 const selectedIds = ref([]);
 
@@ -25,9 +26,17 @@ function toggleSelect(id) {
   <div
     class="flex flex-col items-center w-full min-h-screen px-5 py-6 text-center bg-white"
   >
-    <button type="button" class="text-2xl mb-4 self-start">‹</button>
+    <button
+      type="button"
+      class="text-2xl mb-4 self-start"
+      @click="$emit('back')"
+    >
+      ‹
+    </button>
     <h1 class="text-xl font-bold mb-6">계좌 선택</h1>
-    <p class="text-[14px] text-gray-500 mb-4">연동할 계좌를 선택해주세요</p>
+    <p class="text-[14px] text-gray-500 mb-4">
+      연동할 계좌를 선택해주세요 (복수 선택 가능)
+    </p>
 
     <div class="flex flex-col gap-3 flex-1 w-full text-left">
       <AccountSelectCard
@@ -41,11 +50,11 @@ function toggleSelect(id) {
 
     <div class="w-full pb-4">
       <BaseButton
-        :disabled="selectedIds.length === 0"
+        :disabled="selectedIds.length === 0 || isLoading"
         class="w-full mt-6"
         @click="$emit('complete', selectedIds)"
       >
-        선택 완료
+        {{ isLoading ? '연동 중...' : '선택 완료' }}
       </BaseButton>
     </div>
   </div>

@@ -1,7 +1,10 @@
 <script setup>
+import { useRouter } from 'vue-router';
 import BaseButton from '@/components/common/BaseButton.vue';
 
 defineEmits(['start']);
+
+const router = useRouter();
 </script>
 
 <template>
@@ -12,6 +15,7 @@ defineEmits(['start']);
       type="button"
       class="text-2xl mb-2 self-start"
       aria-label="뒤로가기"
+      @click="router.back()"
     >
       ‹
     </button>
