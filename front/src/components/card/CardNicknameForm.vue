@@ -8,7 +8,6 @@ const props = defineProps({
 const emit = defineEmits(['update']);
 
 const nickname = ref(props.card.cardName);
-const suggestedTags = ['여행비', '업무비', '생활비', '고정비'];
 
 watch(nickname, (value) => {
   emit('update', value);
@@ -30,17 +29,5 @@ watch(nickname, (value) => {
       placeholder="예: 여행경비 카드"
       class="w-full border rounded-xl px-4 py-3 text-[15px] mb-4"
     />
-
-    <div class="flex gap-2 flex-wrap">
-      <button
-        v-for="tag in suggestedTags"
-        :key="tag"
-        type="button"
-        class="px-3 py-1.5 rounded-full border text-[13px] text-gray-600"
-        @click="nickname = tag"
-      >
-        {{ tag }}
-      </button>
-    </div>
   </div>
 </template>

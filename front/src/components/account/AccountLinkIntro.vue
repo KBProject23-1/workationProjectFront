@@ -1,23 +1,31 @@
 <script setup>
 import { useRouter } from 'vue-router';
+import { ChevronLeft, Check } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
+
+const props = defineProps({
+  isAdditional: { type: Boolean, default: false },
+});
 
 defineEmits(['start']);
 
 const router = useRouter();
+
+function handleBack() {
+  if (props.isAdditional) {
+    router.push('/wallet');
+  } else {
+    router.back();
+  }
+}
 </script>
 
 <template>
   <div
-    class="flex flex-col items-center w-full min-h-screen p-6 pb-10 text-center bg-white"
+    class="flex flex-col items-center w-full min-h-screen px-5 py-6 text-center bg-white"
   >
-    <button
-      type="button"
-      class="text-2xl mb-2 self-start"
-      aria-label="뒤로가기"
-      @click="router.back()"
-    >
-      ‹
+    <button type="button" class="mb-4 self-start" @click="handleBack">
+      <ChevronLeft :size="24" />
     </button>
 
     <h1 class="text-4xl font-bold mb-2 text-gray-900">계좌 연동</h1>
@@ -78,17 +86,7 @@ const router = useRouter();
             <div
               class="w-2/3 h-2/3 bg-blue-600 rounded-full flex items-center justify-center text-white"
             >
-              <svg
-                class="w-1/2 h-1/2"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
+              <Check class="w-1/2 h-1/2" :stroke-width="3" />
             </div>
           </div>
         </div>
@@ -98,51 +96,15 @@ const router = useRouter();
         class="text-[32px] font-semibold text-blue-600 space-y-2 inline-block text-left"
       >
         <li class="flex items-center gap-2">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="3"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="text-blue-500 shrink-0"
-          >
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+          <Check :size="20" :stroke-width="3" class="text-blue-500 shrink-0" />
           안전한 연동
         </li>
         <li class="flex items-center gap-2">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="3"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="text-blue-500 shrink-0"
-          >
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+          <Check :size="20" :stroke-width="3" class="text-blue-500 shrink-0" />
           간편한 관리
         </li>
         <li class="flex items-center gap-2">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="3"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="text-blue-500 shrink-0"
-          >
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+          <Check :size="20" :stroke-width="3" class="text-blue-500 shrink-0" />
           데이터 보호
         </li>
       </ul>

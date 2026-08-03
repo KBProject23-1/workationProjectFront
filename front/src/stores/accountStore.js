@@ -77,9 +77,7 @@ export const useAccountStore = defineStore('account', {
     async deleteAccount(accountId) {
       try {
         await deleteAccountApi(accountId);
-        this.accounts = this.accounts.filter(
-          (acc) => acc.accountId !== accountId,
-        );
+        await this.fetchMyAccounts();
       } catch (err) {
         this.error = err.message;
         throw err;

@@ -1,4 +1,6 @@
 <script setup>
+import { Check } from '@lucide/vue';
+
 defineProps({
   account: { type: Object, required: true },
   isSelected: { type: Boolean, default: false },
@@ -26,19 +28,7 @@ defineEmits(['select']);
       class="w-5 h-5 rounded shrink-0 flex items-center justify-center border-2"
       :class="isSelected ? 'border-blue-600 bg-blue-600' : 'border-gray-300'"
     >
-      <svg
-        v-if="isSelected"
-        width="12"
-        height="12"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="white"
-        stroke-width="3"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <polyline points="20 6 9 17 4 12" />
-      </svg>
+      <Check v-if="isSelected" :size="12" stroke="white" :stroke-width="3" />
     </span>
   </button>
 </template>

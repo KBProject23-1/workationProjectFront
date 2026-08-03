@@ -10,18 +10,25 @@
     </div>
     <div class="flex items-center gap-3 shrink-0">
       <button type="button" @click="$emit('set-primary', account.accountId)">
-        <span :class="account.isPrimary ? 'text-yellow-400' : 'text-gray-300'"
-          >★</span
-        >
+        <Star
+          :size="18"
+          :class="
+            account.isPrimary
+              ? 'text-yellow-400 fill-yellow-400'
+              : 'text-gray-300'
+          "
+        />
       </button>
       <button type="button" @click="$emit('delete', account.accountId)">
-        <span class="text-gray-400">✕</span>
+        <X :size="18" class="text-gray-400" />
       </button>
     </div>
   </div>
 </template>
 
 <script setup>
+import { Star, X } from '@lucide/vue';
+
 defineProps({
   account: { type: Object, required: true },
 });

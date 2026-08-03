@@ -1,15 +1,12 @@
 <template>
   <div class="w-full min-h-screen bg-white">
     <router-view />
+    <Toaster position="top-center" rich-colors />
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { Toaster } from '@/components/ui/sonner';
+</script>
 
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-</style>
+<style></style>

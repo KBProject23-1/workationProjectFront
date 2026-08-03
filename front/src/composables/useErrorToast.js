@@ -1,16 +1,9 @@
-import { ref } from 'vue';
+import { toast } from 'vue-sonner';
 
-export function useErrorToast(duration = 3000) {
-  const errorMessage = ref('');
-  let timer = null;
-
+export function useErrorToast() {
   function showError(err, fallbackMessage) {
-    errorMessage.value = err?.message || fallbackMessage;
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      errorMessage.value = '';
-    }, duration);
+    toast.error(err?.message || fallbackMessage);
   }
 
-  return { errorMessage, showError };
+  return { showError };
 }

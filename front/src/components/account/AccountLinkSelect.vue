@@ -1,15 +1,19 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { ChevronLeft } from '@lucide/vue';
 import AccountSelectCard from '@/components/account/AccountSelectCard.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 
 const props = defineProps({
   accounts: { type: Array, default: () => [] },
   isLoading: { type: Boolean, default: false },
+  isAdditional: { type: Boolean, default: false },
 });
 
-defineEmits(['complete', 'back']);
+const emit = defineEmits(['complete', 'back-to-intro']);
 
+const router = useRouter();
 const selectedIds = ref([]);
 
 function toggleSelect(id) {
@@ -20,18 +24,22 @@ function toggleSelect(id) {
     selectedIds.value.splice(index, 1);
   }
 }
+
+function handleBack() {
+  if (props.isAdditional) {
+    router.push('/wallet');
+  } else {
+    emit('back-to-intro');
+  }
+}
 </script>
 
 <template>
   <div
     class="flex flex-col items-center w-full min-h-screen px-5 py-6 text-center bg-white"
   >
-    <button
-      type="button"
-      class="text-2xl mb-4 self-start"
-      @click="$emit('back')"
-    >
-      ‹
+    <button type="button" class="mb-4 self-start" @click="handleBack">
+      <ChevronLeft :size="24" />
     </button>
     <h1 class="text-xl font-bold mb-6">계좌 선택</h1>
     <p class="text-[14px] text-gray-500 mb-4">
