@@ -3,14 +3,13 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAccountStore } from '@/stores/accountStore';
 import { useErrorToast } from '@/composables/useErrorToast';
-import BaseToast from '@/components/common/BaseToast.vue';
 import AccountLinkIntro from '@/components/account/AccountLinkIntro.vue';
 import AccountLinkSelect from '@/components/account/AccountLinkSelect.vue';
 import AccountLinkComplete from '@/components/account/AccountLinkComplete.vue';
 
 const router = useRouter();
 const accountStore = useAccountStore();
-const { errorMessage, showError } = useErrorToast();
+const { showError } = useErrorToast();
 
 const step = ref(0); // 0: 초기 상태 확인 중
 const linkedAccounts = ref([]);
@@ -40,8 +39,6 @@ onMounted(async () => {
 
 <template>
   <div class="w-full mx-auto flex flex-col min-h-screen">
-    <BaseToast :message="errorMessage" />
-
     <p v-if="step === 0" class="text-[14px] text-gray-400 text-center mt-10">
       불러오는 중...
     </p>

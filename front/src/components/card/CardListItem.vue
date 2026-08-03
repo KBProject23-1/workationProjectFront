@@ -1,4 +1,6 @@
 <script setup>
+import { Star, X } from '@lucide/vue';
+
 defineProps({
   card: { type: Object, required: true },
 });
@@ -18,12 +20,15 @@ defineEmits(['set-primary', 'delete']);
     </div>
     <div class="flex items-center gap-3 shrink-0">
       <button type="button" @click="$emit('set-primary', card.cardId)">
-        <span :class="card.isPrimary ? 'text-yellow-400' : 'text-gray-300'"
-          >★</span
-        >
+        <Star
+          :size="18"
+          :class="
+            card.isPrimary ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
+          "
+        />
       </button>
       <button type="button" @click="$emit('delete', card.cardId)">
-        <span class="text-gray-400">✕</span>
+        <X :size="18" class="text-gray-400" />
       </button>
     </div>
   </div>

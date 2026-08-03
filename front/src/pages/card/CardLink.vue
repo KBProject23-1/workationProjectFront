@@ -3,14 +3,13 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCardStore } from '@/stores/cardStore';
 import { useErrorToast } from '@/composables/useErrorToast';
-import BaseToast from '@/components/common/BaseToast.vue';
 import CardLinkPrimarySelect from '@/components/card/CardLinkPrimarySelect.vue';
 import CardLinkExtraSelect from '@/components/card/CardLinkExtraSelect.vue';
 import CardLinkComplete from '@/components/card/CardLinkComplete.vue';
 
 const router = useRouter();
 const cardStore = useCardStore();
-const { errorMessage, showError } = useErrorToast();
+const { showError } = useErrorToast();
 
 const step = ref(0); // 0: 초기 상태 확인 중
 const linkedCards = ref([]);
@@ -75,8 +74,6 @@ onMounted(async () => {
 
 <template>
   <div class="w-full mx-auto flex flex-col min-h-screen">
-    <BaseToast :message="errorMessage" />
-
     <p v-if="step === 0" class="text-[14px] text-gray-400 text-center mt-10">
       불러오는 중...
     </p>

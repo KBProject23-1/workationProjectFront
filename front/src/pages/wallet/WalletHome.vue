@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router';
 import { useWalletStore } from '@/stores/walletStore';
 import { useCardStore } from '@/stores/cardStore';
 import { useErrorToast } from '@/composables/useErrorToast';
-import BaseToast from '@/components/common/BaseToast.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import WalletBalanceCard from '@/components/wallet/WalletBalanceCard.vue';
 import WalletQuickActions from '@/components/wallet/WalletQuickActions.vue';
@@ -13,7 +12,7 @@ import WalletCardCarousel from '@/components/wallet/WalletCardCarousel.vue';
 const router = useRouter();
 const walletStore = useWalletStore();
 const cardStore = useCardStore();
-const { errorMessage, showError } = useErrorToast();
+const { showError } = useErrorToast();
 
 const confirmState = ref({ visible: false, type: null, cardId: null });
 
@@ -63,8 +62,6 @@ onMounted(() => {
   <div
     class="flex flex-col items-center w-full min-h-screen px-5 py-6 bg-white"
   >
-    <BaseToast :message="errorMessage" />
-
     <div class="w-full text-left mb-4">
       <h1 class="text-xl font-bold">{{ '000' }}님, 안녕하세요</h1>
     </div>

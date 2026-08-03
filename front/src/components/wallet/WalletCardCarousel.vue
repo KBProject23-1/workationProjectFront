@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { Star, Plus } from '@lucide/vue';
 
 const props = defineProps({
   cards: { type: Array, default: () => [] },
@@ -55,9 +56,14 @@ watch(
           class="absolute top-2 right-2 text-lg"
           @click.stop="$emit('request-primary', card.cardId)"
         >
-          <span :class="card.isPrimary ? 'text-yellow-400' : 'text-white/40'"
-            >★</span
-          >
+          <Star
+            :size="18"
+            :class="
+              card.isPrimary
+                ? 'text-yellow-400 fill-yellow-400'
+                : 'text-white/40'
+            "
+          />
         </button>
         <span class="text-[11px] text-gray-300">{{ card.cardName }}</span>
         <span class="text-[13px] font-medium">{{ card.maskedNumber }}</span>
@@ -65,10 +71,10 @@ watch(
 
       <button
         type="button"
-        class="shrink-0 w-40 h-28 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center text-3xl text-gray-400"
+        class="shrink-0 w-40 h-28 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400"
         @click="$emit('add')"
       >
-        +
+        <Plus :size="28" />
       </button>
     </div>
 

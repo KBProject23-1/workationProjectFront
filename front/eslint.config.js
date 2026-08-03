@@ -5,7 +5,7 @@ import globals from 'globals';
 
 export default [
   {
-    ignores: ['dist/**', 'dev-dist/**'], // 빌드 산출물은 린트 대상에서 제외
+    ignores: ['dist/**', 'dev-dist/**', 'src/components/ui/**'], // 빌드 산출물 및 shadcn-vue 생성 컴포넌트는 린트 대상에서 제외
   },
   js.configs.recommended,
   ...pluginVue.configs['flat/recommended'],

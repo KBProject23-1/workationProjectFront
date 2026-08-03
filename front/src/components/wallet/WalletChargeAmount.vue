@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
+import { ChevronLeft } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseInput from '@/components/common/BaseInput.vue';
 
@@ -53,12 +54,8 @@ function handleNext() {
 
 <template>
   <div class="flex flex-col w-full min-h-screen px-5 py-6">
-    <button
-      type="button"
-      class="text-2xl mb-4 self-start"
-      @click="$emit('back')"
-    >
-      ‹
+    <button type="button" class="mb-4 self-start" @click="$emit('back')">
+      <ChevronLeft :size="24" />
     </button>
     <h1 class="text-xl font-bold mb-6">충전하기</h1>
 
@@ -86,15 +83,12 @@ function handleNext() {
     <p class="text-[14px] text-gray-500 mb-2 text-left">출금 계좌</p>
     <div
       v-if="selectedAccount"
-      class="flex items-center justify-between border rounded-xl px-4 py-3.5 mb-6"
+      class="border rounded-xl px-4 py-3.5 mb-6 text-left"
     >
-      <div class="text-left">
-        <p class="text-[15px] font-medium">{{ selectedAccount.bankName }}</p>
-        <p class="text-[13px] text-gray-500">
-          잔액 {{ selectedAccount.balance?.toLocaleString('ko-KR') }}원
-        </p>
-      </div>
-      <span class="text-gray-400">›</span>
+      <p class="text-[15px] font-medium">{{ selectedAccount.bankName }}</p>
+      <p class="text-[13px] text-gray-500">
+        잔액 {{ selectedAccount.balance?.toLocaleString('ko-KR') }}원
+      </p>
     </div>
     <p v-else class="text-[14px] text-gray-400 mb-6">연동된 계좌가 없어요</p>
 

@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { ChevronLeft } from '@lucide/vue';
 import AccountSelectCard from '@/components/account/AccountSelectCard.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 
@@ -37,8 +38,8 @@ function handleBack() {
   <div
     class="flex flex-col items-center w-full min-h-screen px-5 py-6 text-center bg-white"
   >
-    <button type="button" class="text-2xl mb-4 self-start" @click="handleBack">
-      ‹
+    <button type="button" class="mb-4 self-start" @click="handleBack">
+      <ChevronLeft :size="24" />
     </button>
     <h1 class="text-xl font-bold mb-6">계좌 선택</h1>
     <p class="text-[14px] text-gray-500 mb-4">

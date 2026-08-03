@@ -4,14 +4,13 @@ import { useRouter } from 'vue-router';
 import { useWalletStore } from '@/stores/walletStore';
 import { useAccountStore } from '@/stores/accountStore';
 import { useErrorToast } from '@/composables/useErrorToast';
-import BaseToast from '@/components/common/BaseToast.vue';
 import WalletChargeAmount from '@/components/wallet/WalletChargeAmount.vue';
 import WalletChargeComplete from '@/components/wallet/WalletChargeComplete.vue';
 
 const router = useRouter();
 const walletStore = useWalletStore();
 const accountStore = useAccountStore();
-const { errorMessage, showError } = useErrorToast();
+const { showError } = useErrorToast();
 
 const step = ref(1);
 const result = ref(null);
@@ -42,8 +41,6 @@ onMounted(() => {
 
 <template>
   <div class="w-full mx-auto flex flex-col min-h-screen">
-    <BaseToast :message="errorMessage" />
-
     <WalletChargeAmount
       v-if="step === 1"
       :accounts="accountStore.accounts"

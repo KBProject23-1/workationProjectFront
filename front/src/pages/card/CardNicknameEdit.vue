@@ -3,14 +3,14 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useCardStore } from '@/stores/cardStore';
 import { useErrorToast } from '@/composables/useErrorToast';
-import BaseToast from '@/components/common/BaseToast.vue';
+import { ChevronLeft } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import CardNicknameForm from '@/components/card/CardNicknameForm.vue';
 
 const router = useRouter();
 const route = useRoute();
 const cardStore = useCardStore();
-const { errorMessage, showError } = useErrorToast();
+const { showError } = useErrorToast();
 
 const cardId = Number(route.params.cardId);
 const nickname = ref('');
@@ -49,10 +49,10 @@ onMounted(() => {
   <div
     class="flex flex-col items-center w-full min-h-screen px-5 py-6 bg-white"
   >
-    <BaseToast :message="errorMessage" />
-
     <div class="w-full flex items-center mb-6">
-      <button type="button" class="text-2xl" @click="router.back()">‹</button>
+      <button type="button" @click="router.back()">
+        <ChevronLeft :size="24" />
+      </button>
       <h1 class="text-xl font-bold ml-2">카드 별칭 설정</h1>
     </div>
 

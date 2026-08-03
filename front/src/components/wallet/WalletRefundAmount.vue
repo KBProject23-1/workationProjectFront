@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
+import { ChevronLeft } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseInput from '@/components/common/BaseInput.vue';
 
@@ -36,12 +37,8 @@ function handleNext() {
 
 <template>
   <div class="flex flex-col w-full min-h-screen px-5 py-6">
-    <button
-      type="button"
-      class="text-2xl mb-4 self-start"
-      @click="$emit('back')"
-    >
-      ‹
+    <button type="button" class="mb-4 self-start" @click="$emit('back')">
+      <ChevronLeft :size="24" />
     </button>
     <h1 class="text-xl font-bold mb-2">내 계좌로 송금</h1>
 

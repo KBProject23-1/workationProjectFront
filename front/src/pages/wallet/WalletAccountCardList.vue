@@ -3,13 +3,13 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAccountStore } from '@/stores/accountStore';
 import { useErrorToast } from '@/composables/useErrorToast';
-import BaseToast from '@/components/common/BaseToast.vue';
+import { ChevronLeft } from '@lucide/vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import AccountListItem from '@/components/account/AccountListItem.vue';
 
 const router = useRouter();
 const accountStore = useAccountStore();
-const { errorMessage, showError } = useErrorToast();
+const { showError } = useErrorToast();
 
 const confirmState = ref({ visible: false, type: null, accountId: null });
 
@@ -58,10 +58,10 @@ onMounted(() => {
   <div
     class="flex flex-col items-center w-full min-h-screen px-5 py-6 bg-white"
   >
-    <BaseToast :message="errorMessage" />
-
     <div class="w-full flex items-center mb-6">
-      <button type="button" class="text-2xl" @click="goToWallet">‹</button>
+      <button type="button" @click="goToWallet">
+        <ChevronLeft :size="24" />
+      </button>
       <h1 class="text-xl font-bold ml-2">연결 계좌</h1>
     </div>
 

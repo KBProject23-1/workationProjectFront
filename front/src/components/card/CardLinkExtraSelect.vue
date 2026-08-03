@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import { ChevronLeft } from '@lucide/vue';
 import CardSelectItem from '@/components/card/CardSelectItem.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 
@@ -26,12 +27,8 @@ function toggleSelect(id) {
   <div
     class="flex flex-col items-center w-full min-h-screen px-5 py-6 text-center bg-white"
   >
-    <button
-      type="button"
-      class="text-2xl mb-4 self-start"
-      @click="$emit('back')"
-    >
-      ‹
+    <button type="button" class="mb-4 self-start" @click="$emit('back')">
+      <ChevronLeft :size="24" />
     </button>
     <h1 class="text-xl font-bold mb-2">추가 카드 연동</h1>
     <p class="text-[14px] text-gray-500 mb-4">

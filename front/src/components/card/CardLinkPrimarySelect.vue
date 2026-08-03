@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import { ChevronLeft } from '@lucide/vue';
 import CardPrimarySelectItem from '@/components/card/CardPrimarySelectItem.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 
@@ -17,12 +18,8 @@ const selectedId = ref(null);
   <div
     class="flex flex-col items-center w-full min-h-screen px-5 py-6 text-center bg-white"
   >
-    <button
-      type="button"
-      class="text-2xl mb-4 self-start"
-      @click="$emit('back')"
-    >
-      ‹
+    <button type="button" class="mb-4 self-start" @click="$emit('back')">
+      <ChevronLeft :size="24" />
     </button>
     <h1 class="text-xl font-bold mb-6">카드 선택</h1>
     <p class="text-[14px] text-gray-500 mb-4">

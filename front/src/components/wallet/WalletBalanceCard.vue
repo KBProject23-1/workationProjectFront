@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { ChevronRight } from '@lucide/vue';
 
 const props = defineProps({
   balance: { type: Number, default: 0 },
@@ -20,7 +21,7 @@ const formattedBalance = computed(() => props.balance.toLocaleString('ko-KR'));
         @click="$emit('edit-accounts')"
       >
         연결계좌 수정
-        <span class="text-[16px]">›</span>
+        <ChevronRight :size="16" />
       </button>
     </div>
     <p class="text-2xl font-bold">{{ formattedBalance }}원</p>

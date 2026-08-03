@@ -1,8 +1,9 @@
 
-@import 'pretendard/dist/web/static/pretendard.css';
+@import 'pretendard/dist/web/variable/pretendardvariable.css';
 
 @import 'tailwindcss';
 @import "tw-animate-css";
+@import 'vue-sonner/style.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -61,8 +62,8 @@ body,
 }
 
 :root {
-  --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui,
-    Roboto, sans-serif;
+  --font-sans: 'Pretendard Variable', -apple-system, BlinkMacSystemFont,
+    system-ui, Roboto, sans-serif;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
