@@ -2,16 +2,18 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAccountStore } from '@/stores/accountStore';
+import { useErrorToast } from '@/composables/useErrorToast';
+import BaseToast from '@/components/common/BaseToast.vue';
 import AccountLinkIntro from '@/components/account/AccountLinkIntro.vue';
 import AccountLinkSelect from '@/components/account/AccountLinkSelect.vue';
 import AccountLinkComplete from '@/components/account/AccountLinkComplete.vue';
 
 const router = useRouter();
 const accountStore = useAccountStore();
+const { errorMessage, showError } = useErrorToast();
 
 const step = ref(1);
 const linkedAccounts = ref([]);
-const errorMessage = ref('');
 
 async function handleLink(selectedIds) {
   try {
@@ -19,11 +21,7 @@ async function handleLink(selectedIds) {
     linkedAccounts.value = data;
     step.value = 3;
   } catch (err) {
-    errorMessage.value =
-      err.message || '계좌 연동에 실패했어요. 다시 시도해주세요.';
-    setTimeout(() => {
-      errorMessage.value = '';
-    }, 3000);
+    showError(err, '계좌 연동에 실패했어요. 다시 시도해주세요.');
   }
 }
 
@@ -38,12 +36,7 @@ onMounted(() => {
 
 <template>
   <div class="w-full mx-auto flex flex-col min-h-screen">
-    <div
-      v-if="errorMessage"
-      class="fixed top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[14px] px-4 py-2 rounded-lg z-50"
-    >
-      {{ errorMessage }}
-    </div>
+    <BaseToast :message="errorMessage" />
 
     <AccountLinkIntro v-if="step === 1" @start="step = 2" />
     <AccountLinkSelect
