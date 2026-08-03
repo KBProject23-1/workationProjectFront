@@ -8,7 +8,7 @@ defineProps({
   isLoading: { type: Boolean, default: false },
 });
 
-defineEmits(['complete', 'skip']);
+defineEmits(['complete', 'skip', 'back']);
 
 const selectedIds = ref([]);
 
@@ -26,6 +26,13 @@ function toggleSelect(id) {
   <div
     class="flex flex-col items-center w-full min-h-screen px-5 py-6 text-center bg-white"
   >
+    <button
+      type="button"
+      class="text-2xl mb-4 self-start"
+      @click="$emit('back')"
+    >
+      ‹
+    </button>
     <h1 class="text-xl font-bold mb-2">추가 카드 연동</h1>
     <p class="text-[14px] text-gray-500 mb-4">
       더 등록할 카드가 있다면 선택해주세요

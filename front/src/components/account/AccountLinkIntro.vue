@@ -2,21 +2,28 @@
 import { useRouter } from 'vue-router';
 import BaseButton from '@/components/common/BaseButton.vue';
 
+const props = defineProps({
+  isAdditional: { type: Boolean, default: false },
+});
+
 defineEmits(['start']);
 
 const router = useRouter();
+
+function handleBack() {
+  if (props.isAdditional) {
+    router.push('/wallet');
+  } else {
+    router.back();
+  }
+}
 </script>
 
 <template>
   <div
-    class="flex flex-col items-center w-full min-h-screen p-6 pb-10 text-center bg-white"
+    class="flex flex-col items-center w-full min-h-screen px-5 py-6 text-center bg-white"
   >
-    <button
-      type="button"
-      class="text-2xl mb-2 self-start"
-      aria-label="뒤로가기"
-      @click="router.back()"
-    >
+    <button type="button" class="text-2xl mb-4 self-start" @click="handleBack">
       ‹
     </button>
 

@@ -98,7 +98,7 @@ export const useCardStore = defineStore('card', {
     async deleteCard(cardId) {
       try {
         await deleteCardApi(cardId);
-        this.cards = this.cards.filter((card) => card.cardId !== cardId);
+        await this.fetchMyCards();
       } catch (err) {
         this.error = err.message;
         throw err;
