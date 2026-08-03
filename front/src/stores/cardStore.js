@@ -1,0 +1,108 @@
+import { defineStore } from 'pinia';
+import {
+  getAvailableCards,
+  getMyCards,
+  linkCards as linkCardsApi,
+  setPrimaryCard as setPrimaryCardApi,
+  updateCardNickname as updateCardNicknameApi,
+  deleteCard as deleteCardApi,
+} from '@/api/card';
+
+export const useCardStore = defineStore('card', {
+  state: () => ({
+    cards: [],
+    availableCards: [],
+    isLoading: false,
+    error: null,
+  }),
+
+  getters: {
+    primaryCard: (state) => state.cards.find((card) => card.isPrimary),
+    personalCards: (state) =>
+      state.cards.filter((card) => card.cardType === 'PERSONAL'),
+    workCards: (state) =>
+      state.cards.filter((card) => card.cardType === 'WORK'),
+  },
+
+  actions: {
+    async fetchAvailableCards() {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const { data } = await getAvailableCards();
+        this.availableCards = data;
+      } catch (err) {
+        this.error = err.message;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    async fetchMyCards() {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const { data } = await getMyCards();
+        this.cards = data;
+      } catch (err) {
+        this.error = err.message;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    async linkCards(linkableCardIds) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const { data } = await linkCardsApi(linkableCardIds);
+        this.cards = [...this.cards, ...data];
+        this.availableCards = this.availableCards.filter(
+          (card) => !linkableCardIds.includes(card.linkableCardId),
+        );
+        return data;
+      } catch (err) {
+        this.error = err.message;
+        throw err;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    async setPrimaryCard(cardId) {
+      try {
+        await setPrimaryCardApi(cardId);
+        this.cards = this.cards.map((card) => ({
+          ...card,
+          isPrimary: card.cardId === cardId,
+        }));
+      } catch (err) {
+        this.error = err.message;
+        throw err;
+      }
+    },
+
+    async updateCardNickname(cardId, cardNickname) {
+      try {
+        const { data } = await updateCardNicknameApi(cardId, cardNickname);
+        const target = this.cards.find((card) => card.cardId === cardId);
+        if (target) {
+          target.cardName = data.cardName;
+        }
+      } catch (err) {
+        this.error = err.message;
+        throw err;
+      }
+    },
+
+    async deleteCard(cardId) {
+      try {
+        await deleteCardApi(cardId);
+        this.cards = this.cards.filter((card) => card.cardId !== cardId);
+      } catch (err) {
+        this.error = err.message;
+        throw err;
+      }
+    },
+  },
+});
