@@ -11,14 +11,18 @@ const router = useRouter();
 const accountStore = useAccountStore();
 const { errorMessage, showError } = useErrorToast();
 
-const confirmState = ref({ visible: false, accountId: null });
+const confirmState = ref({ visible: false, type: null, accountId: null });
 
 function requestSetPrimary(accountId) {
-  confirmState.value = { visible: true, accountId };
+  confirmState.value = { visible: true, type: 'primary', accountId };
+}
+
+function requestDelete(accountId) {
+  confirmState.value = { visible: true, type: 'delete', accountId };
 }
 
 function closeConfirm() {
-  confirmState.value = { visible: false, accountId: null };
+  confirmState.value = { ...confirmState.value, visible: false };
 }
 
 function goToWallet() {
@@ -26,20 +30,22 @@ function goToWallet() {
 }
 
 async function handleConfirm() {
+  const { type, accountId } = confirmState.value;
   try {
-    await accountStore.setPrimaryAccount(confirmState.value.accountId);
+    if (type === 'primary') {
+      await accountStore.setPrimaryAccount(accountId);
+    } else if (type === 'delete') {
+      await accountStore.deleteAccount(accountId);
+    }
   } catch (err) {
-    showError(err, '주 계좌 변경에 실패했어요.');
+    showError(
+      err,
+      type === 'primary'
+        ? '주 계좌 변경에 실패했어요.'
+        : '계좌 삭제에 실패했어요.',
+    );
   } finally {
     closeConfirm();
-  }
-}
-
-async function handleDeleteAccount(id) {
-  try {
-    await accountStore.deleteAccount(id);
-  } catch (err) {
-    showError(err, '계좌 삭제에 실패했어요.');
   }
 }
 
@@ -69,7 +75,7 @@ onMounted(() => {
         :key="account.accountId"
         :account="account"
         @set-primary="requestSetPrimary"
-        @delete="handleDeleteAccount"
+        @delete="requestDelete"
       />
       <p
         v-if="accountStore.accounts.length === 0"
@@ -91,8 +97,12 @@ onMounted(() => {
 
     <BaseConfirmModal
       :visible="confirmState.visible"
-      title="주 계좌 변경"
-      message="이 계좌를 주 계좌로 변경할까요?"
+      :title="confirmState.type === 'primary' ? '주 계좌 변경' : '계좌 삭제'"
+      :message="
+        confirmState.type === 'primary'
+          ? '이 계좌를 주 계좌로 변경할까요?'
+          : '이 계좌를 삭제할까요?'
+      "
       @confirm="handleConfirm"
       @cancel="closeConfirm"
     />

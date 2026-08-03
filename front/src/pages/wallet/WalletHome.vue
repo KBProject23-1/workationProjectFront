@@ -26,7 +26,7 @@ function requestDelete(cardId) {
 }
 
 function closeConfirm() {
-  confirmState.value = { visible: false, type: null, cardId: null };
+  confirmState.value = { ...confirmState.value, visible: false };
 }
 
 async function handleConfirm() {
