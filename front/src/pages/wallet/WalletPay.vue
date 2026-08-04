@@ -94,8 +94,8 @@ onUnmounted(() => {
       <span class="font-bold text-red-500 min-w-[24px]">{{ timeLeft }}초</span>
       <button
         type="button"
-        @click="refreshQR"
         class="ml-2 text-xs text-gray-500 underline hover:text-gray-800"
+        @click="refreshQR"
       >
         새로고침
       </button>

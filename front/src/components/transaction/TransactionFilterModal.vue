@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import BaseButton from '@/components/common/BaseButton.vue';
 import { toDateParam } from '@/utils/date';
+import { CreditCard, ChevronRight } from '@lucide/vue';
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -18,8 +19,14 @@ const props = defineProps({
       startDate: null,
       endDate: null,
       paymentSourceType: null,
+      cardId: null,
       transactionType: null,
     }),
+  },
+
+  cards: {
+    type: Array,
+    default: () => [],
   },
 });
 
@@ -56,6 +63,27 @@ function selectCustom() {
   activePeriod.value = 'custom';
 }
 
+// 결제 수단 변경 핸들러
+function handlePaymentSourceChange(type) {
+  localFilters.value.paymentSourceType = type;
+  if (type !== 'CARD') {
+    localFilters.value.cardId = null;
+  }
+}
+
+function getSelectedCardName() {
+  if (!localFilters.value.cardId) return '전체 카드';
+  const card = props.cards.find(
+    (c) => c.cardId === localFilters.value.cardId,
+  );
+  return card ? formatCardLabel(card) : '전체 카드';
+}
+
+function formatCardLabel(card) {
+  const label = `${card.cardName} (${card.maskedNumber})`;
+  return card.isDeleted ? `${label} - 연동 해제됨` : label;
+}
+
 function handleApply() {
   emit('apply', { ...localFilters.value });
 }
@@ -73,6 +101,7 @@ function handleOpenChange(open) {
       </DialogHeader>
 
       <div class="flex flex-col gap-4 py-2">
+        <!-- 기간 필터 -->
         <div>
           <p class="text-[13px] text-gray-500 mb-2 text-left">기간</p>
           <div class="flex gap-2 mb-3">
@@ -119,6 +148,7 @@ function handleOpenChange(open) {
           </div>
         </div>
 
+        <!-- 결제 수단 필터 -->
         <div>
           <p class="text-[13px] text-gray-500 mb-2 text-left">결제 수단</p>
           <div class="flex gap-2">
@@ -130,7 +160,7 @@ function handleOpenChange(open) {
                   ? 'bg-primary text-white border-primary'
                   : ''
               "
-              @click="localFilters.paymentSourceType = null"
+              @click="handlePaymentSourceChange(null)"
             >
               전체
             </button>
@@ -142,7 +172,7 @@ function handleOpenChange(open) {
                   ? 'bg-primary text-white border-primary'
                   : ''
               "
-              @click="localFilters.paymentSourceType = 'CARD'"
+              @click="handlePaymentSourceChange('CARD')"
             >
               카드
             </button>
@@ -154,13 +184,67 @@ function handleOpenChange(open) {
                   ? 'bg-primary text-white border-primary'
                   : ''
               "
-              @click="localFilters.paymentSourceType = 'WALLET'"
+              @click="handlePaymentSourceChange('WALLET')"
             >
               지갑
             </button>
           </div>
+
+          <!-- 세부 카드 선택 박스 -->
+          <Transition
+            enter-active-class="transition-all duration-200 ease-out"
+            enter-from-class="opacity-0 -translate-y-2"
+            enter-to-class="opacity-100 translate-y-0"
+          >
+            <div
+              v-if="localFilters.paymentSourceType === 'CARD'"
+              class="mt-3 relative"
+            >
+              <div
+                class="flex items-center justify-between p-3 border rounded-2xl bg-white border-gray-200 shadow-sm hover:border-blue-300 transition-colors cursor-pointer"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-primary"
+                  >
+                    <CreditCard :size="20" />
+                  </div>
+                  <div class="text-left">
+                    <p class="text-[13px] font-bold text-gray-800">
+                      {{ getSelectedCardName() }}
+                    </p>
+                    <p
+                      v-if="localFilters.cardId"
+                      class="text-[11px] text-gray-400"
+                    >
+                      개별 카드 선택됨
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight
+                  :size="18"
+                  class="text-gray-400 pointer-events-none"
+                />
+              </div>
+
+              <select
+                v-model="localFilters.cardId"
+                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              >
+                <option :value="null">전체 카드</option>
+                <option
+                  v-for="card in cards"
+                  :key="card.cardId"
+                  :value="card.cardId"
+                >
+                  {{ formatCardLabel(card) }}
+                </option>
+              </select>
+            </div>
+          </Transition>
         </div>
 
+        <!-- 거래 구분 필터 -->
         <div>
           <p class="text-[13px] text-gray-500 mb-2 text-left">거래 구분</p>
           <div class="flex gap-2 flex-wrap">
@@ -216,7 +300,7 @@ function handleOpenChange(open) {
         </div>
       </div>
 
-      <DialogFooter>
+      <DialogFooter class="mt-2">
         <BaseButton class="w-full" @click="handleApply">적용하기</BaseButton>
       </DialogFooter>
     </DialogContent>

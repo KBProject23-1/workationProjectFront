@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import { useTransactionStore } from '@/stores/transactionStore';
+import { useCardStore } from '@/stores/cardStore';
 import { ChevronLeft, SlidersHorizontal } from '@lucide/vue';
 import TransactionListItem from '@/components/transaction/TransactionListItem.vue';
 import TransactionSummary from '@/components/transaction/TransactionSummary.vue';
@@ -9,6 +10,7 @@ import TransactionFilterModal from '@/components/transaction/TransactionFilterMo
 
 const router = useRouter();
 const transactionStore = useTransactionStore();
+const cardStore = useCardStore();
 
 const isFilterOpen = ref(false);
 const sentinel = ref(null);
@@ -32,6 +34,8 @@ onBeforeRouteLeave((to) => {
 });
 
 onMounted(() => {
+  cardStore.fetchAllCardsForFilter();
+
   if (transactionStore.returnedFromDetail) {
     transactionStore.setReturnedFromDetail(false);
   } else {
@@ -106,6 +110,7 @@ onUnmounted(() => {
     <TransactionFilterModal
       :visible="isFilterOpen"
       :model-value="transactionStore.filters"
+      :cards="cardStore.allCardsForFilter"
       @apply="handleApplyFilter"
       @close="isFilterOpen = false"
     />

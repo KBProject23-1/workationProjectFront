@@ -61,7 +61,7 @@ onMounted(() => {
 
 <template>
   <div
-    class="flex flex-col items-center w-full min-h-screen px-5 py-6 bg-white"
+    class="flex flex-col items-center w-full min-h-screen px-5 pt-6 pb-24 bg-white"
   >
     <div class="w-full text-left mb-4">
       <h1 class="text-xl font-bold">{{ '000' }}님, 안녕하세요</h1>

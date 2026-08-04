@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import {
   getAvailableCards,
   getMyCards,
+  getAllCardsForFilter,
   linkCards as linkCardsApi,
   setPrimaryCard as setPrimaryCardApi,
   updateCardNickname as updateCardNicknameApi,
@@ -12,6 +13,7 @@ export const useCardStore = defineStore('card', {
   state: () => ({
     cards: [],
     availableCards: [],
+    allCardsForFilter: [],
     isLoading: false,
     error: null,
   }),
@@ -48,6 +50,16 @@ export const useCardStore = defineStore('card', {
         this.error = err.message;
       } finally {
         this.isLoading = false;
+      }
+    },
+
+    // 거래 내역 카드별 필터용. 삭제된 카드도 포함해서 조회한다
+    async fetchAllCardsForFilter() {
+      try {
+        const { data } = await getAllCardsForFilter();
+        this.allCardsForFilter = data;
+      } catch (err) {
+        this.error = err.message;
       }
     },
 

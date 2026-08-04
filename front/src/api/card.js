@@ -10,6 +10,11 @@ export const getMyCards = () => {
   return axiosInstance.get('/cards');
 };
 
+// 거래 내역 카드별 필터용 전체 카드 목록 (삭제된 카드 포함)
+export const getAllCardsForFilter = () => {
+  return axiosInstance.get('/cards/all');
+};
+
 // 카드 등록(연동)
 export const linkCards = (linkableCardIds) => {
   return axiosInstance.post('/cards', { linkableCardIds });
