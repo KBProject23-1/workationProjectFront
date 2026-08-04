@@ -144,6 +144,7 @@ onMounted(() => {
 
     <BaseConfirmModal
       :visible="isCancelConfirmOpen"
+      :loading="isCanceling"
       title="거래 취소"
       message="이 거래를 취소할까요? 취소 후에는 되돌릴 수 없어요."
       @confirm="handleCancel"
