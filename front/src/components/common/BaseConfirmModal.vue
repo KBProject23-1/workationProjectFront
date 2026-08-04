@@ -9,16 +9,17 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
-defineProps({
+const props = defineProps({
   visible: { type: Boolean, default: false },
   title: { type: String, default: '' },
   message: { type: String, default: '' },
+  loading: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['confirm', 'cancel']);
 
 function handleOpenChange(open) {
-  if (!open) emit('cancel');
+  if (!open && !props.loading) emit('cancel');
 }
 </script>
 
@@ -34,11 +35,17 @@ function handleOpenChange(open) {
           type="button"
           variant="outline"
           class="flex-1"
+          :disabled="loading"
           @click="$emit('cancel')"
         >
           취소
         </Button>
-        <Button type="button" class="flex-1" @click="$emit('confirm')">
+        <Button
+          type="button"
+          class="flex-1"
+          :disabled="loading"
+          @click="$emit('confirm')"
+        >
           확인
         </Button>
       </DialogFooter>

@@ -19,4 +19,9 @@ export default [
     name: 'WalletRefund',
     component: () => import('@/pages/wallet/WalletRefund.vue'),
   },
+  {
+    path: '/wallet/pay',
+    name: 'WalletPay',
+    component: () => import('@/pages/wallet/WalletPay.vue'),
+  },
 ];
