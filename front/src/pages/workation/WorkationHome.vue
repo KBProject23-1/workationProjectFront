@@ -47,8 +47,10 @@
       </div>
     </template>
 
+    <WorkationEmptyState v-else @register="goCreate" />
+
     <section v-if="records.length > 0" class="mt-6">
-      <h3 class="mb-2 text-sm font-bold text-slate-900">워케이션 정산기록 보기</h3>
+      <h3 class="mb-2 text-sm font-bold text-slate-900">{{ recordsTitle }}</h3>
       <div class="space-y-2">
         <SettlementRecordItem
           v-for="record in records"
@@ -62,23 +64,27 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { getCurrentWorkation, getWorkations } from '@/api/workation';
 import WorkationProgressCard from '@/components/workation/WorkationProgressCard.vue';
 import BudgetUsageCard from '@/components/workation/BudgetUsageCard.vue';
 import UncheckedExpenseAlert from '@/components/workation/UncheckedExpenseAlert.vue';
 import SettlementRecordItem from '@/components/workation/SettlementRecordItem.vue';
+import WorkationEmptyState from '@/components/workation/WorkationEmptyState.vue';
+
+const router = useRouter();
 
 const current = ref(null);
 const records = ref([]);
 const loading = ref(true);
 const errorMessage = ref('');
 
-// 진행 중 워케이션이 없으면 404 가 오므로 목록 조회와 분리해서 처리한다
+// 진행 중 워케이션이 없어도 200 으로 workation: null 이 내려온다
 const loadCurrent = async () => {
   try {
     const { data } = await getCurrentWorkation();
-    current.value = data;
+    current.value = data?.workation ? data : null;
   } catch (error) {
     if (error.response?.status === 404) {
       current.value = null;
@@ -102,6 +108,15 @@ onMounted(async () => {
   await Promise.all([loadCurrent(), loadRecords()]);
   loading.value = false;
 });
+
+// 시안 기준으로 진행 중 워케이션이 있을 때와 없을 때 목록 제목이 다르다
+const recordsTitle = computed(() =>
+  current.value ? '워케이션 정산기록 보기' : '지난 워케이션 정산 보기',
+);
+
+const goCreate = () => {
+  router.push('/workation/create');
+};
 
 // 이동할 화면이 아직 없다. 해당 화면을 만들 때 router.push 로 연결한다
 const goBudgetDetail = () => {};
