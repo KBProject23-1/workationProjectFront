@@ -76,7 +76,7 @@ onMounted(() => {
       @charge="router.push('/wallet/charge')"
       @refund="router.push('/wallet/refund')"
       @history="router.push('/transaction')"
-      @pay="() => {}"
+      @pay="router.push('/wallet/pay')"
     />
 
     <WalletCardCarousel
