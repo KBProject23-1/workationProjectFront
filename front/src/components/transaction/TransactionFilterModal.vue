@@ -8,6 +8,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import BaseButton from '@/components/common/BaseButton.vue';
+import { toDateParam } from '@/utils/date';
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -47,8 +48,8 @@ function selectPeriod(preset) {
   const end = new Date();
   const start = new Date();
   start.setDate(start.getDate() - preset.days);
-  localFilters.value.startDate = start.toISOString().slice(0, 10);
-  localFilters.value.endDate = end.toISOString().slice(0, 10);
+  localFilters.value.startDate = toDateParam(start);
+  localFilters.value.endDate = toDateParam(end);
 }
 
 function selectCustom() {

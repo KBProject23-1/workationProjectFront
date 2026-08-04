@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { ChevronLeft, SlidersHorizontal } from '@lucide/vue';
 import TransactionListItem from '@/components/transaction/TransactionListItem.vue';
@@ -27,9 +27,17 @@ function handleApplyFilter(filters) {
   transactionStore.fetchTransactions(filters);
 }
 
+onBeforeRouteLeave((to) => {
+  transactionStore.setReturnedFromDetail(to.name === 'TransactionDetail');
+});
+
 onMounted(() => {
-  transactionStore.resetFilters();
-  transactionStore.fetchTransactions();
+  if (transactionStore.returnedFromDetail) {
+    transactionStore.setReturnedFromDetail(false);
+  } else {
+    transactionStore.resetFilters();
+    transactionStore.fetchTransactions();
+  }
 
   observer = new IntersectionObserver(
     (entries) => {

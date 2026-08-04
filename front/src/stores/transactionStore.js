@@ -1,13 +1,24 @@
 import { defineStore } from 'pinia';
 import {
   getTransactions,
+  getTransactionSummary,
   getTransactionDetail,
   getTransactionReceipt,
   createPayment as createPaymentApi,
   cancelTransaction as cancelTransactionApi,
 } from '@/api/transaction';
+import { toDateParam } from '@/utils/date';
 
 const PAGE_SIZE = 10;
+
+function getDefaultDateRange() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  return {
+    startDate: toDateParam(start),
+    endDate: toDateParam(now),
+  };
+}
 
 export const useTransactionStore = defineStore('transaction', {
   state: () => ({
@@ -15,8 +26,7 @@ export const useTransactionStore = defineStore('transaction', {
     currentDetail: null,
     currentReceipt: null,
     filters: {
-      startDate: null,
-      endDate: null,
+      ...getDefaultDateRange(),
       paymentSourceType: null,
       transactionType: null,
       cardId: null,
@@ -26,34 +36,11 @@ export const useTransactionStore = defineStore('transaction', {
     isLoading: false,
     isLoadingMore: false,
     error: null,
+    returnedFromDetail: false,
+    totalCharge: 0,
+    totalOutflow: 0,
+    outflowCount: 0,
   }),
-
-  getters: {
-    totalCharge: (state) =>
-      state.transactions
-        .filter(
-          (t) => t.transactionType === 'DEPOSIT' && t.status !== 'CANCELED',
-        )
-        .reduce((sum, t) => sum + (t.amount ?? 0), 0),
-
-    totalOutflow: (state) =>
-      state.transactions
-        .filter(
-          (t) =>
-            (t.transactionType === 'PAYMENT' ||
-              t.transactionType === 'WITHDRAWAL') &&
-            t.status !== 'CANCELED',
-        )
-        .reduce((sum, t) => sum + (t.amount ?? 0), 0),
-
-    outflowCount: (state) =>
-      state.transactions.filter(
-        (t) =>
-          (t.transactionType === 'PAYMENT' ||
-            t.transactionType === 'WITHDRAWAL') &&
-          t.status !== 'CANCELED',
-      ).length,
-  },
 
   actions: {
     async fetchTransactions(filters = {}) {
@@ -62,6 +49,7 @@ export const useTransactionStore = defineStore('transaction', {
       this.filters = { ...this.filters, ...filters };
       this.page = 0;
       this.hasMore = true;
+      this.fetchSummary();
       try {
         const { data } = await getTransactions({
           ...this.filters,
@@ -74,6 +62,23 @@ export const useTransactionStore = defineStore('transaction', {
         this.error = err.message;
       } finally {
         this.isLoading = false;
+      }
+    },
+
+    // 필터 조건 전체 기준 합계. 페이징과 무관하게 항상 정확한 값을 보여주기 위해 목록과 별도로 조회한다
+    async fetchSummary() {
+      try {
+        const { data } = await getTransactionSummary({
+          startDate: this.filters.startDate,
+          endDate: this.filters.endDate,
+          paymentSourceType: this.filters.paymentSourceType,
+          cardId: this.filters.cardId,
+        });
+        this.totalCharge = data.totalChargeAmount;
+        this.totalOutflow = data.totalPaymentAmount;
+        this.outflowCount = data.totalPaymentCount;
+      } catch (err) {
+        this.error = err.message;
       }
     },
 
@@ -147,6 +152,7 @@ export const useTransactionStore = defineStore('transaction', {
         if (target) {
           target.status = data.status;
         }
+        this.fetchSummary();
         return data;
       } catch (err) {
         this.error = err.message;
@@ -156,12 +162,15 @@ export const useTransactionStore = defineStore('transaction', {
 
     resetFilters() {
       this.filters = {
-        startDate: null,
-        endDate: null,
+        ...getDefaultDateRange(),
         paymentSourceType: null,
         transactionType: null,
         cardId: null,
       };
+    },
+
+    setReturnedFromDetail(value) {
+      this.returnedFromDetail = value;
     },
   },
 });
