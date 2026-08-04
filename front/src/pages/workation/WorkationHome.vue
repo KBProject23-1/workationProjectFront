@@ -118,8 +118,10 @@ const goCreate = () => {
   router.push('/workation/create');
 };
 
-// 이동할 화면이 아직 없다. 해당 화면을 만들 때 router.push 로 연결한다
-const goBudgetDetail = () => {};
+// 누른 카드의 예산 유형 탭이 열리도록 쿼리로 넘긴다
+const goBudgetDetail = (budgetType) => {
+  router.push(`/workation/${current.value.workation.id}/budgets?budgetType=${budgetType}`);
+};
 
 const goUncheckedExpenses = () => {};
 

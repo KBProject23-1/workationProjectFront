@@ -28,8 +28,13 @@
           class="border-input h-9 w-full rounded-md border bg-transparent px-3 text-base md:text-sm"
           :class="form.regionId ? 'text-slate-900' : 'text-slate-300'"
         >
-          <option :value="null" disabled>지역을 선택해 주세요</option>
-          <option v-for="region in regions" :key="region.id" :value="region.id">
+          <option :value="null" disabled class="text-slate-300">지역을 선택해 주세요</option>
+          <option
+            v-for="region in sortedRegions"
+            :key="region.id"
+            :value="region.id"
+            class="text-slate-900"
+          >
             {{ region.name }}
           </option>
         </select>
@@ -83,7 +88,13 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { getRegions, createWorkation } from '@/api/workation';
+import {
+  getRegions,
+  createWorkation,
+  updateWorkation,
+  getCurrentWorkation,
+} from '@/api/workation';
+import { getBudgetStatus } from '@/api/budget';
 import { useErrorToast } from '@/composables/useErrorToast';
 import WorkationFormField from '@/components/workation/WorkationFormField.vue';
 import WorkationDateInput from '@/components/workation/WorkationDateInput.vue';
@@ -93,6 +104,11 @@ const { showError } = useErrorToast();
 
 const regions = ref([]);
 const submitting = ref(false);
+
+// 지역은 가나다 순으로 보여준다
+const sortedRegions = computed(() =>
+  [...regions.value].sort((a, b) => a.name.localeCompare(b.name, 'ko')),
+);
 
 const form = reactive({
   title: '',
@@ -111,6 +127,10 @@ const errors = reactive({
   personalBudgetTotal: '',
 });
 
+// 진행 중 워케이션이 이미 있으면 새로 만드는 게 아니라 그것을 수정하는 화면이 된다
+// 예산 배분 화면에서 뒤로 돌아왔을 때가 이 경우다
+const editingId = ref(null);
+
 const loadRegions = async () => {
   try {
     const { data } = await getRegions();
@@ -120,7 +140,32 @@ const loadRegions = async () => {
   }
 };
 
-onMounted(loadRegions);
+const loadCurrent = async () => {
+  try {
+    const { data } = await getCurrentWorkation();
+    const workation = data?.workation;
+    if (!workation) return;
+
+    editingId.value = workation.id;
+    form.title = workation.title ?? '';
+    form.regionId = workation.region?.id ?? null;
+    form.startDate = workation.startDate ?? '';
+    form.endDate = workation.endDate ?? '';
+
+    const { data: budgetData } = await getBudgetStatus(workation.id);
+    (budgetData.budgets ?? []).forEach((budget) => {
+      const amount = String(Number(budget.budgetTotal ?? 0));
+      if (budget.budgetType === 'WORK') form.businessBudgetTotal = amount;
+      if (budget.budgetType === 'PERSONAL') form.personalBudgetTotal = amount;
+    });
+  } catch (error) {
+    showError(error, '워케이션 정보를 불러오지 못했습니다.');
+  }
+};
+
+onMounted(async () => {
+  await Promise.all([loadRegions(), loadCurrent()]);
+});
 
 // 숫자만 남기고 화면에는 천 단위 콤마를 붙여 보여준다
 const toDigits = (value) => String(value ?? '').replace(/[^\d]/g, '');
@@ -191,16 +236,20 @@ const submit = async () => {
 
   submitting.value = true;
   try {
-    await createWorkation({
+    const payload = {
       title: form.title.trim(),
       regionId: form.regionId,
       startDate: form.startDate,
       endDate: form.endDate,
       businessBudgetTotal: Number(form.businessBudgetTotal),
       personalBudgetTotal: Number(form.personalBudgetTotal),
-    });
-    // 예산 세부 금액 설정 화면이 아직 없다. 화면이 생기면 응답의 id 를 넘겨 그쪽으로 이동한다
-    router.push('/workation');
+    };
+
+    const { data } = editingId.value
+      ? await updateWorkation(editingId.value, payload)
+      : await createWorkation(payload);
+
+    router.push(`/workation/${data.id}/budgets?step=create`);
   } catch (error) {
     const errorCode = error.response?.data?.errorCode;
     if (errorCode === 'ALREADY_ACTIVE') {
@@ -218,6 +267,6 @@ const submit = async () => {
 };
 
 const goBack = () => {
-  router.back();
+  router.push('/workation');
 };
 </script>

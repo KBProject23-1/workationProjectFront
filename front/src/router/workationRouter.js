@@ -9,4 +9,9 @@ export default [
     name: 'WorkationCreate',
     component: () => import('@/pages/workation/WorkationCreate.vue'),
   },
+  {
+    path: '/workation/:workationId/budgets',
+    name: 'WorkationBudgetSetup',
+    component: () => import('@/pages/workation/WorkationBudgetSetup.vue'),
+  },
 ];
