@@ -1,5 +1,10 @@
 import axiosInstance from './axiosInstance';
 
+// 지역 목록 조회
+export const getRegions = () => {
+  return axiosInstance.get('/regions');
+};
+
 // 워케이션 등록
 export const createWorkation = (payload) => {
   return axiosInstance.post('/workations', payload);

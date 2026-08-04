@@ -4,4 +4,9 @@ export default [
     name: 'WorkationHome',
     component: () => import('@/pages/workation/WorkationHome.vue'),
   },
+  {
+    path: '/workation/create',
+    name: 'WorkationCreate',
+    component: () => import('@/pages/workation/WorkationCreate.vue'),
+  },
 ];
