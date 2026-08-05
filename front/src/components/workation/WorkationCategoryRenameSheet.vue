@@ -15,9 +15,11 @@
       </div>
 
       <div class="mt-5">
-        <p class="mb-1.5 text-xs text-slate-500">현재 이름</p>
+        <p class="mb-1.5 text-xs text-slate-500">기존 카테고리명</p>
         <div class="rounded-md bg-slate-50 px-3 py-2">
-          <p class="text-sm font-bold text-slate-900">{{ category.name }}</p>
+          <p class="text-sm font-bold text-slate-900">
+            {{ category.defaultName ?? category.name }}
+          </p>
           <p class="text-xs text-slate-400">{{ category.description }}</p>
         </div>
       </div>
@@ -80,7 +82,12 @@ const emit = defineEmits(['saved', 'close']);
 const categoryStore = useCategoryStore();
 const { showError } = useErrorToast();
 
-const customName = ref(props.category.name ?? '');
+// 별칭을 지정한 적이 없으면 빈 칸으로 시작한다. 기본 이름을 그대로 별칭으로 저장하지 않기 위함이다
+const customName = ref(
+  props.category.name !== props.category.defaultName
+    ? (props.category.name ?? '')
+    : '',
+);
 const saving = ref(false);
 
 const close = () => {

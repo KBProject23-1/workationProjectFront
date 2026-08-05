@@ -3,13 +3,19 @@
     class="fixed inset-0 z-50 flex items-end justify-center bg-black/40"
     @click.self="$emit('close')"
   >
-    <div class="max-h-[70vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white px-5 pt-5 pb-8">
+    <div
+      class="max-h-[70vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white px-5 pt-5 pb-8"
+    >
       <div class="flex items-start justify-between">
         <div>
           <h2 class="text-base font-bold text-slate-900">{{ title }}</h2>
-          <p v-if="description" class="mt-1 text-xs text-slate-400">{{ description }}</p>
+          <p v-if="description" class="mt-1 text-xs text-slate-400">
+            {{ description }}
+          </p>
         </div>
-        <button class="text-lg text-slate-400" @click="$emit('close')">×</button>
+        <button class="text-lg text-slate-400" @click="$emit('close')">
+          ×
+        </button>
       </div>
 
       <div class="mt-4 divide-y divide-slate-100">
@@ -23,10 +29,15 @@
             <span class="block truncate text-sm font-bold text-slate-900">
               {{ category.name }}
             </span>
-            <span class="block truncate text-xs text-slate-400">{{ category.description }}</span>
+            <span class="block truncate text-xs text-slate-400">{{
+              category.description
+            }}</span>
           </span>
 
-          <span v-if="category.id === selectedId" class="shrink-0 text-xs text-blue-600">
+          <span
+            v-if="category.id === selectedId"
+            class="shrink-0 text-xs text-blue-600"
+          >
             선택됨
           </span>
         </button>
