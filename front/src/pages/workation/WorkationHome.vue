@@ -13,7 +13,11 @@
     </p>
 
     <template v-else-if="current">
-      <WorkationProgressCard :workation="current.workation" />
+      <WorkationProgressCard
+        :workation="current.workation"
+        @edit="goEdit"
+        @delete="confirmOpen = true"
+      />
 
       <div class="mt-5 space-y-5">
         <BudgetUsageCard
@@ -65,6 +69,15 @@
       </div>
     </section>
 
+    <BaseConfirmModal
+      :visible="confirmOpen"
+      :loading="deleting"
+      title="워케이션 삭제"
+      message="일정과 예산, 등록한 지출이 모두 삭제됩니다. 삭제하시겠어요?"
+      @confirm="remove"
+      @cancel="confirmOpen = false"
+    />
+
     <BaseBottomNavigation />
   </div>
 </template>
@@ -80,12 +93,17 @@ import UncheckedExpenseAlert from '@/components/workation/UncheckedExpenseAlert.
 import SettlementRecordItem from '@/components/workation/SettlementRecordItem.vue';
 import WorkationEmptyState from '@/components/workation/WorkationEmptyState.vue';
 import BaseBottomNavigation from '@/components/common/BaseBottomNavigation.vue';
+import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
+import { useErrorToast } from '@/composables/useErrorToast';
 
 const router = useRouter();
 const workationStore = useWorkationStore();
+const { showError } = useErrorToast();
 const { current, records, error: errorMessage } = storeToRefs(workationStore);
 
 const loading = ref(true);
+const confirmOpen = ref(false);
+const deleting = ref(false);
 
 onMounted(async () => {
   await Promise.all([
@@ -102,6 +120,24 @@ const recordsTitle = computed(() =>
 
 const goCreate = () => {
   router.push('/workation/create');
+};
+
+const goEdit = () => {
+  router.push(`/workation/${workationStore.workationId}/edit`);
+};
+
+const remove = async () => {
+  if (deleting.value) return;
+
+  deleting.value = true;
+  try {
+    await workationStore.deleteWorkation(workationStore.workationId);
+    confirmOpen.value = false;
+  } catch (error) {
+    showError(error, '워케이션을 삭제하지 못했습니다.');
+  } finally {
+    deleting.value = false;
+  }
 };
 
 // 누른 카드의 예산 유형 탭이 열리도록 쿼리로 넘긴다

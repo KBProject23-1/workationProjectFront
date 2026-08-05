@@ -4,13 +4,15 @@
       <button class="absolute left-0 text-xl text-slate-900" @click="goBack">
         ‹
       </button>
-      <h1 class="text-base font-bold text-slate-900">워케이션 일정 등록하기</h1>
+      <h1 class="text-base font-bold text-slate-900">{{ pageTitle }}</h1>
     </header>
 
-    <div class="h-1 w-full rounded-full bg-blue-100">
-      <div class="h-1 w-1/2 rounded-full bg-blue-600" />
-    </div>
-    <p class="mt-1 text-right text-xs text-slate-400">1 / 2</p>
+    <template v-if="!isEdit">
+      <div class="h-1 w-full rounded-full bg-blue-100">
+        <div class="h-1 w-1/2 rounded-full bg-blue-600" />
+      </div>
+      <p class="mt-1 text-right text-xs text-slate-400">1 / 2</p>
+    </template>
 
     <h2 class="mt-4 mb-3 text-base font-bold text-slate-900">기본 정보</h2>
 
@@ -112,14 +114,14 @@
       :disabled="submitting"
       @click="submit"
     >
-      {{ submitting ? '등록 중...' : '다음' }}
+      {{ submitLabel }}
     </Button>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { getRegions } from '@/api/workation';
@@ -129,12 +131,24 @@ import { useErrorToast } from '@/composables/useErrorToast';
 import WorkationFormField from '@/components/workation/WorkationFormField.vue';
 import WorkationDateInput from '@/components/workation/WorkationDateInput.vue';
 
+const route = useRoute();
 const router = useRouter();
 const workationStore = useWorkationStore();
 const { showError } = useErrorToast();
 
+// 라우트에 workationId 가 있으면 수정 화면으로 동작한다
+const workationId = route.params.workationId ?? null;
+const isEdit = Boolean(workationId);
+
+const pageTitle = isEdit ? '워케이션 일정 수정하기' : '워케이션 일정 등록하기';
+
 const regions = ref([]);
 const submitting = ref(false);
+
+const submitLabel = computed(() => {
+  if (submitting.value) return '저장 중...';
+  return isEdit ? '저장' : '다음';
+});
 
 // 지역은 가나다 순으로 보여준다
 const sortedRegions = computed(() =>
@@ -158,10 +172,6 @@ const errors = reactive({
   personalBudgetTotal: '',
 });
 
-// 진행 중 워케이션이 이미 있으면 새로 만드는 게 아니라 그것을 수정하는 화면이 된다
-// 예산 배분 화면에서 뒤로 돌아왔을 때가 이 경우다
-const editingId = ref(null);
-
 const loadRegions = async () => {
   try {
     const { data } = await getRegions();
@@ -171,13 +181,16 @@ const loadRegions = async () => {
   }
 };
 
-const loadCurrent = async () => {
+// 수정 대상은 진행 중 워케이션 하나뿐이라 current 로 채운다
+const loadWorkation = async () => {
   try {
     await workationStore.fetchCurrent();
     const workation = workationStore.workation;
-    if (!workation) return;
+    if (!workation) {
+      router.replace('/workation');
+      return;
+    }
 
-    editingId.value = workation.id;
     form.title = workation.title ?? '';
     form.regionId = workation.region?.id ?? null;
     form.startDate = workation.startDate ?? '';
@@ -194,8 +207,17 @@ const loadCurrent = async () => {
   }
 };
 
+// 등록 화면인데 이미 진행 중 워케이션이 있으면 들어올 수 없다
+const guardCreate = async () => {
+  await workationStore.fetchCurrent();
+  if (workationStore.hasActive) {
+    showError(null, '이미 진행 중인 워케이션이 있습니다.');
+    router.replace('/workation');
+  }
+};
+
 onMounted(async () => {
-  await Promise.all([loadRegions(), loadCurrent()]);
+  await Promise.all([loadRegions(), isEdit ? loadWorkation() : guardCreate()]);
 });
 
 // 숫자만 남기고 화면에는 천 단위 콤마를 붙여 보여준다
@@ -278,11 +300,12 @@ const submit = async () => {
       personalBudgetTotal: Number(form.personalBudgetTotal),
     };
 
-    const data = editingId.value
-      ? await workationStore.updateWorkation(editingId.value, payload)
+    const data = isEdit
+      ? await workationStore.updateWorkation(workationId, payload)
       : await workationStore.createWorkation(payload);
 
-    router.push(`/workation/${data.id}/budgets?step=create`);
+    // 예산 총액이 바뀌었을 수 있어 수정 후에도 배분 화면을 거친다
+    router.push(`/workation/${data.id ?? workationId}/budgets?step=create`);
   } catch (error) {
     const errorCode = error.response?.data?.errorCode;
     if (errorCode === 'ALREADY_ACTIVE') {
@@ -293,7 +316,7 @@ const submit = async () => {
       errors.regionId = '존재하지 않는 지역입니다.';
       return;
     }
-    showError(error, '워케이션을 등록하지 못했습니다.');
+    showError(error, `워케이션을 ${isEdit ? '수정' : '등록'}하지 못했습니다.`);
   } finally {
     submitting.value = false;
   }
