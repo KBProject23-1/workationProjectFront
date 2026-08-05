@@ -1,7 +1,9 @@
 <template>
   <div class="min-h-screen bg-white px-5 pt-4 pb-8">
     <header class="relative mb-4 flex items-center justify-center">
-      <button class="absolute left-0 text-xl text-slate-900" @click="goBack">‹</button>
+      <button class="absolute left-0 text-xl text-slate-900" @click="goBack">
+        ‹
+      </button>
       <h1 class="text-base font-bold text-slate-900">지출 내역</h1>
     </header>
 
@@ -10,7 +12,9 @@
         v-for="tab in TABS"
         :key="tab.label"
         class="rounded-lg py-2 text-sm font-bold"
-        :class="budgetType === tab.value ? 'bg-white text-blue-600' : 'text-slate-400'"
+        :class="
+          budgetType === tab.value ? 'bg-white text-blue-600' : 'text-slate-400'
+        "
         @click="changeBudgetType(tab.value)"
       >
         {{ tab.label }}
@@ -50,9 +54,14 @@
       총 {{ summary.totalCount }}건 · {{ won(summary.totalAmount) }}
     </p>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">불러오는 중...</p>
+    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
+      불러오는 중...
+    </p>
 
-    <p v-else-if="expenses.length === 0" class="py-20 text-center text-sm text-slate-400">
+    <p
+      v-else-if="expenses.length === 0"
+      class="py-20 text-center text-sm text-slate-400"
+    >
       조건에 맞는 지출이 없어요
     </p>
 
@@ -63,6 +72,33 @@
         :expense="expense"
         @click="goDetail"
       />
+    </div>
+
+    <div
+      v-if="totalPages > 1"
+      class="mt-5 flex items-center justify-center gap-4"
+    >
+      <button
+        class="text-sm"
+        :class="hasPrev ? 'text-slate-500' : 'text-slate-300'"
+        :disabled="!hasPrev"
+        @click="goPage(page - 1)"
+      >
+        이전
+      </button>
+
+      <span class="text-xs text-slate-400"
+        >{{ page + 1 }} / {{ totalPages }}</span
+      >
+
+      <button
+        class="text-sm"
+        :class="hasNext ? 'text-slate-500' : 'text-slate-300'"
+        :disabled="!hasNext"
+        @click="goPage(page + 1)"
+      >
+        다음
+      </button>
     </div>
 
     <Button class="mt-8 h-12 w-full rounded-xl text-base" @click="goCreate">
@@ -99,9 +135,17 @@ const budgetType = ref(null);
 const uncheckedOnly = ref(route.query.uncheckedOnly === 'true');
 const categoryId = ref(null);
 
+const PAGE_SIZE = 10;
+
 const loading = ref(true);
 const expenses = ref([]);
 const summary = ref({ totalCount: 0, totalAmount: 0, uncheckedCount: 0 });
+const page = ref(0);
+const totalElements = ref(0);
+
+const totalPages = computed(() => Math.ceil(totalElements.value / PAGE_SIZE));
+const hasPrev = computed(() => page.value > 0);
+const hasNext = computed(() => page.value + 1 < totalPages.value);
 
 // 예산 유형을 고르지 않았을 때는 필터 칩을 법인 기준으로 보여준다
 const filterCategories = computed(() =>
@@ -115,10 +159,11 @@ const loadExpenses = async () => {
       budgetType: budgetType.value ?? undefined,
       expenseCategoryId: categoryId.value ?? undefined,
       uncheckedOnly: uncheckedOnly.value ? true : undefined,
-      page: 0,
-      size: 50,
+      page: page.value,
+      size: PAGE_SIZE,
     });
     expenses.value = data.expenses?.content ?? [];
+    totalElements.value = data.expenses?.totalElements ?? 0;
     summary.value = data.summary ?? summary.value;
   } catch (error) {
     showError(error, '지출 목록을 불러오지 못했습니다.');
@@ -126,6 +171,18 @@ const loadExpenses = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+// 필터가 바뀌면 결과가 달라지므로 첫 페이지부터 다시 본다
+const reload = async () => {
+  page.value = 0;
+  await loadExpenses();
+};
+
+const goPage = async (value) => {
+  page.value = value;
+  await loadExpenses();
+  window.scrollTo({ top: 0 });
 };
 
 onMounted(async () => {
@@ -140,17 +197,17 @@ onMounted(async () => {
 const changeBudgetType = async (value) => {
   budgetType.value = value;
   categoryId.value = null;
-  await loadExpenses();
+  await reload();
 };
 
 const toggleUnchecked = async () => {
   uncheckedOnly.value = !uncheckedOnly.value;
-  await loadExpenses();
+  await reload();
 };
 
 const toggleCategory = async (value) => {
   categoryId.value = categoryId.value === value ? null : value;
-  await loadExpenses();
+  await reload();
 };
 
 const goDetail = (expenseId) => {
