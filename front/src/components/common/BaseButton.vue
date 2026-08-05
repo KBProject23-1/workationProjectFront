@@ -10,7 +10,7 @@ defineProps({
   <Button
     type="button"
     :disabled="disabled"
-    class="w-full max-w-[340px] h-auto rounded-[20px] py-4 text-2xl font-medium"
+    class="flex mx-auto w-full max-w-[340px] h-auto rounded-[20px] py-4 text-2xl font-medium"
   >
     <slot />
   </Button>

@@ -1,5 +1,7 @@
 <script setup>
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { formatDateTime } from '@/utils/date';
+import { formatCardNumber } from '@/utils/card';
 
 defineProps({
   visible: { type: Boolean, default: false },
@@ -52,7 +54,7 @@ function handleOpenChange(open) {
               <span class="text-gray-500">카드</span>
               <span
                 >{{ receipt.transaction.cardCompanyName }}
-                {{ receipt.transaction.maskedCardNumber }}</span
+                {{ formatCardNumber(receipt.transaction.maskedCardNumber) }}</span
               >
             </div>
             <div class="flex justify-between text-[14px]">
@@ -66,7 +68,7 @@ function handleOpenChange(open) {
           </template>
           <div class="flex justify-between text-[14px]">
             <span class="text-gray-500">거래일시</span>
-            <span>{{ receipt.transaction.approvedAt }}</span>
+            <span>{{ formatDateTime(receipt.transaction.approvedAt) }}</span>
           </div>
         </div>
 
