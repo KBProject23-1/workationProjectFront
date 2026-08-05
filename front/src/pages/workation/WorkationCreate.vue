@@ -1,7 +1,9 @@
 <template>
   <div class="min-h-screen bg-white px-5 pt-4 pb-8">
     <header class="relative mb-4 flex items-center justify-center">
-      <button class="absolute left-0 text-xl text-slate-900" @click="goBack">‹</button>
+      <button class="absolute left-0 text-xl text-slate-900" @click="goBack">
+        ‹
+      </button>
       <h1 class="text-base font-bold text-slate-900">워케이션 일정 등록하기</h1>
     </header>
 
@@ -28,7 +30,9 @@
           class="border-input h-9 w-full rounded-md border bg-transparent px-3 text-base md:text-sm"
           :class="form.regionId ? 'text-slate-900' : 'text-slate-300'"
         >
-          <option :value="null" disabled class="text-slate-300">지역을 선택해 주세요</option>
+          <option :value="null" disabled class="text-slate-300">
+            지역을 선택해 주세요
+          </option>
           <option
             v-for="region in sortedRegions"
             :key="region.id"
@@ -40,16 +44,31 @@
         </select>
       </WorkationFormField>
 
-      <WorkationFormField label="기간" :hint="totalDaysText" :error-message="errors.period">
+      <WorkationFormField
+        label="기간"
+        :hint="totalDaysText"
+        :error-message="errors.period"
+      >
         <div class="flex items-center gap-2">
-          <WorkationDateInput v-model="form.startDate" placeholder="시작일" class="flex-1" />
+          <WorkationDateInput
+            v-model="form.startDate"
+            placeholder="시작일"
+            class="flex-1"
+          />
           <span class="shrink-0 text-slate-400">~</span>
-          <WorkationDateInput v-model="form.endDate" placeholder="종료일" class="flex-1" />
+          <WorkationDateInput
+            v-model="form.endDate"
+            placeholder="종료일"
+            class="flex-1"
+          />
         </div>
       </WorkationFormField>
 
       <div class="grid grid-cols-2 gap-3">
-        <WorkationFormField label="법인 예산 총액" :error-message="errors.businessBudgetTotal">
+        <WorkationFormField
+          label="법인 예산 총액"
+          :error-message="errors.businessBudgetTotal"
+        >
           <div class="relative">
             <Input
               :model-value="businessBudgetText"
@@ -57,11 +76,17 @@
               class="pr-8 text-right"
               @update:model-value="onBusinessBudgetInput"
             />
-            <span class="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400">원</span>
+            <span
+              class="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400"
+              >원</span
+            >
           </div>
         </WorkationFormField>
 
-        <WorkationFormField label="개인 예산 총액" :error-message="errors.personalBudgetTotal">
+        <WorkationFormField
+          label="개인 예산 총액"
+          :error-message="errors.personalBudgetTotal"
+        >
           <div class="relative">
             <Input
               :model-value="personalBudgetText"
@@ -69,15 +94,24 @@
               class="pr-8 text-right"
               @update:model-value="onPersonalBudgetInput"
             />
-            <span class="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400">원</span>
+            <span
+              class="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400"
+              >원</span
+            >
           </div>
         </WorkationFormField>
       </div>
 
-      <p class="text-xs text-slate-400">다음 단계에서 카테고리별로 배정하게 돼요</p>
+      <p class="text-xs text-slate-400">
+        다음 단계에서 카테고리별로 배정하게 돼요
+      </p>
     </div>
 
-    <Button class="mt-8 h-12 w-full rounded-xl text-base" :disabled="submitting" @click="submit">
+    <Button
+      class="mt-8 h-12 w-full rounded-xl text-base"
+      :disabled="submitting"
+      @click="submit"
+    >
       {{ submitting ? '등록 중...' : '다음' }}
     </Button>
   </div>
@@ -88,18 +122,15 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-  getRegions,
-  createWorkation,
-  updateWorkation,
-  getCurrentWorkation,
-} from '@/api/workation';
+import { getRegions } from '@/api/workation';
 import { getBudgetStatus } from '@/api/budget';
+import { useWorkationStore } from '@/stores/workationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import WorkationFormField from '@/components/workation/WorkationFormField.vue';
 import WorkationDateInput from '@/components/workation/WorkationDateInput.vue';
 
 const router = useRouter();
+const workationStore = useWorkationStore();
 const { showError } = useErrorToast();
 
 const regions = ref([]);
@@ -142,8 +173,8 @@ const loadRegions = async () => {
 
 const loadCurrent = async () => {
   try {
-    const { data } = await getCurrentWorkation();
-    const workation = data?.workation;
+    await workationStore.fetchCurrent();
+    const workation = workationStore.workation;
     if (!workation) return;
 
     editingId.value = workation.id;
@@ -195,7 +226,9 @@ const totalDays = computed(() => {
   return diff > 0 ? diff : 0;
 });
 
-const totalDaysText = computed(() => (totalDays.value > 0 ? `총 ${totalDays.value}일` : ''));
+const totalDaysText = computed(() =>
+  totalDays.value > 0 ? `총 ${totalDays.value}일` : '',
+);
 
 const validate = () => {
   errors.title = '';
@@ -245,9 +278,9 @@ const submit = async () => {
       personalBudgetTotal: Number(form.personalBudgetTotal),
     };
 
-    const { data } = editingId.value
-      ? await updateWorkation(editingId.value, payload)
-      : await createWorkation(payload);
+    const data = editingId.value
+      ? await workationStore.updateWorkation(editingId.value, payload)
+      : await workationStore.createWorkation(payload);
 
     router.push(`/workation/${data.id}/budgets?step=create`);
   } catch (error) {

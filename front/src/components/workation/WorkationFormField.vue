@@ -7,7 +7,9 @@
 
     <slot />
 
-    <p v-if="errorMessage" class="mt-1.5 text-xs text-red-500">{{ errorMessage }}</p>
+    <p v-if="errorMessage" class="mt-1.5 text-xs text-red-500">
+      {{ errorMessage }}
+    </p>
   </div>
 </template>
 

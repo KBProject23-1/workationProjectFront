@@ -1,7 +1,9 @@
 <template>
   <div class="min-h-screen bg-white px-5 pt-4 pb-8">
     <header class="relative mb-4 flex items-center justify-center">
-      <button class="absolute left-0 text-xl text-slate-900" @click="goBack">‹</button>
+      <button class="absolute left-0 text-xl text-slate-900" @click="goBack">
+        ‹
+      </button>
       <h1 class="text-base font-bold text-slate-900">예산 세부 금액 설정</h1>
     </header>
 
@@ -18,7 +20,9 @@
         :key="tab.value"
         class="rounded-lg py-2 text-sm font-bold"
         :class="
-          budgetType === tab.value ? 'bg-white text-blue-600' : 'bg-transparent text-slate-400'
+          budgetType === tab.value
+            ? 'bg-white text-blue-600'
+            : 'bg-transparent text-slate-400'
         "
         @click="budgetType = tab.value"
       >
@@ -26,12 +30,18 @@
       </button>
     </div>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">불러오는 중...</p>
+    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
+      불러오는 중...
+    </p>
 
     <template v-else>
-      <div class="mt-4 flex items-center justify-between border-b border-slate-100 pb-3">
+      <div
+        class="mt-4 flex items-center justify-between border-b border-slate-100 pb-3"
+      >
         <span class="text-sm text-slate-500">총 예산</span>
-        <span class="text-lg font-bold text-slate-900">{{ won(budgetTotal) }}</span>
+        <span class="text-lg font-bold text-slate-900">{{
+          won(budgetTotal)
+        }}</span>
       </div>
 
       <div class="mt-3 flex items-center justify-between">
@@ -64,7 +74,10 @@
           <span class="text-slate-500">배정 합계</span>
           <span
             class="font-bold"
-            :class="[matched ? 'text-slate-900' : 'text-red-500', shaking ? 'shake' : '']"
+            :class="[
+              matched ? 'text-slate-900' : 'text-red-500',
+              shaking ? 'shake' : '',
+            ]"
           >
             {{ won(assignedSum) }}
           </span>
@@ -77,7 +90,11 @@
         </div>
       </div>
 
-      <Button class="mt-8 h-12 w-full rounded-xl text-base" :disabled="submitting" @click="submit">
+      <Button
+        class="mt-8 h-12 w-full rounded-xl text-base"
+        :disabled="submitting"
+        @click="submit"
+      >
         {{ submitting ? '저장 중...' : '완료' }}
       </Button>
 
@@ -108,7 +125,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Button } from '@/components/ui/button';
 import { getBudgetStatus, setupBudget, updateBudget } from '@/api/budget';
-import { getExpenseCategories } from '@/api/category';
+import { useCategoryStore } from '@/stores/categoryStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { won } from '@/components/workation/format';
 import WorkationBudgetItem from '@/components/workation/WorkationBudgetItem.vue';
@@ -122,6 +139,7 @@ const TABS = [
 
 const route = useRoute();
 const router = useRouter();
+const categoryStore = useCategoryStore();
 const { showError } = useErrorToast();
 
 const workationId = route.params.workationId;
@@ -182,7 +200,9 @@ const guideMessage = computed(() => {
       : '배정 합계가 총예산과 일치해야 완료할 수 있어요';
   }
   if (!canSubmit.value) {
-    const otherTab = TABS.find((tab) => sumOf(tab.value) !== budgetTotals[tab.value]);
+    const otherTab = TABS.find(
+      (tab) => sumOf(tab.value) !== budgetTotals[tab.value],
+    );
     return otherTab ? `${otherTab.label} 배정이 아직 총예산과 맞지 않아요` : '';
   }
   return '';
@@ -216,7 +236,9 @@ const removeCategory = (categoryId) => {
 // 화면에 아직 올리지 않은 카테고리만 추가 목록에 보여준다
 const addableCategories = computed(() => {
   const usedIds = categoryMap[budgetType.value].map((category) => category.id);
-  return allCategoryMap[budgetType.value].filter((category) => !usedIds.includes(category.id));
+  return allCategoryMap[budgetType.value].filter(
+    (category) => !usedIds.includes(category.id),
+  );
 });
 
 // 기본 카테고리는 원래 순서를 지키고, 추가한 카테고리는 그 뒤에 넣은 순서대로 쌓는다
@@ -257,8 +279,8 @@ const loadBudgetStatus = async () => {
 
 // 처음에는 기본 표출 카테고리만 보여준다. 나머지는 ＋ 목록에서 고른다
 const loadCategories = async (type) => {
-  const { data } = await getExpenseCategories(type);
-  allCategoryMap[type] = data.categories ?? [];
+  await categoryStore.fetchCategories(type);
+  allCategoryMap[type] = categoryStore.categoriesOf(type);
 };
 
 // 이미 배정한 이력이 있으면 그 카테고리와 금액을 그대로 보여준다
@@ -272,7 +294,9 @@ const buildRows = (type) => {
       allCategoryMap[type].filter((category) => savedIds.includes(category.id)),
     );
     saved.forEach((item) => {
-      amountMap[type][item.expenseCategoryId] = String(Number(item.targetAmount ?? 0));
+      amountMap[type][item.expenseCategoryId] = String(
+        Number(item.targetAmount ?? 0),
+      );
     });
     return;
   }
@@ -311,7 +335,9 @@ const restoreDraft = () => {
     if (!part) return;
     categoryMap[type] = sortCategories(
       type,
-      allCategoryMap[type].filter((category) => part.categoryIds.includes(category.id)),
+      allCategoryMap[type].filter((category) =>
+        part.categoryIds.includes(category.id),
+      ),
     );
     amountMap[type] = { ...part.amounts };
   });
@@ -319,7 +345,11 @@ const restoreDraft = () => {
 
 onMounted(async () => {
   try {
-    await Promise.all([loadBudgetStatus(), loadCategories('WORK'), loadCategories('PERSONAL')]);
+    await Promise.all([
+      loadBudgetStatus(),
+      loadCategories('WORK'),
+      loadCategories('PERSONAL'),
+    ]);
     TABS.forEach((tab) => buildRows(tab.value));
     restoreDraft();
   } catch (error) {
@@ -353,7 +383,9 @@ const shake = () => {
 const submit = async () => {
   if (submitting.value) return;
   if (!canSubmit.value) {
-    const wrongTab = TABS.find((tab) => sumOf(tab.value) !== budgetTotals[tab.value]);
+    const wrongTab = TABS.find(
+      (tab) => sumOf(tab.value) !== budgetTotals[tab.value],
+    );
     if (wrongTab && wrongTab.value !== budgetType.value) {
       budgetType.value = wrongTab.value;
     }
