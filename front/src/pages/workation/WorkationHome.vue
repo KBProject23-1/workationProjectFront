@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white px-5 pt-4 pb-8">
+  <div class="min-h-screen bg-white px-5 pt-4 pb-28">
     <header class="mb-4 flex items-center justify-between">
       <h1 class="text-xl font-bold text-slate-900">나의 워케이션</h1>
     </header>
@@ -34,6 +34,7 @@
       <div class="mt-4 grid grid-cols-2 gap-3">
         <button
           class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 py-5 text-xs text-slate-500"
+          @click="goExpenses"
         >
           <!-- 아이콘 자리 채워야 함 -->
           <span class="h-5 w-5 rounded bg-slate-200" />
@@ -62,6 +63,8 @@
         />
       </div>
     </section>
+
+    <BaseBottomNavigation />
   </div>
 </template>
 
@@ -75,6 +78,7 @@ import BudgetUsageCard from '@/components/workation/BudgetUsageCard.vue';
 import UncheckedExpenseAlert from '@/components/workation/UncheckedExpenseAlert.vue';
 import SettlementRecordItem from '@/components/workation/SettlementRecordItem.vue';
 import WorkationEmptyState from '@/components/workation/WorkationEmptyState.vue';
+import BaseBottomNavigation from '@/components/common/BaseBottomNavigation.vue';
 
 const router = useRouter();
 const workationStore = useWorkationStore();
@@ -106,7 +110,16 @@ const goBudgetDetail = (budgetType) => {
   );
 };
 
-const goUncheckedExpenses = () => {};
+// 확인이 필요한 건만 걸러 보여준다
+const goUncheckedExpenses = () => {
+  router.push(
+    `/workation/${workationStore.workationId}/expenses?uncheckedOnly=true`,
+  );
+};
+
+const goExpenses = () => {
+  router.push(`/workation/${workationStore.workationId}/expenses`);
+};
 
 const goRecord = () => {};
 </script>

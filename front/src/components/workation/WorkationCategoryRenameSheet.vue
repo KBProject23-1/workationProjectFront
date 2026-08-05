@@ -15,7 +15,7 @@
       </div>
 
       <div class="mt-5">
-        <p class="mb-1.5 text-xs text-slate-500">기본 이름</p>
+        <p class="mb-1.5 text-xs text-slate-500">현재 이름</p>
         <div class="rounded-md bg-slate-50 px-3 py-2">
           <p class="text-sm font-bold text-slate-900">{{ category.name }}</p>
           <p class="text-xs text-slate-400">{{ category.description }}</p>

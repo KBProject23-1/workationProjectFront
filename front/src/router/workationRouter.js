@@ -14,4 +14,24 @@ export default [
     name: 'WorkationBudgetSetup',
     component: () => import('@/pages/workation/WorkationBudgetSetup.vue'),
   },
+  {
+    path: '/workation/:workationId/expenses',
+    name: 'ExpenseList',
+    component: () => import('@/pages/workation/ExpenseList.vue'),
+  },
+  {
+    path: '/workation/:workationId/expenses/new',
+    name: 'ExpenseCreate',
+    component: () => import('@/pages/workation/ExpenseForm.vue'),
+  },
+  {
+    path: '/workation/:workationId/expenses/:expenseId',
+    name: 'ExpenseDetail',
+    component: () => import('@/pages/workation/ExpenseDetail.vue'),
+  },
+  {
+    path: '/workation/:workationId/expenses/:expenseId/edit',
+    name: 'ExpenseEdit',
+    component: () => import('@/pages/workation/ExpenseForm.vue'),
+  },
 ];

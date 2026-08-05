@@ -24,8 +24,8 @@ const tabs = [
     key: 'workation',
     label: '워케이션',
     icon: Calendar,
-    path: null,
-    disabled: true,
+    path: '/workation',
+    disabled: false,
   },
   { key: 'myinfo', label: '내정보', icon: User, path: null, disabled: true },
 ];
