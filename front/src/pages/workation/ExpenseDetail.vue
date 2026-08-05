@@ -1,15 +1,21 @@
 <template>
   <div class="min-h-screen bg-white px-5 pt-4 pb-8">
     <header class="relative mb-4 flex items-center justify-center">
-      <button class="absolute left-0 text-xl text-slate-900" @click="goBack">‹</button>
+      <button class="absolute left-0 text-xl text-slate-900" @click="goBack">
+        ‹
+      </button>
       <h1 class="text-base font-bold text-slate-900">사용내역 상세</h1>
     </header>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">불러오는 중...</p>
+    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
+      불러오는 중...
+    </p>
 
     <template v-else-if="detail">
       <div class="flex items-start justify-between">
-        <span class="text-xs text-slate-400">{{ dotDate(detail.spentDate) }}</span>
+        <span class="text-xs text-slate-400">{{
+          dotDate(detail.spentDate)
+        }}</span>
         <button
           class="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-bold text-blue-600"
           @click="budgetTypeSheetOpen = true"
@@ -18,20 +24,27 @@
         </button>
       </div>
 
-      <p class="mt-1 text-2xl font-bold text-slate-900">{{ won(detail.amount) }}</p>
+      <p class="mt-1 text-2xl font-bold text-slate-900">
+        {{ won(detail.amount) }}
+      </p>
       <p class="text-sm text-slate-500">{{ detail.merchantName }}</p>
 
       <p
         v-if="detail.isAutoCategorized"
         class="mt-4 rounded-md bg-blue-50 px-3 py-2 text-xs text-slate-500"
       >
-        가맹점 업종을 보고 {{ detail.categoryName }}(으)로 분류했어요. 맞으면 그대로 두시면 됩니다
+        가맹점 업종을 보고 {{ detail.categoryName }}(으)로 분류했어요. 맞으면
+        그대로 두시면 됩니다
       </p>
 
       <section class="mt-6">
         <h2 class="mb-2 text-sm font-bold text-slate-900">결제 정보</h2>
         <dl class="rounded-xl border border-slate-200 px-4 py-3 text-sm">
-          <div v-for="row in paymentRows" :key="row.label" class="flex justify-between py-1.5">
+          <div
+            v-for="row in paymentRows"
+            :key="row.label"
+            class="flex justify-between py-1.5"
+          >
             <dt class="text-slate-500">{{ row.label }}</dt>
             <dd class="font-bold text-slate-900">{{ row.value }}</dd>
           </div>
@@ -40,12 +53,21 @@
 
       <section class="mt-6">
         <h2 class="mb-2 text-sm font-bold text-slate-900">카테고리</h2>
-        <div class="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3">
+        <div
+          class="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3"
+        >
           <div class="min-w-0">
-            <p class="truncate text-sm font-bold text-slate-900">{{ detail.categoryName }}</p>
-            <p class="truncate text-xs text-slate-400">{{ currentCategoryDescription }}</p>
+            <p class="truncate text-sm font-bold text-slate-900">
+              {{ detail.categoryName }}
+            </p>
+            <p class="truncate text-xs text-slate-400">
+              {{ currentCategoryDescription }}
+            </p>
           </div>
-          <button class="shrink-0 text-xs text-blue-600" @click="categorySheetOpen = true">
+          <button
+            class="shrink-0 text-xs text-blue-600"
+            @click="categorySheetOpen = true"
+          >
             변경
           </button>
         </div>
@@ -56,14 +78,22 @@
 
       <section class="mt-6">
         <h2 class="mb-2 text-sm font-bold text-slate-900">증빙</h2>
-        <div class="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3">
+        <div
+          class="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3"
+        >
           <div class="min-w-0">
-            <p class="truncate text-sm font-bold text-slate-900">{{ proof.title }}</p>
-            <p class="truncate text-xs text-slate-400">{{ proof.description }}</p>
+            <p class="truncate text-sm font-bold text-slate-900">
+              {{ proof.title }}
+            </p>
+            <p class="truncate text-xs text-slate-400">
+              {{ proof.description }}
+            </p>
           </div>
           <span
             class="shrink-0 rounded-full px-2 py-0.5 text-[11px]"
-            :class="proof.done ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-500'"
+            :class="
+              proof.done ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-500'
+            "
           >
             {{ proof.done ? '완료' : '보완 필요' }}
           </span>
@@ -71,7 +101,11 @@
       </section>
 
       <div v-if="isManual" class="mt-8 flex gap-2">
-        <Button variant="outline" class="h-12 flex-1 rounded-xl text-base" @click="goEdit">
+        <Button
+          variant="outline"
+          class="h-12 flex-1 rounded-xl text-base"
+          @click="goEdit"
+        >
           수정
         </Button>
         <Button
@@ -140,6 +174,20 @@ const { showError } = useErrorToast();
 const workationId = route.params.workationId;
 const expenseId = route.params.expenseId;
 
+// 목록에서 넘겨준 필터·페이지. 뒤로 갈 때 그대로 돌려준다
+const listQuery = (() => {
+  try {
+    return JSON.parse(route.query.from ?? '{}');
+  } catch {
+    return {};
+  }
+})();
+
+const listLocation = {
+  path: `/workation/${workationId}/expenses`,
+  query: listQuery,
+};
+
 const detail = ref(null);
 const loading = ref(true);
 const removing = ref(false);
@@ -183,7 +231,11 @@ const proof = computed(() => {
     };
   }
   if (value.budgetType === 'PERSONAL') {
-    return { title: '증빙 대상 아님', description: '개인 소비는 증빙이 필요 없어요', done: true };
+    return {
+      title: '증빙 대상 아님',
+      description: '개인 소비는 증빙이 필요 없어요',
+      done: true,
+    };
   }
   if (value.card) {
     return {
@@ -250,7 +302,11 @@ const changeCategory = async (categoryId) => {
 
 const changeBudgetType = async (categoryId) => {
   try {
-    await updateExpenseBudgetType(expenseId, targetBudgetType.value, categoryId);
+    await updateExpenseBudgetType(
+      expenseId,
+      targetBudgetType.value,
+      categoryId,
+    );
     budgetTypeSheetOpen.value = false;
     await loadDetail();
   } catch (error) {
@@ -263,7 +319,7 @@ const remove = async () => {
   removing.value = true;
   try {
     await deleteExpense(expenseId);
-    router.push(`/workation/${workationId}/expenses`);
+    router.push(listLocation);
   } catch (error) {
     showError(error, '지출을 삭제하지 못했습니다.');
   } finally {
@@ -272,10 +328,13 @@ const remove = async () => {
 };
 
 const goEdit = () => {
-  router.push(`/workation/${workationId}/expenses/${expenseId}/edit`);
+  router.push({
+    path: `/workation/${workationId}/expenses/${expenseId}/edit`,
+    query: { from: route.query.from },
+  });
 };
 
 const goBack = () => {
-  router.push(`/workation/${workationId}/expenses`);
+  router.push(listLocation);
 };
 </script>

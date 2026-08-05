@@ -130,17 +130,24 @@ const { showError } = useErrorToast();
 
 const workationId = route.params.workationId;
 
-const budgetType = ref(null);
-// 메인화면의 "확인이 필요한 지출" 알림으로 들어오면 그 필터가 켜진 채로 시작한다
+// 필터와 페이지를 쿼리에 담아 둔다
+// 상세 화면에 갔다 돌아와도 보던 탭과 페이지가 유지된다
+const budgetType = ref(
+  TABS.some((tab) => tab.value === route.query.budgetType)
+    ? route.query.budgetType
+    : null,
+);
 const uncheckedOnly = ref(route.query.uncheckedOnly === 'true');
-const categoryId = ref(null);
+const categoryId = ref(
+  route.query.categoryId ? Number(route.query.categoryId) : null,
+);
 
 const PAGE_SIZE = 10;
 
 const loading = ref(true);
 const expenses = ref([]);
 const summary = ref({ totalCount: 0, totalAmount: 0, uncheckedCount: 0 });
-const page = ref(0);
+const page = ref(Number(route.query.page ?? 0));
 const totalElements = ref(0);
 
 const totalPages = computed(() => Math.ceil(totalElements.value / PAGE_SIZE));
@@ -173,14 +180,26 @@ const loadExpenses = async () => {
   }
 };
 
+// 현재 필터·페이지를 주소에 반영한다. 뒤로 돌아왔을 때 같은 화면을 보여주기 위함이다
+const syncQuery = () => {
+  const query = {};
+  if (budgetType.value) query.budgetType = budgetType.value;
+  if (uncheckedOnly.value) query.uncheckedOnly = 'true';
+  if (categoryId.value) query.categoryId = String(categoryId.value);
+  if (page.value > 0) query.page = String(page.value);
+  router.replace({ query });
+};
+
 // 필터가 바뀌면 결과가 달라지므로 첫 페이지부터 다시 본다
 const reload = async () => {
   page.value = 0;
+  syncQuery();
   await loadExpenses();
 };
 
 const goPage = async (value) => {
   page.value = value;
+  syncQuery();
   await loadExpenses();
   window.scrollTo({ top: 0 });
 };
@@ -210,12 +229,19 @@ const toggleCategory = async (value) => {
   await reload();
 };
 
+// 상세에서 뒤로 돌아올 때 지금 보던 목록으로 오도록 필터를 넘긴다
 const goDetail = (expenseId) => {
-  router.push(`/workation/${workationId}/expenses/${expenseId}`);
+  router.push({
+    path: `/workation/${workationId}/expenses/${expenseId}`,
+    query: { from: JSON.stringify(route.query) },
+  });
 };
 
 const goCreate = () => {
-  router.push(`/workation/${workationId}/expenses/new`);
+  router.push({
+    path: `/workation/${workationId}/expenses/new`,
+    query: { from: JSON.stringify(route.query) },
+  });
 };
 
 const goBack = () => {

@@ -112,7 +112,9 @@ const goBudgetDetail = (budgetType) => {
 
 // 확인이 필요한 건만 걸러 보여준다
 const goUncheckedExpenses = () => {
-  router.push(`/workation/${workationStore.workationId}/expenses?uncheckedOnly=true`);
+  router.push(
+    `/workation/${workationStore.workationId}/expenses?uncheckedOnly=true`,
+  );
 };
 
 const goExpenses = () => {
