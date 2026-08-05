@@ -3,7 +3,9 @@
     <button
       type="button"
       class="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-slate-400"
-      :class="deletable ? 'border-slate-300' : 'border-slate-200 text-slate-200'"
+      :class="
+        deletable ? 'border-slate-300' : 'border-slate-200 text-slate-200'
+      "
       :disabled="!deletable"
       @click="$emit('remove', category.id)"
     >
@@ -12,7 +14,9 @@
 
     <div class="min-w-0 flex-1">
       <div class="flex items-center gap-1">
-        <span class="truncate text-sm font-bold text-slate-900">{{ category.name }}</span>
+        <span class="truncate text-sm font-bold text-slate-900">{{
+          category.name
+        }}</span>
         <button
           type="button"
           class="shrink-0 text-slate-400"
@@ -25,7 +29,10 @@
       <p class="truncate text-xs text-slate-400">{{ category.description }}</p>
 
       <div class="mt-2 h-1 w-full rounded-full bg-slate-200">
-        <div class="h-1 rounded-full bg-blue-600" :style="{ width: ratio + '%' }" />
+        <div
+          class="h-1 rounded-full bg-blue-600"
+          :style="{ width: ratio + '%' }"
+        />
       </div>
     </div>
 
@@ -37,7 +44,10 @@
         @update:model-value="onInput"
         @blur="$emit('blur')"
       />
-      <span class="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400">원</span>
+      <span
+        class="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400"
+        >원</span
+      >
     </div>
   </div>
 </template>

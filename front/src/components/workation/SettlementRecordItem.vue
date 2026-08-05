@@ -7,7 +7,9 @@
     <span class="h-8 w-8 shrink-0 rounded-lg bg-slate-200" />
 
     <span class="flex-1">
-      <span class="block text-sm font-bold text-slate-900">{{ record.title }}</span>
+      <span class="block text-sm font-bold text-slate-900">{{
+        record.title
+      }}</span>
       <span class="block text-xs text-slate-400">
         {{ dotDate(record.startDate) }} ~ {{ dotDate(record.endDate) }}
       </span>

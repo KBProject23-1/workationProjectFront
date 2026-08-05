@@ -10,8 +10,12 @@
     </span>
 
     <span class="flex-1">
-      <span class="block text-sm font-bold text-slate-900">확인이 필요한 지출 {{ count }}건</span>
-      <span class="block text-xs text-slate-500">자동 분류한 카테고리가 맞는지 확인해 주세요</span>
+      <span class="block text-sm font-bold text-slate-900"
+        >확인이 필요한 지출 {{ count }}건</span
+      >
+      <span class="block text-xs text-slate-500"
+        >자동 분류한 카테고리가 맞는지 확인해 주세요</span
+      >
     </span>
 
     <span class="text-red-400">›</span>

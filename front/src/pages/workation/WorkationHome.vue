@@ -4,7 +4,9 @@
       <h1 class="text-xl font-bold text-slate-900">나의 워케이션</h1>
     </header>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">불러오는 중...</p>
+    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
+      불러오는 중...
+    </p>
 
     <p v-else-if="errorMessage" class="py-20 text-center text-sm text-red-500">
       {{ errorMessage }}
@@ -33,14 +35,14 @@
         <button
           class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 py-5 text-xs text-slate-500"
         >
-          <!-- 아이콘 자리. 전 화면 아이콘 작업 때 채운다 -->
+          <!-- 아이콘 자리 채워야 함 -->
           <span class="h-5 w-5 rounded bg-slate-200" />
           지출
         </button>
         <button
           class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 py-5 text-xs text-slate-500"
         >
-          <!-- 아이콘 자리. 전 화면 아이콘 작업 때 채운다 -->
+          <!-- 아이콘 자리 채워야 함 -->
           <span class="h-5 w-5 rounded bg-slate-200" />
           정산
         </button>
@@ -66,7 +68,8 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { getCurrentWorkation, getWorkations } from '@/api/workation';
+import { storeToRefs } from 'pinia';
+import { useWorkationStore } from '@/stores/workationStore';
 import WorkationProgressCard from '@/components/workation/WorkationProgressCard.vue';
 import BudgetUsageCard from '@/components/workation/BudgetUsageCard.vue';
 import UncheckedExpenseAlert from '@/components/workation/UncheckedExpenseAlert.vue';
@@ -74,38 +77,16 @@ import SettlementRecordItem from '@/components/workation/SettlementRecordItem.vu
 import WorkationEmptyState from '@/components/workation/WorkationEmptyState.vue';
 
 const router = useRouter();
+const workationStore = useWorkationStore();
+const { current, records, error: errorMessage } = storeToRefs(workationStore);
 
-const current = ref(null);
-const records = ref([]);
 const loading = ref(true);
-const errorMessage = ref('');
-
-// 진행 중 워케이션이 없어도 200 으로 workation: null 이 내려온다
-const loadCurrent = async () => {
-  try {
-    const { data } = await getCurrentWorkation();
-    current.value = data?.workation ? data : null;
-  } catch (error) {
-    if (error.response?.status === 404) {
-      current.value = null;
-      return;
-    }
-    errorMessage.value = error.message;
-  }
-};
-
-// 목록 API 는 정산 완료 건만 최신순으로 내려준다
-const loadRecords = async () => {
-  try {
-    const { data } = await getWorkations({ page: 0, size: 10 });
-    records.value = data.content ?? [];
-  } catch {
-    records.value = [];
-  }
-};
 
 onMounted(async () => {
-  await Promise.all([loadCurrent(), loadRecords()]);
+  await Promise.all([
+    workationStore.fetchCurrent(),
+    workationStore.fetchRecords(),
+  ]);
   loading.value = false;
 });
 
@@ -120,7 +101,9 @@ const goCreate = () => {
 
 // 누른 카드의 예산 유형 탭이 열리도록 쿼리로 넘긴다
 const goBudgetDetail = (budgetType) => {
-  router.push(`/workation/${current.value.workation.id}/budgets?budgetType=${budgetType}`);
+  router.push(
+    `/workation/${workationStore.workationId}/budgets?budgetType=${budgetType}`,
+  );
 };
 
 const goUncheckedExpenses = () => {};
