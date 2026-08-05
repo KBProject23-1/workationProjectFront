@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router';
-import { ChevronLeft, Check } from '@lucide/vue';
+import { ChevronLeft, Check, ShieldCheck, Zap, Lock } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 
 const props = defineProps({
@@ -10,6 +10,12 @@ const props = defineProps({
 defineEmits(['start']);
 
 const router = useRouter();
+
+const features = [
+  { icon: ShieldCheck, label: '안전한 연동' },
+  { icon: Zap, label: '간편한 관리' },
+  { icon: Lock, label: '데이터 보호' },
+];
 
 function handleBack() {
   if (props.isAdditional) {
@@ -22,17 +28,21 @@ function handleBack() {
 
 <template>
   <div
-    class="flex flex-col items-center w-full min-h-screen px-5 py-6 text-center bg-white"
+    class="flex flex-col items-center w-full min-h-screen px-5 py-5 text-center bg-white"
   >
-    <button type="button" class="mb-4 self-start" @click="handleBack">
+    <button
+      type="button"
+      class="mb-4 self-start p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+      @click="handleBack"
+    >
       <ChevronLeft :size="24" />
     </button>
 
-    <h1 class="text-4xl font-bold mb-2 text-gray-900">계좌 연동</h1>
-    <p class="text-[18px] font-medium text-gray-800 leading-relaxed mb-1">
+    <h1 class="text-[24px] font-bold mb-2 text-gray-900">계좌 연동</h1>
+    <p class="text-[14px] font-medium text-gray-600 leading-relaxed mb-1">
       안전하게 계좌를 연동하고<br />사용 내역을 한눈에 관리하세요.
     </p>
-    <p class="text-[16px] text-gray-400 mb-6">
+    <p class="text-[13px] text-gray-400 mb-6">
       금융정보원 표준 API를 통해<br />안전하게 연결됩니다.
     </p>
 
@@ -92,20 +102,20 @@ function handleBack() {
         </div>
       </div>
 
-      <ul
-        class="text-[32px] font-semibold text-blue-600 space-y-2 inline-block text-left"
-      >
-        <li class="flex items-center gap-2">
-          <Check :size="20" :stroke-width="3" class="text-blue-500 shrink-0" />
-          안전한 연동
-        </li>
-        <li class="flex items-center gap-2">
-          <Check :size="20" :stroke-width="3" class="text-blue-500 shrink-0" />
-          간편한 관리
-        </li>
-        <li class="flex items-center gap-2">
-          <Check :size="20" :stroke-width="3" class="text-blue-500 shrink-0" />
-          데이터 보호
+      <ul class="w-full max-w-xs space-y-2">
+        <li
+          v-for="feature in features"
+          :key="feature.label"
+          class="flex items-center gap-3 rounded-2xl bg-gray-50/70 border border-gray-100 px-4 py-3"
+        >
+          <div
+            class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 shrink-0"
+          >
+            <component :is="feature.icon" :size="16" />
+          </div>
+          <span class="text-[14px] font-bold text-gray-800">{{
+            feature.label
+          }}</span>
         </li>
       </ul>
     </div>

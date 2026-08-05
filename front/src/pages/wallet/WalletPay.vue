@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import QRCode from 'qrcode';
-import { ChevronLeft } from '@lucide/vue';
+import { ChevronLeft, RotateCw, QrCode as QrIcon } from '@lucide/vue';
 
 const router = useRouter();
 const qrCodeUrl = ref('');
@@ -21,7 +21,7 @@ async function generateQR() {
   qrCodeUrl.value = await QRCode.toDataURL(dummyPayload, {
     width: 280,
     margin: 1,
-    color: { dark: '#1e293b', light: '#ffffff' },
+    color: { dark: '#0f172a', light: '#ffffff' },
   });
 }
 
@@ -60,45 +60,78 @@ onUnmounted(() => {
 
 <template>
   <div
-    class="flex flex-col items-center w-full min-h-screen px-5 py-6 text-center bg-white"
+    class="flex flex-col items-center w-full min-h-screen px-5 py-5 bg-gray-50 text-center"
   >
-    <div class="w-full flex items-center mb-8">
-      <button type="button" @click="router.back()">
+    <!-- 상단 헤더 -->
+    <div class="w-full flex items-center justify-between mb-6">
+      <button
+        type="button"
+        class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-200/60 transition-colors"
+        @click="router.back()"
+      >
         <ChevronLeft :size="24" />
       </button>
-      <h1 class="text-xl font-bold ml-2">결제 QR</h1>
+      <h1 class="text-[18px] font-bold text-gray-900">결제 QR</h1>
+      <!-- 좌우 대칭용 더미 영역: 뒤로가기 버튼의 실제 점유 폭(아이콘 24px + padding 8px - 음수 마진 4px = 28px)과 맞춤 -->
+      <div class="w-[28px]"></div>
     </div>
 
-    <p class="text-[15px] text-gray-600 mb-6">
-      가맹점 단말기에 QR코드를 보여주세요.
+    <!-- 안내 텍스트 -->
+    <p class="text-[14px] font-medium text-gray-500 mb-6">
+      가맹점 단말기나 스캐너에 QR코드를 보여주세요
     </p>
 
-    <div class="border rounded-2xl p-4 mb-4 shadow-sm relative">
-      <img
-        v-if="qrCodeUrl"
-        :src="qrCodeUrl"
-        alt="결제 QR 코드"
-        class="w-64 h-64"
-      />
+    <!-- 메인 QR 카드 패널 (티켓/페이 전용 패널 느낌) -->
+    <div
+      class="w-full max-w-xs bg-white rounded-[28px] p-6 shadow-[0_10px_30px_rgba(0,0,0,0.06)] border border-gray-100 flex flex-col items-center relative overflow-hidden"
+    >
+      <!-- 은은한 탑 포인트 테두리 선 -->
+      <div class="absolute top-0 left-0 right-0 h-1.5 bg-primary"></div>
+
+      <!-- QR 이미지 영역 -->
       <div
-        v-else
-        class="w-64 h-64 flex items-center justify-center text-gray-400 text-[14px]"
+        class="p-3 bg-white rounded-2xl border border-gray-100 shadow-xs mb-5 relative"
       >
-        QR 생성 중...
+        <img
+          v-if="qrCodeUrl"
+          :src="qrCodeUrl"
+          alt="결제 QR 코드"
+          class="w-60 h-60 object-contain rounded-lg"
+        />
+        <div
+          v-else
+          class="w-60 h-60 flex flex-col items-center justify-center text-gray-400 gap-2"
+        >
+          <QrIcon :size="32" class="animate-pulse text-gray-300" />
+          <span class="text-[13px] font-medium">QR 코드를 생성하고 있어요</span>
+        </div>
+      </div>
+
+      <!-- 남은 시간 & 새로고침 알약 버튼 -->
+      <div
+        class="flex items-center justify-between w-full px-2 pt-2 border-t border-gray-100/80"
+      >
+        <div class="flex items-center gap-1.5 text-[13px]">
+          <span class="font-semibold text-gray-400">유효시간</span>
+          <span class="font-extrabold text-red-500 min-w-[28px] text-[14px]">
+            {{ timeLeft }}초
+          </span>
+        </div>
+
+        <button
+          type="button"
+          class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200/70 active:scale-95 text-gray-600 font-semibold text-[12px] transition-all"
+          @click="refreshQR"
+        >
+          <RotateCw :size="12" class="text-gray-500" />
+          새로고침
+        </button>
       </div>
     </div>
 
-    <!-- 남은 시간 표시 및 수동 새로고침 버튼 -->
-    <div class="flex items-center gap-2 mb-8 text-[14px]">
-      <span class="text-gray-500">남은 시간</span>
-      <span class="font-bold text-red-500 min-w-[24px]">{{ timeLeft }}초</span>
-      <button
-        type="button"
-        @click="refreshQR"
-        class="ml-2 text-xs text-gray-500 underline hover:text-gray-800"
-      >
-        새로고침
-      </button>
-    </div>
+    <!-- 하단 안심 결제 안내 -->
+    <p class="text-[12px] text-gray-400 mt-8">
+      보안을 위해 유효시간이 지나면 QR코드가 자동으로 갱신됩니다
+    </p>
   </div>
 </template>

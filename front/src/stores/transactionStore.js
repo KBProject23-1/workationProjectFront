@@ -13,7 +13,8 @@ const PAGE_SIZE = 10;
 
 function getDefaultDateRange() {
   const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const start = new Date(now);
+  start.setDate(start.getDate() - 30);
   return {
     startDate: toDateParam(start),
     endDate: toDateParam(now),

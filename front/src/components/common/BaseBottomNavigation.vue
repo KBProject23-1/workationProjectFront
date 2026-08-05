@@ -38,7 +38,7 @@ function handleClick(tab) {
 
 <template>
   <nav
-    class="fixed bottom-0 left-0 right-0 w-full max-w-[430px] mx-auto bg-white border-t border-gray-100 flex items-center justify-around py-2 pb-safe"
+    class="fixed bottom-0 left-0 right-0 w-full max-w-[430px] mx-auto bg-white border-t border-gray-100 flex items-center justify-around pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
   >
     <button
       v-for="tab in tabs"

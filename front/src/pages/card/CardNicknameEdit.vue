@@ -47,22 +47,30 @@ onMounted(() => {
 
 <template>
   <div
-    class="flex flex-col items-center w-full min-h-screen px-5 py-6 bg-white"
+    class="flex flex-col items-center w-full min-h-screen px-5 py-5 bg-white"
   >
-    <div class="w-full flex items-center mb-6">
-      <button type="button" @click="router.back()">
+    <div class="w-full flex items-center gap-2 mb-6">
+      <button
+        type="button"
+        class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+        @click="router.back()"
+      >
         <ChevronLeft :size="24" />
       </button>
-      <h1 class="text-xl font-bold ml-2">카드 별칭 설정</h1>
+      <h1 class="text-[18px] font-bold text-gray-900">카드 별칭 설정</h1>
     </div>
 
     <CardNicknameForm v-if="card" :card="card" @update="handleUpdate" />
 
     <div class="flex-1"></div>
 
-    <div class="w-full pb-4">
-      <BaseButton :disabled="isSaving" class="w-full" @click="handleSave">
-        {{ isSaving ? '저장 중...' : '저장' }}
+    <div class="w-full pb-4 text-center">
+      <BaseButton
+        :disabled="isSaving"
+        class="w-full py-3.5 text-[15px] font-bold rounded-2xl"
+        @click="handleSave"
+      >
+        {{ isSaving ? '변경 중...' : '변경' }}
       </BaseButton>
     </div>
   </div>

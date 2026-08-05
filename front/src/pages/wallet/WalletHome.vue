@@ -7,7 +7,6 @@ import { useErrorToast } from '@/composables/useErrorToast';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import BaseBottomNavigation from '@/components/common/BaseBottomNavigation.vue';
 import WalletBalanceCard from '@/components/wallet/WalletBalanceCard.vue';
-import WalletQuickActions from '@/components/wallet/WalletQuickActions.vue';
 import WalletCardCarousel from '@/components/wallet/WalletCardCarousel.vue';
 
 const router = useRouter();
@@ -16,6 +15,7 @@ const cardStore = useCardStore();
 const { showError } = useErrorToast();
 
 const confirmState = ref({ visible: false, type: null, cardId: null });
+const isProcessing = ref(false);
 
 function requestSetPrimary(cardId) {
   confirmState.value = { visible: true, type: 'primary', cardId };
@@ -31,6 +31,7 @@ function closeConfirm() {
 
 async function handleConfirm() {
   const { type, cardId } = confirmState.value;
+  isProcessing.value = true;
   try {
     if (type === 'primary') {
       await cardStore.setPrimaryCard(cardId);
@@ -45,6 +46,7 @@ async function handleConfirm() {
         : '카드 삭제에 실패했어요.',
     );
   } finally {
+    isProcessing.value = false;
     closeConfirm();
   }
 }
@@ -61,7 +63,7 @@ onMounted(() => {
 
 <template>
   <div
-    class="flex flex-col items-center w-full min-h-screen px-5 py-6 bg-white"
+    class="flex flex-col items-center w-full min-h-screen px-5 pt-6 pb-24 bg-white"
   >
     <div class="w-full text-left mb-4">
       <h1 class="text-xl font-bold">{{ '000' }}님, 안녕하세요</h1>
@@ -70,9 +72,6 @@ onMounted(() => {
     <WalletBalanceCard
       :balance="walletStore.balance"
       @edit-accounts="router.push('/wallet/accounts')"
-    />
-
-    <WalletQuickActions
       @charge="router.push('/wallet/charge')"
       @refund="router.push('/wallet/refund')"
       @history="router.push('/transaction')"
@@ -95,6 +94,7 @@ onMounted(() => {
           ? '이 카드를 주 카드로 변경할까요?'
           : '이 카드를 삭제할까요?'
       "
+      :loading="isProcessing"
       @confirm="handleConfirm"
       @cancel="closeConfirm"
     />

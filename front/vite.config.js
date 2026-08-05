@@ -8,7 +8,9 @@ import { fileURLToPath } from 'node:url';
 export default defineConfig({
   plugins: [
     vue(),
-    vueDevTools(),
+    vueDevTools({
+      appendTo: 'none',
+    }),
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',

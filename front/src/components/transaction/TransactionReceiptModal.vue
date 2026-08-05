@@ -1,5 +1,7 @@
 <script setup>
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { formatDateTime } from '@/utils/date';
+import { formatCardNumber } from '@/utils/card';
 
 defineProps({
   visible: { type: Boolean, default: false },
@@ -17,18 +19,24 @@ function handleOpenChange(open) {
   <Dialog :open="visible" @update:open="handleOpenChange">
     <DialogContent class="max-w-sm">
       <div v-if="receipt" class="text-left">
-        <div class="border-b pb-4 mb-4">
+        <div class="border-b pb-4 mb-4 space-y-1">
           <p class="text-[16px] font-bold text-primary mb-2">가맹점 정보</p>
-          <p class="text-[15px] font-medium">{{ receipt.merchant.name }}</p>
-          <p class="text-[13px] text-gray-500">
-            {{ receipt.merchant.businessNumber }}
-          </p>
-          <p class="text-[13px] text-gray-500">
-            {{ receipt.merchant.address }}
-          </p>
-          <p class="text-[13px] text-gray-500">
-            {{ receipt.merchant.phoneNumber }}
-          </p>
+          <div class="flex justify-between text-[14px]">
+            <span class="text-gray-500">가맹점명</span>
+            <span>{{ receipt.merchant.name }}</span>
+          </div>
+          <div class="flex justify-between text-[14px]">
+            <span class="text-gray-500">사업자등록번호</span>
+            <span>{{ receipt.merchant.businessNumber }}</span>
+          </div>
+          <div class="flex justify-between text-[14px]">
+            <span class="text-gray-500">주소</span>
+            <span>{{ receipt.merchant.address }}</span>
+          </div>
+          <div class="flex justify-between text-[14px]">
+            <span class="text-gray-500">전화번호</span>
+            <span>{{ receipt.merchant.phoneNumber }}</span>
+          </div>
         </div>
 
         <div class="border-b pb-4 mb-4 space-y-1">
@@ -46,7 +54,7 @@ function handleOpenChange(open) {
               <span class="text-gray-500">카드</span>
               <span
                 >{{ receipt.transaction.cardCompanyName }}
-                {{ receipt.transaction.maskedCardNumber }}</span
+                {{ formatCardNumber(receipt.transaction.maskedCardNumber) }}</span
               >
             </div>
             <div class="flex justify-between text-[14px]">
@@ -60,7 +68,7 @@ function handleOpenChange(open) {
           </template>
           <div class="flex justify-between text-[14px]">
             <span class="text-gray-500">거래일시</span>
-            <span>{{ receipt.transaction.approvedAt }}</span>
+            <span>{{ formatDateTime(receipt.transaction.approvedAt) }}</span>
           </div>
         </div>
 
