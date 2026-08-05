@@ -42,6 +42,7 @@
         </button>
         <button
           class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 py-5 text-xs text-slate-500"
+          @click="goSettlement"
         >
           <!-- 아이콘 자리 채워야 함 -->
           <span class="h-5 w-5 rounded bg-slate-200" />
@@ -121,5 +122,12 @@ const goExpenses = () => {
   router.push(`/workation/${workationStore.workationId}/expenses`);
 };
 
-const goRecord = () => {};
+const goSettlement = () => {
+  router.push(`/workation/${workationStore.workationId}/settlement`);
+};
+
+// 지난 워케이션은 정산 화면이 기록 조회 모드로 열린다
+const goRecord = (workationId) => {
+  router.push(`/workation/${workationId}/settlement`);
+};
 </script>

@@ -39,7 +39,9 @@ defineEmits(['click']);
 const subText = computed(() => {
   const date = (props.expense.spentDate ?? '').slice(5).replace('-', '.');
   const type = props.expense.budgetType === 'WORK' ? '법인' : '개인';
-  const card = props.expense.cardName ?? (props.expense.budgetType === 'WORK' ? '카드 미지정' : '현금');
+  const card =
+    props.expense.cardName ??
+    (props.expense.budgetType === 'WORK' ? '카드 미지정' : '현금');
   return `${date} · ${type} · ${card}`;
 });
 
@@ -50,7 +52,8 @@ const needsCard = computed(
 
 const badgeText = computed(() => {
   if (needsCard.value) return '보완 필요';
-  if (props.expense.isAutoCategorized) return `${props.expense.categoryName} · 확인 필요`;
+  if (props.expense.isAutoCategorized)
+    return `${props.expense.categoryName} · 확인 필요`;
   return props.expense.categoryName;
 });
 
