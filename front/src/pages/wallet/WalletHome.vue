@@ -7,7 +7,6 @@ import { useErrorToast } from '@/composables/useErrorToast';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import BaseBottomNavigation from '@/components/common/BaseBottomNavigation.vue';
 import WalletBalanceCard from '@/components/wallet/WalletBalanceCard.vue';
-import WalletQuickActions from '@/components/wallet/WalletQuickActions.vue';
 import WalletCardCarousel from '@/components/wallet/WalletCardCarousel.vue';
 
 const router = useRouter();
@@ -70,9 +69,6 @@ onMounted(() => {
     <WalletBalanceCard
       :balance="walletStore.balance"
       @edit-accounts="router.push('/wallet/accounts')"
-    />
-
-    <WalletQuickActions
       @charge="router.push('/wallet/charge')"
       @refund="router.push('/wallet/refund')"
       @history="router.push('/transaction')"
