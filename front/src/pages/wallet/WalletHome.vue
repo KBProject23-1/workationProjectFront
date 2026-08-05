@@ -15,6 +15,7 @@ const cardStore = useCardStore();
 const { showError } = useErrorToast();
 
 const confirmState = ref({ visible: false, type: null, cardId: null });
+const isProcessing = ref(false);
 
 function requestSetPrimary(cardId) {
   confirmState.value = { visible: true, type: 'primary', cardId };
@@ -30,6 +31,7 @@ function closeConfirm() {
 
 async function handleConfirm() {
   const { type, cardId } = confirmState.value;
+  isProcessing.value = true;
   try {
     if (type === 'primary') {
       await cardStore.setPrimaryCard(cardId);
@@ -44,6 +46,7 @@ async function handleConfirm() {
         : '카드 삭제에 실패했어요.',
     );
   } finally {
+    isProcessing.value = false;
     closeConfirm();
   }
 }
@@ -91,6 +94,7 @@ onMounted(() => {
           ? '이 카드를 주 카드로 변경할까요?'
           : '이 카드를 삭제할까요?'
       "
+      :loading="isProcessing"
       @confirm="handleConfirm"
       @cancel="closeConfirm"
     />
