@@ -77,12 +77,14 @@
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Button } from '@/components/ui/button';
-import { getSettlement } from '@/api/settlement';
+import { storeToRefs } from 'pinia';
+import { useSettlementStore } from '@/stores/settlementStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { won } from '@/components/workation/format';
 
 const route = useRoute();
 const router = useRouter();
+const settlementStore = useSettlementStore();
 const { showError } = useErrorToast();
 
 const workationId = route.params.workationId;
@@ -103,14 +105,10 @@ const CONFETTI = Array.from({ length: 14 }, (_, index) => {
 });
 
 const loading = ref(true);
-const workation = ref(null);
-const settlements = ref([]);
+const { workation } = storeToRefs(settlementStore);
 
 const amountOf = (budgetType) =>
-  Number(
-    settlements.value.find((item) => item.budgetType === budgetType)
-      ?.totalAmount ?? 0,
-  );
+  Number(settlementStore.summaryOf(budgetType).totalAmount ?? 0);
 
 const workAmount = computed(() => amountOf('WORK'));
 const personalAmount = computed(() => amountOf('PERSONAL'));
@@ -126,9 +124,7 @@ const settledAtText = computed(() => {
 
 const loadSettlement = async () => {
   try {
-    const { data } = await getSettlement(workationId);
-    workation.value = data.workation;
-    settlements.value = data.settlements ?? [];
+    await settlementStore.fetchSettlement(workationId);
   } catch (error) {
     showError(error, '정산 결과를 불러오지 못했습니다.');
   } finally {

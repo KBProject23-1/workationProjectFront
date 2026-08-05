@@ -124,7 +124,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Button } from '@/components/ui/button';
-import { getBudgetStatus, setupBudget, updateBudget } from '@/api/budget';
+import { useBudgetStore } from '@/stores/budgetStore';
 import { useCategoryStore } from '@/stores/categoryStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { won } from '@/components/workation/format';
@@ -139,6 +139,7 @@ const TABS = [
 
 const route = useRoute();
 const router = useRouter();
+const budgetStore = useBudgetStore();
 const categoryStore = useCategoryStore();
 const { showError } = useErrorToast();
 
@@ -268,8 +269,8 @@ const addCategory = (category) => {
 
 // 총예산과 이미 배정된 금액을 함께 받는다. 배정 이력이 있으면 수정으로 저장한다
 const loadBudgetStatus = async () => {
-  const { data } = await getBudgetStatus(workationId);
-  (data.budgets ?? []).forEach((budget) => {
+  const budgets = await budgetStore.fetchBudgets(workationId);
+  budgets.forEach((budget) => {
     const type = budget.budgetType;
     budgetTotals[type] = Number(budget.budgetTotal ?? 0);
     savedItems[type] = budget.items ?? [];
@@ -399,9 +400,9 @@ const submit = async () => {
     for (const tab of TABS) {
       const payload = buildPayload(tab.value);
       if (alreadySet[tab.value]) {
-        await updateBudget(workationId, payload);
+        await budgetStore.updateBudget(workationId, payload);
       } else {
-        await setupBudget(workationId, payload);
+        await budgetStore.setupBudget(workationId, payload);
       }
     }
     sessionStorage.removeItem(draftKey);

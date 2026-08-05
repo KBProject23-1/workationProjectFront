@@ -142,8 +142,8 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { createExpense, getExpenseDetail, updateExpense } from '@/api/expense';
-import { getBudgetStatus } from '@/api/budget';
+import { useExpenseStore } from '@/stores/expenseStore';
+import { useBudgetStore } from '@/stores/budgetStore';
 import { useCardStore } from '@/stores/cardStore';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
@@ -157,6 +157,8 @@ const BUDGET_TYPES = [
 
 const route = useRoute();
 const router = useRouter();
+const expenseStore = useExpenseStore();
+const budgetStore = useBudgetStore();
 const cardStore = useCardStore();
 const workationStore = useWorkationStore();
 const { showError } = useErrorToast();
@@ -212,7 +214,7 @@ const onAmountInput = (value) => {
 };
 
 const loadDetail = async () => {
-  const { data } = await getExpenseDetail(expenseId);
+  const data = await expenseStore.fetchDetail(expenseId);
   form.budgetType = data.budgetType;
   form.cardId = data.card?.id ?? null;
   form.merchantName = data.merchantName ?? '';
@@ -223,8 +225,8 @@ const loadDetail = async () => {
 };
 
 const loadAssignedCategories = async () => {
-  const { data } = await getBudgetStatus(workationId);
-  (data.budgets ?? []).forEach((budget) => {
+  const budgets = await budgetStore.fetchBudgets(workationId);
+  budgets.forEach((budget) => {
     assignedCategories[budget.budgetType] = (budget.items ?? []).map(
       (item) => ({
         id: item.expenseCategoryId,
@@ -307,9 +309,9 @@ const submit = async () => {
     };
 
     if (isEdit) {
-      await updateExpense(expenseId, payload);
+      await expenseStore.updateExpense(workationId, expenseId, payload);
     } else {
-      await createExpense(workationId, {
+      await expenseStore.createExpense(workationId, {
         ...payload,
         budgetType: form.budgetType,
         expenseCategoryId: form.expenseCategoryId,

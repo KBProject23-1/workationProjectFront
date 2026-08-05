@@ -154,12 +154,8 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Button } from '@/components/ui/button';
-import {
-  deleteExpense,
-  getExpenseDetail,
-  updateExpenseBudgetType,
-  updateExpenseCategory,
-} from '@/api/expense';
+import { storeToRefs } from 'pinia';
+import { useExpenseStore } from '@/stores/expenseStore';
 import { useCategoryStore } from '@/stores/categoryStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { dotDate, won } from '@/components/workation/format';
@@ -168,6 +164,7 @@ import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 
 const route = useRoute();
 const router = useRouter();
+const expenseStore = useExpenseStore();
 const categoryStore = useCategoryStore();
 const { showError } = useErrorToast();
 
@@ -188,7 +185,7 @@ const listLocation = {
   query: listQuery,
 };
 
-const detail = ref(null);
+const { detail } = storeToRefs(expenseStore);
 const loading = ref(true);
 const removing = ref(false);
 const categorySheetOpen = ref(false);
@@ -273,8 +270,7 @@ const targetBudgetTypeCategories = computed(() =>
 const loadDetail = async () => {
   loading.value = true;
   try {
-    const { data } = await getExpenseDetail(expenseId);
-    detail.value = data;
+    await expenseStore.fetchDetail(expenseId);
   } catch (error) {
     showError(error, '지출 정보를 불러오지 못했습니다.');
   } finally {
@@ -292,9 +288,8 @@ onMounted(async () => {
 
 const changeCategory = async (categoryId) => {
   try {
-    await updateExpenseCategory(expenseId, categoryId);
+    await expenseStore.changeCategory(workationId, expenseId, categoryId);
     categorySheetOpen.value = false;
-    await loadDetail();
   } catch (error) {
     showError(error, '카테고리를 변경하지 못했습니다.');
   }
@@ -302,13 +297,13 @@ const changeCategory = async (categoryId) => {
 
 const changeBudgetType = async (categoryId) => {
   try {
-    await updateExpenseBudgetType(
+    await expenseStore.changeBudgetType(
+      workationId,
       expenseId,
       targetBudgetType.value,
       categoryId,
     );
     budgetTypeSheetOpen.value = false;
-    await loadDetail();
   } catch (error) {
     showError(error, '경비 구분을 변경하지 못했습니다.');
   }
@@ -318,7 +313,7 @@ const remove = async () => {
   if (removing.value) return;
   removing.value = true;
   try {
-    await deleteExpense(expenseId);
+    await expenseStore.deleteExpense(workationId, expenseId);
     router.push(listLocation);
   } catch (error) {
     showError(error, '지출을 삭제하지 못했습니다.');
