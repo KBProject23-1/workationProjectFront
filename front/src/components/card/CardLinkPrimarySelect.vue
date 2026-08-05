@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { ChevronLeft } from '@lucide/vue';
+import { ChevronLeft, CreditCard } from '@lucide/vue';
 import CardPrimarySelectItem from '@/components/card/CardPrimarySelectItem.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 
@@ -15,18 +15,28 @@ const selectedId = ref(null);
 </script>
 
 <template>
-  <div
-    class="flex flex-col items-center w-full min-h-screen px-5 py-6 text-center bg-white"
-  >
-    <button type="button" class="mb-4 self-start" @click="$emit('back')">
-      <ChevronLeft :size="24" />
-    </button>
-    <h1 class="text-xl font-bold mb-6">카드 선택</h1>
-    <p class="text-[14px] text-gray-500 mb-4">
-      주로 사용하는 카드를 선택해주세요
-    </p>
+  <div class="flex flex-col w-full min-h-screen px-5 py-5 bg-white text-left">
+    <div class="flex items-center gap-2 mb-6">
+      <button
+        type="button"
+        class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+        @click="$emit('back')"
+      >
+        <ChevronLeft :size="24" />
+      </button>
+      <h1 class="text-[18px] font-bold text-gray-900">주 카드 선택</h1>
+    </div>
 
-    <div class="flex flex-col gap-3 flex-1 w-full text-left">
+    <div class="mb-5">
+      <h2 class="text-[20px] font-bold text-gray-900 leading-snug">
+        주로 사용하는 카드를<br />선택해 주세요
+      </h2>
+      <p class="text-[13px] font-medium text-gray-400 mt-1">
+        주 카드는 기본 결제 수단으로 지정돼요
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-3 flex-1 w-full">
       <CardPrimarySelectItem
         v-for="card in cards"
         :key="card.linkableCardId"
@@ -34,15 +44,29 @@ const selectedId = ref(null);
         :is-selected="selectedId === card.linkableCardId"
         @select="selectedId = $event"
       />
+
+      <div
+        v-if="cards.length === 0 && !isLoading"
+        class="flex flex-col items-center justify-center py-16 text-center"
+      >
+        <div
+          class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-3 text-gray-300"
+        >
+          <CreditCard :size="24" />
+        </div>
+        <p class="text-[14px] font-medium text-gray-400">
+          연동 가능한 카드가 없습니다
+        </p>
+      </div>
     </div>
 
-    <div class="w-full pb-4">
+    <div class="w-full pt-4 pb-2 mt-auto text-center">
       <BaseButton
         :disabled="!selectedId || isLoading"
-        class="w-full mt-6"
+        class="w-full py-3.5 text-[15px] font-bold rounded-2xl"
         @click="emit('select', selectedId)"
       >
-        {{ isLoading ? '연동 중...' : '선택 완료' }}
+        {{ isLoading ? '연동하는 중...' : '주 카드로 설정하기' }}
       </BaseButton>
     </div>
   </div>

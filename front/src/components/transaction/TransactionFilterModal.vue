@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem } from '@/components/ui/select';
 import { SelectTrigger } from 'reka-ui';
 import BaseButton from '@/components/common/BaseButton.vue';
 import { toDateParam } from '@/utils/date';
+import { formatCardNumber } from '@/utils/card';
 import { CreditCard, ChevronRight } from '@lucide/vue';
 
 const ALL_CARDS = 'ALL';
@@ -105,7 +106,7 @@ const cardSelectValue = computed({
 });
 
 function formatCardLabel(card) {
-  const label = `${card.cardName} (${card.maskedNumber})`;
+  const label = `${card.cardName} (${formatCardNumber(card.maskedNumber)})`;
   return card.isDeleted ? `${label} - 연동 해제됨` : label;
 }
 

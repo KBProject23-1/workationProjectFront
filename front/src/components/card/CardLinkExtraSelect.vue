@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { ChevronLeft } from '@lucide/vue';
+import { ChevronLeft, CreditCard } from '@lucide/vue';
 import CardSelectItem from '@/components/card/CardSelectItem.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 
@@ -24,18 +24,37 @@ function toggleSelect(id) {
 </script>
 
 <template>
-  <div
-    class="flex flex-col items-center w-full min-h-screen px-5 py-6 text-center bg-white"
-  >
-    <button type="button" class="mb-4 self-start" @click="$emit('back')">
-      <ChevronLeft :size="24" />
-    </button>
-    <h1 class="text-xl font-bold mb-2">추가 카드 연동</h1>
-    <p class="text-[14px] text-gray-500 mb-4">
-      더 등록할 카드가 있다면 선택해주세요
-    </p>
+  <div class="flex flex-col w-full min-h-screen px-5 py-5 bg-white text-left">
+    <div class="flex items-center gap-2 mb-6">
+      <button
+        type="button"
+        class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+        @click="$emit('back')"
+      >
+        <ChevronLeft :size="24" />
+      </button>
+      <h1 class="text-[18px] font-bold text-gray-900">추가 카드 연동</h1>
+    </div>
 
-    <div class="flex flex-col gap-3 flex-1 w-full text-left">
+    <div class="mb-5 flex items-end justify-between">
+      <div>
+        <h2 class="text-[20px] font-bold text-gray-900 leading-snug">
+          함께 연동할 카드를<br />선택해 주세요
+        </h2>
+        <p class="text-[13px] font-medium text-gray-400 mt-1">
+          다중 선택이 가능해요
+        </p>
+      </div>
+
+      <span
+        v-if="selectedIds.length > 0"
+        class="text-[12px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg shrink-0"
+      >
+        {{ selectedIds.length }}개 선택됨
+      </span>
+    </div>
+
+    <div class="flex flex-col gap-3 flex-1 w-full">
       <CardSelectItem
         v-for="card in cards"
         :key="card.linkableCardId"
@@ -43,25 +62,38 @@ function toggleSelect(id) {
         :is-selected="selectedIds.includes(card.linkableCardId)"
         @select="toggleSelect"
       />
-      <p
+
+      <div
         v-if="cards.length === 0"
-        class="text-[14px] text-gray-400 text-center mt-4"
+        class="flex flex-col items-center justify-center py-16 text-center"
       >
-        추가로 연동할 수 있는 카드가 없어요
-      </p>
+        <div
+          class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-3 text-gray-300"
+        >
+          <CreditCard :size="24" />
+        </div>
+        <p class="text-[14px] font-medium text-gray-400">
+          추가로 연동할 수 있는 카드가 없어요
+        </p>
+      </div>
     </div>
 
-    <div class="w-full pb-4 flex flex-col gap-2">
+    <div class="w-full pt-4 pb-2 mt-auto flex flex-col items-center gap-1.5">
       <BaseButton
         :disabled="selectedIds.length === 0 || isLoading"
-        class="w-full"
+        class="w-full py-3.5 text-[15px] font-bold rounded-2xl"
         @click="$emit('complete', selectedIds)"
       >
-        {{ isLoading ? '연동 중...' : '선택 완료' }}
+        {{
+          isLoading
+            ? '연동하는 중...'
+            : `${selectedIds.length > 0 ? selectedIds.length + '개 ' : ''}카드 연동하기`
+        }}
       </BaseButton>
+
       <button
         type="button"
-        class="text-[14px] text-gray-400 py-2"
+        class="w-full py-2.5 text-[13px] font-semibold text-gray-400 hover:text-gray-600 transition-colors text-center"
         @click="$emit('skip')"
       >
         다음에 할게요

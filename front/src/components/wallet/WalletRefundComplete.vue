@@ -76,7 +76,7 @@ defineEmits(['confirm']);
       </div>
     </div>
 
-    <div class="w-full pb-2 mt-auto">
+    <div class="w-full pb-2 mt-auto text-center">
       <BaseButton
         class="w-full py-3.5 text-[15px] font-bold rounded-2xl"
         @click="$emit('confirm')"

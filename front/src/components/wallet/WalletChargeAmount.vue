@@ -151,7 +151,7 @@ function handleNext() {
       </div>
     </div>
 
-    <div class="mt-auto pt-4 pb-2">
+    <div class="mt-auto pt-4 pb-2 text-center">
       <BaseButton
         :disabled="isLoading"
         class="w-full py-3.5 text-[15px] font-bold rounded-2xl"
