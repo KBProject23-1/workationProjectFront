@@ -95,7 +95,7 @@ onUnmounted(() => {
         "
         class="text-[14px] text-gray-400 text-center mt-8"
       >
-        거래내역이 없어요
+        이번 달 거래내역이 없어요
       </p>
 
       <div ref="sentinel" class="h-4"></div>
