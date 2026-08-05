@@ -1,0 +1,328 @@
+<template>
+  <div class="min-h-screen bg-white px-5 pt-4 pb-8">
+    <header class="relative mb-4 flex items-center justify-center">
+      <button class="absolute left-0 text-xl text-slate-900" @click="goBack">
+        ‹
+      </button>
+      <h1 class="text-base font-bold text-slate-900">{{ pageTitle }}</h1>
+    </header>
+
+    <template v-if="!isEdit">
+      <div class="h-1 w-full rounded-full bg-blue-100">
+        <div class="h-1 w-1/2 rounded-full bg-blue-600" />
+      </div>
+      <p class="mt-1 text-right text-xs text-slate-400">1 / 2</p>
+    </template>
+
+    <h2 class="mt-4 mb-3 text-base font-bold text-slate-900">기본 정보</h2>
+
+    <div class="space-y-4">
+      <WorkationFormField label="제목" :error-message="errors.title">
+        <Input
+          v-model="form.title"
+          maxlength="100"
+          placeholder="예) 제주 귤따기 워케이션"
+          class="placeholder:text-slate-300"
+        />
+      </WorkationFormField>
+
+      <WorkationFormField label="지역" :error-message="errors.regionId">
+        <select
+          v-model="form.regionId"
+          class="border-input h-9 w-full rounded-md border bg-transparent px-3 text-base md:text-sm"
+          :class="form.regionId ? 'text-slate-900' : 'text-slate-300'"
+        >
+          <option :value="null" disabled class="text-slate-300">
+            지역을 선택해 주세요
+          </option>
+          <option
+            v-for="region in sortedRegions"
+            :key="region.id"
+            :value="region.id"
+            class="text-slate-900"
+          >
+            {{ region.name }}
+          </option>
+        </select>
+      </WorkationFormField>
+
+      <WorkationFormField
+        label="기간"
+        :hint="totalDaysText"
+        :error-message="errors.period"
+      >
+        <div class="flex items-center gap-2">
+          <WorkationDateInput
+            v-model="form.startDate"
+            placeholder="시작일"
+            class="flex-1"
+          />
+          <span class="shrink-0 text-slate-400">~</span>
+          <WorkationDateInput
+            v-model="form.endDate"
+            placeholder="종료일"
+            class="flex-1"
+          />
+        </div>
+      </WorkationFormField>
+
+      <div class="grid grid-cols-2 gap-3">
+        <WorkationFormField
+          label="법인 예산 총액"
+          :error-message="errors.businessBudgetTotal"
+        >
+          <div class="relative">
+            <Input
+              :model-value="businessBudgetText"
+              inputmode="numeric"
+              class="pr-8 text-right"
+              @update:model-value="onBusinessBudgetInput"
+            />
+            <span
+              class="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400"
+              >원</span
+            >
+          </div>
+        </WorkationFormField>
+
+        <WorkationFormField
+          label="개인 예산 총액"
+          :error-message="errors.personalBudgetTotal"
+        >
+          <div class="relative">
+            <Input
+              :model-value="personalBudgetText"
+              inputmode="numeric"
+              class="pr-8 text-right"
+              @update:model-value="onPersonalBudgetInput"
+            />
+            <span
+              class="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400"
+              >원</span
+            >
+          </div>
+        </WorkationFormField>
+      </div>
+
+      <p class="text-xs text-slate-400">
+        다음 단계에서 카테고리별로 배정하게 돼요
+      </p>
+    </div>
+
+    <Button
+      class="mt-8 h-12 w-full rounded-xl text-base"
+      :disabled="submitting"
+      @click="submit"
+    >
+      {{ submitLabel }}
+    </Button>
+  </div>
+</template>
+
+<script setup>
+import { computed, onMounted, reactive, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { getRegions } from '@/api/workation';
+import { getBudgetStatus } from '@/api/budget';
+import { useWorkationStore } from '@/stores/workationStore';
+import { useErrorToast } from '@/composables/useErrorToast';
+import WorkationFormField from '@/components/workation/WorkationFormField.vue';
+import WorkationDateInput from '@/components/workation/WorkationDateInput.vue';
+
+const route = useRoute();
+const router = useRouter();
+const workationStore = useWorkationStore();
+const { showError } = useErrorToast();
+
+// 라우트에 workationId 가 있으면 수정 화면으로 동작한다
+const workationId = route.params.workationId ?? null;
+const isEdit = Boolean(workationId);
+
+const pageTitle = isEdit ? '워케이션 일정 수정하기' : '워케이션 일정 등록하기';
+
+const regions = ref([]);
+const submitting = ref(false);
+
+const submitLabel = computed(() => {
+  if (submitting.value) return '저장 중...';
+  return isEdit ? '저장' : '다음';
+});
+
+// 지역은 가나다 순으로 보여준다
+const sortedRegions = computed(() =>
+  [...regions.value].sort((a, b) => a.name.localeCompare(b.name, 'ko')),
+);
+
+const form = reactive({
+  title: '',
+  regionId: null,
+  startDate: '',
+  endDate: '',
+  businessBudgetTotal: '',
+  personalBudgetTotal: '',
+});
+
+const errors = reactive({
+  title: '',
+  regionId: '',
+  period: '',
+  businessBudgetTotal: '',
+  personalBudgetTotal: '',
+});
+
+const loadRegions = async () => {
+  try {
+    const { data } = await getRegions();
+    regions.value = data.regions ?? [];
+  } catch (error) {
+    showError(error, '지역 목록을 불러오지 못했습니다.');
+  }
+};
+
+// 수정 대상은 진행 중 워케이션 하나뿐이라 current 로 채운다
+const loadWorkation = async () => {
+  try {
+    await workationStore.fetchCurrent();
+    const workation = workationStore.workation;
+    if (!workation) {
+      router.replace('/workation');
+      return;
+    }
+
+    form.title = workation.title ?? '';
+    form.regionId = workation.region?.id ?? null;
+    form.startDate = workation.startDate ?? '';
+    form.endDate = workation.endDate ?? '';
+
+    const { data: budgetData } = await getBudgetStatus(workation.id);
+    (budgetData.budgets ?? []).forEach((budget) => {
+      const amount = String(Number(budget.budgetTotal ?? 0));
+      if (budget.budgetType === 'WORK') form.businessBudgetTotal = amount;
+      if (budget.budgetType === 'PERSONAL') form.personalBudgetTotal = amount;
+    });
+  } catch (error) {
+    showError(error, '워케이션 정보를 불러오지 못했습니다.');
+  }
+};
+
+// 등록 화면인데 이미 진행 중 워케이션이 있으면 들어올 수 없다
+const guardCreate = async () => {
+  await workationStore.fetchCurrent();
+  if (workationStore.hasActive) {
+    showError(null, '이미 진행 중인 워케이션이 있습니다.');
+    router.replace('/workation');
+  }
+};
+
+onMounted(async () => {
+  await Promise.all([loadRegions(), isEdit ? loadWorkation() : guardCreate()]);
+});
+
+// 숫자만 남기고 화면에는 천 단위 콤마를 붙여 보여준다
+const toDigits = (value) => String(value ?? '').replace(/[^\d]/g, '');
+
+const withComma = (value) => {
+  const digits = toDigits(value);
+  return digits === '' ? '' : Number(digits).toLocaleString('ko-KR');
+};
+
+const businessBudgetText = computed(() => withComma(form.businessBudgetTotal));
+const personalBudgetText = computed(() => withComma(form.personalBudgetTotal));
+
+const onBusinessBudgetInput = (value) => {
+  form.businessBudgetTotal = toDigits(value);
+};
+
+const onPersonalBudgetInput = (value) => {
+  form.personalBudgetTotal = toDigits(value);
+};
+
+// 시작일과 종료일을 모두 고른 경우에만 일수를 보여준다. 양 끝날을 포함해서 센다
+const totalDays = computed(() => {
+  if (!form.startDate || !form.endDate) return 0;
+  const start = new Date(form.startDate);
+  const end = new Date(form.endDate);
+  const diff = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+  return diff > 0 ? diff : 0;
+});
+
+const totalDaysText = computed(() =>
+  totalDays.value > 0 ? `총 ${totalDays.value}일` : '',
+);
+
+const validate = () => {
+  errors.title = '';
+  errors.regionId = '';
+  errors.period = '';
+  errors.businessBudgetTotal = '';
+  errors.personalBudgetTotal = '';
+
+  if (!form.title.trim()) {
+    errors.title = '제목을 입력해 주세요.';
+  } else if (form.title.length > 100) {
+    errors.title = '제목은 100자까지 입력할 수 있습니다.';
+  }
+
+  if (!form.regionId) {
+    errors.regionId = '지역을 선택해 주세요.';
+  }
+
+  if (!form.startDate || !form.endDate) {
+    errors.period = '기간을 선택해 주세요.';
+  } else if (form.endDate < form.startDate) {
+    errors.period = '종료일은 시작일 이후여야 합니다.';
+  }
+
+  if (form.businessBudgetTotal === '') {
+    errors.businessBudgetTotal = '법인 예산을 입력해 주세요.';
+  }
+
+  if (form.personalBudgetTotal === '') {
+    errors.personalBudgetTotal = '개인 예산을 입력해 주세요.';
+  }
+
+  return Object.values(errors).every((message) => message === '');
+};
+
+const submit = async () => {
+  if (!validate() || submitting.value) return;
+
+  submitting.value = true;
+  try {
+    const payload = {
+      title: form.title.trim(),
+      regionId: form.regionId,
+      startDate: form.startDate,
+      endDate: form.endDate,
+      businessBudgetTotal: Number(form.businessBudgetTotal),
+      personalBudgetTotal: Number(form.personalBudgetTotal),
+    };
+
+    const data = isEdit
+      ? await workationStore.updateWorkation(workationId, payload)
+      : await workationStore.createWorkation(payload);
+
+    // 예산 총액이 바뀌었을 수 있어 수정 후에도 배분 화면을 거친다
+    router.push(`/workation/${data.id ?? workationId}/budgets?step=create`);
+  } catch (error) {
+    const errorCode = error.response?.data?.errorCode;
+    if (errorCode === 'ALREADY_ACTIVE') {
+      showError(error, '이미 진행 중인 워케이션이 있습니다.');
+      return;
+    }
+    if (errorCode === 'REGION_NOT_FOUND') {
+      errors.regionId = '존재하지 않는 지역입니다.';
+      return;
+    }
+    showError(error, `워케이션을 ${isEdit ? '수정' : '등록'}하지 못했습니다.`);
+  } finally {
+    submitting.value = false;
+  }
+};
+
+const goBack = () => {
+  router.push('/workation');
+};
+</script>

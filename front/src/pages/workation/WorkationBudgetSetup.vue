@@ -414,7 +414,8 @@ const submit = async () => {
 };
 
 const goBack = () => {
-  router.push(isCreateFlow ? '/workation/create' : '/workation');
+  // 등록·수정 흐름에서 넘어왔으면 앞 단계인 기본 정보 화면으로 돌아간다
+  router.push(isCreateFlow ? `/workation/${workationId}/edit` : '/workation');
 };
 </script>
 

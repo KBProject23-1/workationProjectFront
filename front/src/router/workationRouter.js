@@ -7,7 +7,12 @@ export default [
   {
     path: '/workation/create',
     name: 'WorkationCreate',
-    component: () => import('@/pages/workation/WorkationCreate.vue'),
+    component: () => import('@/pages/workation/WorkationForm.vue'),
+  },
+  {
+    path: '/workation/:workationId/edit',
+    name: 'WorkationEdit',
+    component: () => import('@/pages/workation/WorkationForm.vue'),
   },
   {
     path: '/workation/:workationId/budgets',
