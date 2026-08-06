@@ -111,8 +111,9 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Button } from '@/components/ui/button';
-import { getExpenses } from '@/api/expense';
-import { useCategoryStore } from '@/stores/categoryStore';
+import { storeToRefs } from 'pinia';
+import { useExpenseStore } from '@/stores/expenseStore';
+import { useBudgetStore } from '@/stores/budgetStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { won } from '@/components/workation/format';
 import ExpenseListItem from '@/components/workation/ExpenseListItem.vue';
@@ -125,7 +126,8 @@ const TABS = [
 
 const route = useRoute();
 const router = useRouter();
-const categoryStore = useCategoryStore();
+const expenseStore = useExpenseStore();
+const budgetStore = useBudgetStore();
 const { showError } = useErrorToast();
 
 const workationId = route.params.workationId;
@@ -145,36 +147,34 @@ const categoryId = ref(
 const PAGE_SIZE = 10;
 
 const loading = ref(true);
-const expenses = ref([]);
-const summary = ref({ totalCount: 0, totalAmount: 0, uncheckedCount: 0 });
 const page = ref(Number(route.query.page ?? 0));
-const totalElements = ref(0);
 
-const totalPages = computed(() => Math.ceil(totalElements.value / PAGE_SIZE));
-const hasPrev = computed(() => page.value > 0);
-const hasNext = computed(() => page.value + 1 < totalPages.value);
+const { expenses, summary, totalPages } = storeToRefs(expenseStore);
 
-// 예산 유형을 고르지 않았을 때는 필터 칩을 법인 기준으로 보여준다
+const hasPrev = computed(() => expenseStore.hasPrev);
+const hasNext = computed(() => expenseStore.hasNext);
+
+// 예산에 배정한 카테고리만 필터로 보여준다. 배정하지 않은 카테고리에는 지출이 잡히지 않는다
+// 예산 유형을 고르지 않았을 때는 법인 기준으로 보여준다
 const filterCategories = computed(() =>
-  categoryStore.defaultCategoriesOf(budgetType.value ?? 'WORK'),
+  budgetStore.itemsOf(budgetType.value ?? 'WORK').map((item) => ({
+    id: item.expenseCategoryId,
+    name: item.categoryName,
+  })),
 );
 
 const loadExpenses = async () => {
   loading.value = true;
   try {
-    const { data } = await getExpenses(workationId, {
+    await expenseStore.fetchExpenses(workationId, {
       budgetType: budgetType.value ?? undefined,
       expenseCategoryId: categoryId.value ?? undefined,
       uncheckedOnly: uncheckedOnly.value ? true : undefined,
       page: page.value,
       size: PAGE_SIZE,
     });
-    expenses.value = data.expenses?.content ?? [];
-    totalElements.value = data.expenses?.totalElements ?? 0;
-    summary.value = data.summary ?? summary.value;
   } catch (error) {
     showError(error, '지출 목록을 불러오지 못했습니다.');
-    expenses.value = [];
   } finally {
     loading.value = false;
   }
@@ -205,10 +205,7 @@ const goPage = async (value) => {
 };
 
 onMounted(async () => {
-  await Promise.all([
-    categoryStore.fetchCategories('WORK'),
-    categoryStore.fetchCategories('PERSONAL'),
-  ]);
+  await budgetStore.fetchBudgets(workationId);
   await loadExpenses();
 });
 

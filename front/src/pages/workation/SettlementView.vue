@@ -194,13 +194,10 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
 import { Trash2 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
-import {
-  getSettlement,
-  downloadSettlementExcel,
-  downloadSettlementPdf,
-} from '@/api/settlement';
+import { useSettlementStore } from '@/stores/settlementStore';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { useFileDownload } from '@/composables/useFileDownload';
@@ -213,16 +210,9 @@ const TABS = [
   { value: 'PERSONAL', label: '개인 내역', summaryLabel: '개인 사용 합계' },
 ];
 
-const EMPTY_SUMMARY = {
-  totalAmount: 0,
-  totalCount: 0,
-  spentDayCount: 0,
-  noSpendDayCount: 0,
-  categories: [],
-};
-
 const route = useRoute();
 const router = useRouter();
+const settlementStore = useSettlementStore();
 const workationStore = useWorkationStore();
 const { showError } = useErrorToast();
 const { download } = useFileDownload();
@@ -242,14 +232,12 @@ const removing = ref(false);
 const confirmOpen = ref(false);
 const removeOpen = ref(false);
 
-const workation = ref(null);
-const settlements = ref([]);
-const validation = ref({ uncheckedCount: 0, canProceed: true, message: '' });
+const { workation, validation } = storeToRefs(settlementStore);
 
 const isWork = computed(() => budgetType.value === 'WORK');
 
 // 정산이 끝난 워케이션은 기록 조회 화면으로 동작한다
-const settled = computed(() => workation.value?.status === 'SETTLED');
+const settled = computed(() => settlementStore.settled);
 
 // 2026-05-08T14:20:00 -> 2026.05.08
 const settledAtText = computed(() =>
@@ -260,18 +248,10 @@ const currentTab = computed(
   () => TABS.find((tab) => tab.value === budgetType.value) ?? TABS[0],
 );
 
-const current = computed(
-  () =>
-    settlements.value.find((item) => item.budgetType === budgetType.value) ??
-    EMPTY_SUMMARY,
-);
+const current = computed(() => settlementStore.summaryOf(budgetType.value));
 
-// 총예산은 따로 내려오지 않아 계정과목 배정액을 더해서 쓴다
 const budgetTotal = computed(() =>
-  current.value.categories.reduce(
-    (total, item) => total + Number(item.targetAmount ?? 0),
-    0,
-  ),
+  settlementStore.budgetTotalOf(budgetType.value),
 );
 
 const usageRate = computed(() => {
@@ -303,10 +283,7 @@ const goUncheckedExpenses = () => {
 const loadSettlement = async () => {
   loading.value = true;
   try {
-    const { data } = await getSettlement(workationId);
-    workation.value = data.workation;
-    settlements.value = data.settlements ?? [];
-    validation.value = data.validation ?? validation.value;
+    await settlementStore.fetchSettlement(workationId);
   } catch (error) {
     showError(error, '정산 내역을 불러오지 못했습니다.');
   } finally {
@@ -332,8 +309,9 @@ const downloadFile = async (request, fallbackName) => {
 };
 
 const downloadExcel = () =>
-  downloadFile(downloadSettlementExcel, '정산내역.xlsx');
-const downloadPdf = () => downloadFile(downloadSettlementPdf, '증빙자료.pdf');
+  downloadFile(settlementStore.downloadExcel, '정산내역.xlsx');
+const downloadPdf = () =>
+  downloadFile(settlementStore.downloadPdf, '증빙자료.pdf');
 
 const settle = async () => {
   if (settling.value) return;

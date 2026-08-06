@@ -124,8 +124,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { getRegions } from '@/api/workation';
-import { getBudgetStatus } from '@/api/budget';
+import { useBudgetStore } from '@/stores/budgetStore';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import WorkationFormField from '@/components/workation/WorkationFormField.vue';
@@ -133,6 +132,7 @@ import WorkationDateInput from '@/components/workation/WorkationDateInput.vue';
 
 const route = useRoute();
 const router = useRouter();
+const budgetStore = useBudgetStore();
 const workationStore = useWorkationStore();
 const { showError } = useErrorToast();
 
@@ -142,7 +142,6 @@ const isEdit = Boolean(workationId);
 
 const pageTitle = isEdit ? '워케이션 일정 수정하기' : '워케이션 일정 등록하기';
 
-const regions = ref([]);
 const submitting = ref(false);
 
 const submitLabel = computed(() => {
@@ -150,10 +149,7 @@ const submitLabel = computed(() => {
   return isEdit ? '저장' : '다음';
 });
 
-// 지역은 가나다 순으로 보여준다
-const sortedRegions = computed(() =>
-  [...regions.value].sort((a, b) => a.name.localeCompare(b.name, 'ko')),
-);
+const sortedRegions = computed(() => workationStore.sortedRegions);
 
 const form = reactive({
   title: '',
@@ -174,8 +170,7 @@ const errors = reactive({
 
 const loadRegions = async () => {
   try {
-    const { data } = await getRegions();
-    regions.value = data.regions ?? [];
+    await workationStore.fetchRegions();
   } catch (error) {
     showError(error, '지역 목록을 불러오지 못했습니다.');
   }
@@ -196,8 +191,8 @@ const loadWorkation = async () => {
     form.startDate = workation.startDate ?? '';
     form.endDate = workation.endDate ?? '';
 
-    const { data: budgetData } = await getBudgetStatus(workation.id);
-    (budgetData.budgets ?? []).forEach((budget) => {
+    const budgets = await budgetStore.fetchBudgets(workation.id);
+    budgets.forEach((budget) => {
       const amount = String(Number(budget.budgetTotal ?? 0));
       if (budget.budgetType === 'WORK') form.businessBudgetTotal = amount;
       if (budget.budgetType === 'PERSONAL') form.personalBudgetTotal = amount;

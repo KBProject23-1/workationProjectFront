@@ -6,6 +6,7 @@ import {
   updateWorkation as updateWorkationApi,
   deleteWorkation as deleteWorkationApi,
   settleWorkation as settleWorkationApi,
+  getRegions,
 } from '@/api/workation';
 
 export const useWorkationStore = defineStore('workation', {
@@ -14,6 +15,7 @@ export const useWorkationStore = defineStore('workation', {
     current: null,
     // 정산 완료된 지난 워케이션 목록
     records: [],
+    regions: [],
     page: 0,
     totalPages: 0,
     totalElements: 0,
@@ -29,6 +31,9 @@ export const useWorkationStore = defineStore('workation', {
     uncheckedExpenseCount: (state) => state.current?.uncheckedExpenseCount ?? 0,
     recordById: (state) => (workationId) =>
       state.records.find((record) => record.id === Number(workationId)),
+    // 지역은 가나다 순으로 보여준다
+    sortedRegions: (state) =>
+      [...state.regions].sort((a, b) => a.name.localeCompare(b.name, 'ko')),
   },
 
   actions: {
@@ -60,6 +65,17 @@ export const useWorkationStore = defineStore('workation', {
       } catch (err) {
         this.error = err.message;
         this.records = [];
+      }
+    },
+
+    async fetchRegions() {
+      try {
+        const { data } = await getRegions();
+        this.regions = data.regions ?? [];
+        return this.regions;
+      } catch (err) {
+        this.error = err.message;
+        throw err;
       }
     },
 
