@@ -75,6 +75,14 @@ function fetchDetail() {
   reservationStore.fetchReservationDetails(reservationId.value);
 }
 
+function goToCancellation() {
+  if (!detail.value?.cancelable) return;
+  router.push({
+    name: 'ReservationCancelWarning',
+    params: { reservationId: reservationId.value },
+  });
+}
+
 onMounted(fetchDetail);
 </script>
 
@@ -194,6 +202,7 @@ onMounted(fetchDetail);
         <BaseButton
           :disabled="!detail.cancelable"
           class="max-w-none rounded-lg bg-rose-500 py-3.5 text-[16px] font-bold hover:bg-rose-500 disabled:bg-slate-200 disabled:text-slate-400"
+          @click="goToCancellation"
         >
           예약 취소
         </BaseButton>

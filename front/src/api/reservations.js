@@ -32,3 +32,13 @@ export const getReservationList = (params) => {
 export const getReservationDetails = (reservationId) => {
   return axiosInstance.get(`/reservations/${reservationId}`);
 };
+
+// 로그인한 사용자의 예약 취소와 전액 환불 처리
+export const cancelReservation = (reservationId) => {
+  return axiosInstance.post(`/reservations/${reservationId}/cancel`);
+};
+
+// 취소 완료된 예약의 취소 일시·수수료·환불 금액 조회
+export const getReservationCancellation = (reservationId) => {
+  return axiosInstance.get(`/reservations/${reservationId}/cancellation`);
+};

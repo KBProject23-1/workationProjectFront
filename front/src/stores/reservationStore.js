@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 import {
+  cancelReservation,
+  getReservationCancellation,
   getReservationDetails,
   getReservationList,
 } from '@/api/reservations';
@@ -39,6 +41,12 @@ export const useReservationStore = defineStore('reservation', {
     reservationDetail: null,
     isDetailLoading: false,
     detailError: null,
+    cancelResult: null,
+    cancelError: null,
+    isCanceling: false,
+    cancellationDetail: null,
+    isCancellationDetailLoading: false,
+    cancellationDetailError: null,
   }),
 
   getters: {
@@ -122,6 +130,78 @@ export const useReservationStore = defineStore('reservation', {
         this.detailError = error.message;
       } finally {
         this.isDetailLoading = false;
+      }
+    },
+
+    // 최종 확인 시 한 번만 예약 취소를 요청하고 성공 결과를 보관하는 처리
+    async cancelReservation(reservationId) {
+      if (this.isCanceling) return null;
+
+      this.isCanceling = true;
+      this.cancelError = null;
+      this.cancelResult = null;
+
+      try {
+        const { data } = await cancelReservation(reservationId);
+
+        if (
+          !data?.reservationId ||
+          data.status !== 'CANCELED' ||
+          data.cancelFee === null ||
+          data.cancelFee === undefined ||
+          data.refundAmount === null ||
+          data.refundAmount === undefined ||
+          !data.canceledAt
+        ) {
+          throw new Error('예약 취소 응답 형식이 올바르지 않습니다.');
+        }
+
+        this.cancelResult = data;
+        if (this.reservationDetail?.reservationId === data.reservationId) {
+          this.reservationDetail = {
+            ...this.reservationDetail,
+            status: 'CANCELED',
+            cancelable: false,
+          };
+        }
+        this.reservations = [];
+        this.pagination = createPagination();
+        return data;
+      } catch (error) {
+        this.cancelError = error.message;
+        throw error;
+      } finally {
+        this.isCanceling = false;
+      }
+    },
+
+    // 완료 화면 새로고침 시 저장된 취소 이력을 서버에서 다시 조회하는 처리
+    async fetchReservationCancellation(reservationId) {
+      this.isCancellationDetailLoading = true;
+      this.cancellationDetailError = null;
+      this.cancellationDetail = null;
+
+      try {
+        const { data } = await getReservationCancellation(reservationId);
+
+        if (
+          !data?.reservationId ||
+          !data.reservationProduct ||
+          data.cancelFee === null ||
+          data.cancelFee === undefined ||
+          data.refundAmount === null ||
+          data.refundAmount === undefined
+        ) {
+          throw new Error('예약 취소 상세 응답 형식이 올바르지 않습니다.');
+        }
+
+        this.cancellationDetail = data;
+        return data;
+      } catch (error) {
+        this.cancellationDetailError = error.message;
+        return null;
+      } finally {
+        this.isCancellationDetailLoading = false;
       }
     },
   },
