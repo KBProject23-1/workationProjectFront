@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia';
-import { getReservationList } from '@/api/reservations';
+import {
+  getReservationDetails,
+  getReservationList,
+} from '@/api/reservations';
 
 const PAGE_SIZE = 10;
 const DEFAULT_RESERVATION_STATUSES = ['CONFIRMED', 'COMPLETED'];
@@ -33,6 +36,9 @@ export const useReservationStore = defineStore('reservation', {
     isLoading: false,
     isLoadingMore: false,
     error: null,
+    reservationDetail: null,
+    isDetailLoading: false,
+    detailError: null,
   }),
 
   getters: {
@@ -95,6 +101,27 @@ export const useReservationStore = defineStore('reservation', {
         this.error = error.message;
       } finally {
         this.isLoadingMore = false;
+      }
+    },
+
+    // URL 예약 식별자로 예약 확정·이용 완료 상세를 새로 조회하는 처리
+    async fetchReservationDetails(reservationId) {
+      this.isDetailLoading = true;
+      this.detailError = null;
+      this.reservationDetail = null;
+
+      try {
+        const { data } = await getReservationDetails(reservationId);
+
+        if (!data?.reservationId || !data.merchant || !data.reservationProduct) {
+          throw new Error('예약 상세 응답 형식이 올바르지 않습니다.');
+        }
+
+        this.reservationDetail = data;
+      } catch (error) {
+        this.detailError = error.message;
+      } finally {
+        this.isDetailLoading = false;
       }
     },
   },

@@ -27,3 +27,8 @@ export const getReservationList = (params) => {
     },
   });
 };
+
+// 로그인한 사용자의 예약 확정·이용 완료 상세 조회
+export const getReservationDetails = (reservationId) => {
+  return axiosInstance.get(`/reservations/${reservationId}`);
+};
