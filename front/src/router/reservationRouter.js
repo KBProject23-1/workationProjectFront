@@ -10,6 +10,12 @@ export default [
     component: () => import('@/pages/reservation/ReservationDetailView.vue'),
   },
   {
+    path: '/reservations/:reservationId/cancellation',
+    name: 'ReservationCancellationDetail',
+    component: () =>
+      import('@/pages/reservation/ReservationCancellationDetailView.vue'),
+  },
+  {
     path: '/reservations/:reservationId/cancel',
     name: 'ReservationCancelWarning',
     component: () =>

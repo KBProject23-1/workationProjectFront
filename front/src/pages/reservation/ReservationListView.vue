@@ -48,7 +48,12 @@ function goBack() {
 }
 
 function goToDetail(reservationId) {
-  router.push(`/reservations/${reservationId}`);
+  const routeName =
+    activeTabKey.value === 'cancellation'
+      ? 'ReservationCancellationDetail'
+      : 'ReservationDetail';
+
+  router.push({ name: routeName, params: { reservationId } });
 }
 
 // 탭 변경 시 해당 예약 상태의 첫 페이지를 조회하는 처리
