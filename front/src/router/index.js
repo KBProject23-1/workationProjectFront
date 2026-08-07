@@ -8,6 +8,7 @@ import walletRouter from './walletRouter';
 import transactionRouter from './transactionRouter';
 import workationRouter from './workationRouter';
 import devRouter from './devRouter';
+import merchantRouter from './merchantRouter';
 import reservationRouter from './reservationRouter';
 
 const router = createRouter({
@@ -22,6 +23,7 @@ const router = createRouter({
     ...transactionRouter,
     ...workationRouter,
     ...devRouter,
+    ...merchantRouter,
     ...reservationRouter,
   ],
 });
