@@ -9,8 +9,8 @@ const tabs = [
     key: 'reservation',
     label: '예약',
     icon: Clock,
-    path: null,
-    disabled: true,
+    path: '/reservations',
+    disabled: false,
   },
   {
     key: 'recommend',
