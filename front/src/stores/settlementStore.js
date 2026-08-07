@@ -27,12 +27,15 @@ export const useSettlementStore = defineStore('settlement', {
     summaryOf: (state) => (budgetType) =>
       state.settlements.find((item) => item.budgetType === budgetType) ??
       EMPTY_SUMMARY,
-    // 총예산은 따로 내려오지 않아 계정과목 배정액을 더해서 쓴다
+    // 총예산은 워케이션에 저장된 값을 그대로 쓴다.
+    // 계정과목 배정액 합계로 역산하면, 총예산만 변경하고 예산 재배분을 마치지 않은 상태에서
+    // 실제 총예산과 다른 금액이 표시된다.
     budgetTotalOf: (state) => (budgetType) =>
-      (
-        state.settlements.find((item) => item.budgetType === budgetType)
-          ?.categories ?? []
-      ).reduce((total, item) => total + Number(item.targetAmount ?? 0), 0),
+      Number(
+        (budgetType === 'WORK'
+          ? state.workation?.businessBudgetTotal
+          : state.workation?.personalBudgetTotal) ?? 0,
+      ),
   },
 
   actions: {
