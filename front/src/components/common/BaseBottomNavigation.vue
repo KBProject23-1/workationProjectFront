@@ -16,8 +16,8 @@ const tabs = [
     key: 'recommend',
     label: '추천',
     icon: Sparkles,
-    path: null,
-    disabled: true,
+    path: '/recommendation',
+    disabled: false,
   },
   { key: 'home', label: '홈', icon: Home, path: '/wallet', disabled: false },
   {
