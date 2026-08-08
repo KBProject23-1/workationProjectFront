@@ -1,11 +1,12 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ChevronLeft } from '@lucide/vue';
 import { useReservationStore } from '@/stores/reservationStore';
 import ReservationListItem from '@/components/reservation/ReservationListItem.vue';
 
 const router = useRouter();
+const route = useRoute();
 const reservationStore = useReservationStore();
 const sentinel = ref(null);
 let observer = null;
@@ -27,7 +28,10 @@ const reservationTabs = [
   },
 ];
 
-const activeTabKey = ref(reservationTabs[0].key);
+const initialTabKey = reservationTabs.some((tab) => tab.key === route.query.tab)
+  ? route.query.tab
+  : reservationTabs[0].key;
+const activeTabKey = ref(initialTabKey);
 const activeTab = computed(
   () =>
     reservationTabs.find((tab) => tab.key === activeTabKey.value) ??
@@ -44,7 +48,12 @@ function goBack() {
 }
 
 function goToDetail(reservationId) {
-  router.push(`/reservations/${reservationId}`);
+  const routeName =
+    activeTabKey.value === 'cancellation'
+      ? 'ReservationCancellationDetail'
+      : 'ReservationDetail';
+
+  router.push({ name: routeName, params: { reservationId } });
 }
 
 // 탭 변경 시 해당 예약 상태의 첫 페이지를 조회하는 처리
@@ -52,6 +61,7 @@ async function changeTab(tab) {
   if (activeTabKey.value === tab.key) return;
 
   activeTabKey.value = tab.key;
+  await router.replace({ query: { ...route.query, tab: tab.key } });
   await reservationStore.fetchReservations(tab.statuses);
 }
 
