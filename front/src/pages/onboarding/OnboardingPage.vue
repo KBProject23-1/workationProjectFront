@@ -81,20 +81,21 @@ function onTouchEnd(event) {
           class="w-full shrink-0 flex flex-col px-7 pt-12"
           :aria-hidden="index !== currentIndex"
         >
-          <!-- 제목 / 설명 -->
-          <h2 class="text-[22px] font-bold leading-snug tracking-tight text-[#0B3155]">
+          <!-- 제목 / 설명 (Figma 기준: 제목 26px extrabold / 설명 16px semibold) -->
+          <h2 class="text-[26px] font-extrabold leading-snug tracking-tight text-[#0B3155]">
             {{ slide.title }}
           </h2>
-          <p class="mt-3 text-[14px] font-medium leading-relaxed text-[#7186A0]">
+          <p class="mt-3 text-[16px] font-semibold leading-relaxed text-[#7186A0]">
             {{ slide.description }}
           </p>
 
-          <!-- 일러스트 (원본 Figma 화면처럼 가장자리가 잘리는 구도) -->
+          <!-- 일러스트: 아트워크 기준으로 크롭된 (정사각형에 가까운) viewBox 비율을 유지한 채 컨테이너 안에 꽉 차게(fit) 배치
+               max-h-full/max-w-full + aspect-square 로 화면 크기와 무관하게 왜곡·오버플로 없이 렌더링 -->
           <div class="flex-1 min-h-0 mt-2 flex items-center justify-center overflow-hidden">
             <img
               :src="slide.image"
               :alt="`온보딩 ${index + 1}번째 일러스트`"
-              class="h-full max-w-none select-none object-contain"
+              class="aspect-square max-h-full max-w-full select-none object-contain"
               draggable="false"
             />
           </div>
@@ -102,8 +103,8 @@ function onTouchEnd(event) {
       </div>
     </div>
 
-    <!-- 하단: 페이지 도트 + CTA 버튼 -->
-    <div class="flex flex-col items-center px-6 pt-4 pb-[max(env(safe-area-inset-bottom),28px)]">
+    <!-- 하단: 페이지 도트 + CTA 버튼 (shrink-0 으로 화면 높이에 따라 눌리거나 밀리지 않도록 고정) -->
+    <div class="shrink-0 flex flex-col items-center px-6 pt-4 pb-[max(env(safe-area-inset-bottom),28px)]">
       <div class="flex items-center gap-1.5 mb-6" aria-label="온보딩 페이지 표시">
         <button
           v-for="(_, index) in slides"
