@@ -1,43 +1,16 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
 import { ChevronLeft, MapPin, Phone } from '@lucide/vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationOccupancyModal from '@/components/reservation/ReservationOccupancyModal.vue';
 import AccommodationProductCard from '@/components/merchant/AccommodationProductCard.vue';
+import { useAccommodationStore } from '@/stores/merchant/accommodationStore';
 
-const checkIn = ref('2026-08-10');
-const checkOut = ref('2026-08-12');
-const roomCount = ref(1);
-const guestCount = ref(2);
+const accommodationStore = useAccommodationStore();
+const { accommodation, checkIn, checkOut, roomCount, guestCount, selectedProductName, totalPrice } = storeToRefs(accommodationStore);
 const dateModalMode = ref('');
 const isOccupancyModalOpen = ref(false);
-const accommodationResponse = {
-  status: 'SUCCESS',
-  message: '요청 성공',
-  data: {
-    merchantId: 101,
-    name: '제주 스테이',
-    address: '제주특별자치도 제주시 중앙로 10',
-    phoneNumber: '064-000-0000',
-    description: '업무와 휴식에 적합한 숙소입니다.',
-    checkInTime: '15:00:00',
-    checkOutTime: '11:00:00',
-    rating: 4.7,
-    reviewCount: 128,
-    bookmarked: false,
-    thumbnailUrl: 'https://example.com/merchants/101.jpg',
-    products: [
-      { productName: '스탠다드 A', description: '퀸사이즈 침대 2개 · 금연 객실 · 오션뷰', productDetailType: 'ROOM', maxHeadcount: 4, thumbnailURL: 'https://example.com/merchants/101-standard-a.jpg', price: 120000 },
-      { productName: '디럭스 오션', description: '킹사이즈 침대 1개 · 금연 객실 · 오션뷰', productDetailType: 'ROOM', maxHeadcount: 2, thumbnailURL: 'https://example.com/merchants/101-deluxe-ocean.jpg', price: 165000 },
-    ],
-  },
-};
-
-const accommodation = accommodationResponse.data;
-const selectedProductName = ref(accommodation.products[0].productName);
-const selectedProduct = computed(() => accommodation.products.find((product) => product.productName === selectedProductName.value));
-const nightCount = computed(() => Math.max(1, Math.round((new Date(checkOut.value) - new Date(checkIn.value)) / 86400000)));
-const totalPrice = computed(() => (selectedProduct.value?.price ?? 0) * nightCount.value * roomCount.value);
 
 function displayDate(value) {
   const date = new Date(`${value}T00:00:00`);
@@ -46,8 +19,7 @@ function displayDate(value) {
 }
 
 function selectDate(value) {
-  if (dateModalMode.value === 'checkIn') checkIn.value = value;
-  else checkOut.value = value;
+  accommodationStore.setDate(dateModalMode.value, value);
   dateModalMode.value = '';
 }
 </script>
@@ -70,7 +42,7 @@ function selectDate(value) {
       <p class="address"><MapPin :size="22" /> {{ accommodation.address }}</p>
       <div class="rating-row">
         <p class="rating"><span>★</span> {{ accommodation.rating }} <b>({{ accommodation.reviewCount }}) · 리뷰 {{ accommodation.reviewCount }}개</b></p>
-        <button type="button" class="review-button">리뷰 보기</button>
+        <button type="button" class="review-button" @click="$router.push(`/merchants/${accommodation.merchantId}/reviews`)">리뷰 보기</button>
       </div>
     </section>
 
@@ -94,7 +66,7 @@ function selectDate(value) {
           :key="product.productName"
           :product="product"
           :selected="selectedProductName === product.productName"
-          @select="selectedProductName = $event"
+          @select="accommodationStore.selectProduct"
         />
       </div>
     </section>
