@@ -11,6 +11,7 @@ import surveyRouter from './surveyRouter';
 import devRouter from './devRouter';
 import merchantRouter from './merchantRouter';
 import reservationRouter from './reservationRouter';
+import recommendationRouter from './recommendationRouter';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,6 +28,7 @@ const router = createRouter({
     ...devRouter,
     ...merchantRouter,
     ...reservationRouter,
+    ...recommendationRouter,
   ],
 });
 
