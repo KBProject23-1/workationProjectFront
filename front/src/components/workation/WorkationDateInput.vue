@@ -2,8 +2,15 @@
   <div class="relative">
     <button
       type="button"
-      class="border-input flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-transparent px-3 text-left text-base md:text-sm"
-      :class="modelValue ? 'text-slate-900' : 'text-slate-300'"
+      class="border-input flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-transparent px-3 text-left text-base disabled:bg-slate-50 md:text-sm"
+      :class="
+        disabled
+          ? 'text-slate-400'
+          : modelValue
+            ? 'text-slate-900'
+            : 'text-slate-300'
+      "
+      :disabled="disabled"
       @click="openPicker"
     >
       <span class="truncate">{{ displayText }}</span>
@@ -39,6 +46,7 @@ import { computed, ref } from 'vue';
 const props = defineProps({
   modelValue: { type: String, default: '' },
   placeholder: { type: String, default: '날짜 선택' },
+  disabled: { type: Boolean, default: false },
 });
 
 defineEmits(['update:modelValue']);
@@ -57,6 +65,8 @@ const displayText = computed(() => {
 
 // showPicker 를 지원하지 않는 브라우저에서는 포커스만 준다
 const openPicker = () => {
+  if (props.disabled) return;
+
   const input = dateInput.value;
   if (!input) return;
   if (typeof input.showPicker === 'function') {

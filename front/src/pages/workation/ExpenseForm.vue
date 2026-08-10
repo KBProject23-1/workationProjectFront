@@ -1,8 +1,12 @@
 <template>
   <div class="min-h-screen bg-white px-5 pt-4 pb-8">
     <header class="relative mb-4 flex items-center justify-center">
-      <button class="absolute left-0 text-xl text-slate-900" @click="goBack">
-        ‹
+      <button
+        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
+        aria-label="뒤로 가기"
+        @click="goBack"
+      >
+        <ChevronLeft class="h-7 w-7" />
       </button>
       <h1 class="text-base font-bold text-slate-900">
         {{ isEdit ? '지출 내역 수정하기' : '지출 내역 추가하기' }}
@@ -140,6 +144,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { ChevronLeft } from '@lucide/vue';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useExpenseStore } from '@/stores/expenseStore';

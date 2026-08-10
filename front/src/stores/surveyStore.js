@@ -6,9 +6,6 @@ import {
   updateSurvey as updateSurveyApi,
 } from '@/api/survey';
 
-// 한 페이지에 노출할 문항 수. 시안이 4문항을 2페이지로 나눈다
-const QUESTIONS_PER_PAGE = 2;
-
 export const useSurveyStore = defineStore('survey', {
   state: () => ({
     // 문항 목록. 선택지까지 함께 내려온다
@@ -22,14 +19,6 @@ export const useSurveyStore = defineStore('survey', {
   getters: {
     hasAnswered: (state) => state.result !== null,
     surveyId: (state) => state.result?.surveyId ?? null,
-    totalPages: (state) =>
-      Math.max(Math.ceil(state.questions.length / QUESTIONS_PER_PAGE), 1),
-    // 1부터 시작하는 페이지 번호로 문항을 잘라 준다
-    questionsOfPage: (state) => (page) =>
-      state.questions.slice(
-        (page - 1) * QUESTIONS_PER_PAGE,
-        page * QUESTIONS_PER_PAGE,
-      ),
     // { questionId: [optionId, ...] } 형태로 저장된 응답을 펴 준다
     selectedMap: (state) => {
       const map = {};

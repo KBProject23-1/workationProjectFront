@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { AlertTriangle, LogIn, Trash2 } from '@lucide/vue';
-import axiosInstance from '@/api/axiosInstance';
+import { login } from '@/api/auth';
 import BaseButton from '@/components/common/BaseButton.vue';
 
 // 임시 개발용 로그인 페이지 — 실제 로그인 페이지 merge 되면 이 파일과 devRouter.js 함께 삭제할 것
@@ -24,12 +24,13 @@ async function handleLogin() {
 
   isLoading.value = true;
   try {
-    const { data } = await axiosInstance.post('/auth/login', {
+    const { data } = await login({
       loginType: 'PASSWORD',
       loginId: email.value.trim(),
       password: password.value,
     });
 
+    // 로그인 응답만 JSON 이 snake_case 다 (LoginResponseDTO 의 @JsonProperty)
     localStorage.setItem('accessToken', data.token_info.access_token);
     localStorage.setItem('devLoginEmail', email.value.trim());
     hasToken.value = true;

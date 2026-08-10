@@ -1,8 +1,12 @@
 <template>
   <div class="min-h-screen bg-white px-5 pt-4 pb-8">
     <header class="relative mb-4 flex items-center justify-center">
-      <button class="absolute left-0 text-xl text-slate-900" @click="goBack">
-        ‹
+      <button
+        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
+        aria-label="뒤로 가기"
+        @click="goBack"
+      >
+        <ChevronLeft class="h-7 w-7" />
       </button>
       <h1 class="text-base font-bold text-slate-900">사용내역 상세</h1>
     </header>
@@ -100,25 +104,37 @@
         </div>
       </section>
 
+      <!--
+        수기 등록 건은 고칠 수 있으니 수정·삭제를 둔다.
+        앱 결제 건은 금액·일시를 못 고치므로 "수정" 이 아니라 "확인" 이다.
+        확인 버튼이 없으면 카테고리를 바꾸지 않는 한 확정할 방법이 없어
+        뒤로 나가도 계속 "확인 필요" 로 남는다.
+      -->
       <div v-if="isManual" class="mt-8 flex gap-2">
         <Button
           variant="outline"
-          class="h-12 flex-1 rounded-xl text-base"
-          @click="goEdit"
-        >
-          수정
-        </Button>
-        <Button
-          class="h-12 flex-1 rounded-xl bg-red-500 text-base hover:bg-red-600"
+          class="h-12 flex-1 rounded-xl text-base text-red-500 hover:text-red-600"
           :disabled="removing"
           @click="confirmOpen = true"
         >
-          삭제
+          삭제하기
+        </Button>
+        <Button class="h-12 flex-1 rounded-xl text-base" @click="goEdit">
+          수정하기
         </Button>
       </div>
 
-      <p v-else class="mt-8 text-center text-xs text-slate-400">
-        앱 내 결제 건은 수정하거나 삭제할 수 없어요
+      <Button
+        v-else
+        class="mt-8 h-12 w-full rounded-xl text-base"
+        :disabled="confirming"
+        @click="confirmAndClose"
+      >
+        {{ confirming ? '처리 중...' : '확인 완료' }}
+      </Button>
+
+      <p v-if="!isManual" class="mt-2 text-center text-xs text-slate-400">
+        앱 내 결제 건은 금액과 일시를 바꿀 수 없어요
       </p>
     </template>
 
@@ -153,6 +169,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { ChevronLeft } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { storeToRefs } from 'pinia';
 import { useExpenseStore } from '@/stores/expenseStore';
@@ -188,6 +205,7 @@ const listLocation = {
 const { detail } = storeToRefs(expenseStore);
 const loading = ref(true);
 const removing = ref(false);
+const confirming = ref(false);
 const categorySheetOpen = ref(false);
 const budgetTypeSheetOpen = ref(false);
 const confirmOpen = ref(false);
@@ -319,6 +337,27 @@ const remove = async () => {
     showError(error, '지출을 삭제하지 못했습니다.');
   } finally {
     removing.value = false;
+  }
+};
+
+// 자동분류 상태 그대로인 건은 확정하고 목록으로 돌아간다.
+// 이미 확인된 건이면 서버를 부르지 않고 그냥 나간다
+const confirmAndClose = async () => {
+  if (confirming.value) return;
+
+  if (!detail.value?.isAutoCategorized) {
+    router.push(listLocation);
+    return;
+  }
+
+  confirming.value = true;
+  try {
+    await expenseStore.confirmExpenses(workationId, [Number(expenseId)]);
+    router.push(listLocation);
+  } catch (error) {
+    showError(error, '확인 처리를 하지 못했습니다.');
+  } finally {
+    confirming.value = false;
   }
 };
 

@@ -1,21 +1,26 @@
 <template>
   <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
     <header class="relative mb-4 flex items-center justify-center">
-      <button class="absolute left-0 text-xl text-slate-900" @click="goBack">
-        ‹
+      <button
+        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
+        aria-label="뒤로 가기"
+        @click="goBack"
+      >
+        <ChevronLeft class="h-7 w-7" />
       </button>
       <h1 class="text-base font-bold text-slate-900">나의 워케이션 스타일</h1>
-      <span class="absolute right-0 text-xs text-slate-400">
-        {{ page }} / {{ totalPages }}
-      </span>
     </header>
 
-    <div class="h-1 w-full rounded-full bg-blue-100">
-      <div
-        class="h-1 rounded-full bg-blue-600 transition-all"
-        :style="{ width: progress + '%' }"
-      />
-    </div>
+    <template v-if="isCreateFlow">
+      <div class="h-1 w-full rounded-full bg-blue-100">
+        <div class="h-1 w-2/3 rounded-full bg-blue-600" />
+      </div>
+      <p class="mt-1 text-right text-xs text-slate-400">2 / 3</p>
+    </template>
+
+    <p class="mt-4 text-sm text-slate-500">
+      답변을 바탕으로 숙소와 공유오피스를 추천해 드려요
+    </p>
 
     <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
       불러오는 중...
@@ -26,30 +31,52 @@
     </p>
 
     <p
-      v-else-if="pageQuestions.length === 0"
+      v-else-if="questions.length === 0"
       class="py-20 text-center text-sm text-slate-400"
     >
       등록된 설문 문항이 없어요
     </p>
 
-    <div v-else class="mt-6 flex-1 space-y-8">
-      <SurveyQuestionBlock
-        v-for="(question, index) in pageQuestions"
+    <!-- 문항 4개를 한 화면에 모두 놓고 스크롤로 내려본다 -->
+    <div v-else class="mt-6 flex-1 space-y-10">
+      <div
+        v-for="(question, index) in questions"
         :key="question.questionId"
-        :question="question"
-        :order="startOrder + index"
-        :selected="answers[question.questionId] ?? []"
-        @change="setAnswer"
-      />
+        :ref="(el) => setQuestionRef(question.questionId, el)"
+      >
+        <SurveyQuestionBlock
+          :question="question"
+          :order="index + 1"
+          :selected="answers[question.questionId] ?? []"
+          @change="setAnswer"
+        />
+      </div>
     </div>
 
     <Button
+      v-if="!loading && questions.length > 0"
       class="mt-8 h-12 w-full rounded-xl text-base"
-      :disabled="!canGoNext || submitting"
-      @click="next"
+      :disabled="submitting"
+      @click="submit"
     >
       {{ submitLabel }}
     </Button>
+
+    <p
+      v-if="unansweredCount > 0 && !loading"
+      class="mt-2 text-center text-xs text-slate-400"
+    >
+      아직 답하지 않은 문항이 {{ unansweredCount }}개 있어요
+    </p>
+
+    <BaseConfirmModal
+      :visible="cancelOpen"
+      title="등록을 취소할까요?"
+      message="지금까지 입력한 워케이션 정보가 사라져요."
+      :loading="canceling"
+      @confirm="cancelRegistration"
+      @cancel="cancelOpen = false"
+    />
   </div>
 </template>
 
@@ -57,36 +84,50 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { ChevronLeft } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { useSurveyStore } from '@/stores/surveyStore';
+import { useWorkationStore } from '@/stores/workationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import SurveyQuestionBlock from '@/components/survey/SurveyQuestionBlock.vue';
+import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 
 const route = useRoute();
 const router = useRouter();
 const surveyStore = useSurveyStore();
+const workationStore = useWorkationStore();
 const { showError } = useErrorToast();
-const { error: errorMessage } = storeToRefs(surveyStore);
+const { questions, error: errorMessage } = storeToRefs(surveyStore);
+
+const workationId = route.params.workationId;
+
+// 워케이션 등록 흐름(2/3)으로 들어왔는지, 나중에 취향만 고치러 왔는지 구분한다
+const isCreateFlow = route.query.step === 'create';
 
 const loading = ref(true);
 const submitting = ref(false);
-const page = ref(1);
+const cancelOpen = ref(false);
+const canceling = ref(false);
 
 // { questionId: [optionId, ...] }
 const answers = reactive({});
 
-// 이미 응답이 있으면 수정 모드로 동작한다
-const isEdit = computed(() => route.query.mode === 'edit');
+// 미응답 문항으로 스크롤하기 위해 DOM 을 들고 있는다
+const questionRefs = {};
+const setQuestionRef = (questionId, el) => {
+  questionRefs[questionId] = el;
+};
 
 onMounted(async () => {
   try {
     await surveyStore.fetchQuestions();
-    if (isEdit.value) {
-      await surveyStore.fetchMySurvey();
-      Object.entries(surveyStore.selectedMap).forEach(([questionId, ids]) => {
-        answers[questionId] = ids;
-      });
-    }
+
+    // 뒤로 갔다 다시 들어오는 경우가 있어 기존 응답을 먼저 채운다.
+    // 응답이 있으면 저장도 POST 가 아니라 PATCH 로 보내야 한다
+    await surveyStore.fetchMySurvey();
+    Object.entries(surveyStore.selectedMap).forEach(([questionId, ids]) => {
+      answers[questionId] = ids;
+    });
   } catch (error) {
     showError(error, '설문을 불러오지 못했습니다.');
   } finally {
@@ -94,29 +135,26 @@ onMounted(async () => {
   }
 });
 
-const totalPages = computed(() => surveyStore.totalPages);
-const pageQuestions = computed(() => surveyStore.questionsOfPage(page.value));
-const startOrder = computed(() => (page.value - 1) * 2 + 1);
-const progress = computed(() => (page.value / totalPages.value) * 100);
-const isLastPage = computed(() => page.value >= totalPages.value);
-
-const submitLabel = computed(() => {
-  if (submitting.value) return '저장 중...';
-  return isLastPage.value ? '완료' : '다음';
-});
-
 const setAnswer = (questionId, optionIds) => {
   answers[questionId] = optionIds;
 };
 
-// 현재 페이지의 필수 문항을 최소 개수만큼 채웠는지 본다
-const canGoNext = computed(() =>
-  pageQuestions.value.every((question) => {
-    const picked = answers[question.questionId] ?? [];
-    const min = question.required ? (question.minSelections ?? 1) : 0;
-    return picked.length >= min;
-  }),
+const minOf = (question) =>
+  question.required ? (question.minSelections ?? 1) : 0;
+
+const isAnswered = (question) =>
+  (answers[question.questionId] ?? []).length >= minOf(question);
+
+const unanswered = computed(() =>
+  questions.value.filter((question) => !isAnswered(question)),
 );
+
+const unansweredCount = computed(() => unanswered.value.length);
+
+const submitLabel = computed(() => {
+  if (submitting.value) return '저장 중...';
+  return isCreateFlow ? '다음' : '저장';
+});
 
 const buildPayload = () =>
   Object.entries(answers)
@@ -126,43 +164,61 @@ const buildPayload = () =>
       optionIds,
     }));
 
+// 답하지 않은 문항이 있으면 저장하지 않고 그 문항으로 데려간다
+const scrollToUnanswered = () => {
+  const target = questionRefs[unanswered.value[0]?.questionId];
+  target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+};
+
 const submit = async () => {
+  if (submitting.value) return;
+
+  if (unansweredCount.value > 0) {
+    scrollToUnanswered();
+    return;
+  }
+
   submitting.value = true;
   try {
-    if (isEdit.value && surveyStore.surveyId) {
+    if (surveyStore.surveyId) {
       await surveyStore.updateSurvey(surveyStore.surveyId, buildPayload());
     } else {
       await surveyStore.createSurvey(buildPayload());
     }
-    router.replace('/survey/result');
+
+    // 등록 흐름이면 3/3 예산 배분으로, 아니면 메인으로 돌아간다
+    router.replace(
+      isCreateFlow
+        ? `/workation/${workationId}/budgets?step=create`
+        : '/workation',
+    );
   } catch (error) {
-    // 이미 저장된 설문이 있으면 수정으로 넘긴다
-    if (error.response?.data?.errorCode === 'SURVEY_ALREADY_EXISTS') {
-      showError(error, '이미 등록된 설문이 있습니다.');
-      router.replace('/survey/result');
-      return;
-    }
     showError(error, '설문을 저장하지 못했습니다.');
   } finally {
     submitting.value = false;
   }
 };
 
-const next = () => {
-  if (!isLastPage.value) {
-    page.value += 1;
-    window.scrollTo({ top: 0 });
-    return;
+// 등록 도중 나가면 1/3 에서 만든 워케이션이 반쪽으로 남는다
+const cancelRegistration = async () => {
+  if (canceling.value) return;
+  canceling.value = true;
+  try {
+    await workationStore.deleteWorkation(workationId);
+    router.replace('/workation');
+  } catch (error) {
+    showError(error, '등록을 취소하지 못했습니다.');
+  } finally {
+    canceling.value = false;
+    cancelOpen.value = false;
   }
-  submit();
 };
 
 const goBack = () => {
-  if (page.value > 1) {
-    page.value -= 1;
-    window.scrollTo({ top: 0 });
+  if (isCreateFlow) {
+    cancelOpen.value = true;
     return;
   }
-  router.back();
+  router.push('/workation');
 };
 </script>

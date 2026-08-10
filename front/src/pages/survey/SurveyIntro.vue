@@ -48,6 +48,8 @@ import { Button } from '@/components/ui/button';
 const router = useRouter();
 
 const goForm = () => {
-  router.push('/survey');
+  // 설문이 워케이션 등록 2/3 로 편입되면서 이 화면은 라우트에서 빠졌다.
+  // 다시 쓰게 되면 workationId 를 받아 /workation/:workationId/survey 로 보내야 한다.
+  router.push('/workation');
 };
 </script>

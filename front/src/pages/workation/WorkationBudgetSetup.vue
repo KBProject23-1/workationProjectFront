@@ -1,8 +1,12 @@
 <template>
   <div class="min-h-screen bg-white px-5 pt-4 pb-8">
     <header class="relative mb-4 flex items-center justify-center">
-      <button class="absolute left-0 text-xl text-slate-900" @click="goBack">
-        ‹
+      <button
+        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
+        aria-label="뒤로 가기"
+        @click="goBack"
+      >
+        <ChevronLeft class="h-7 w-7" />
       </button>
       <h1 class="text-base font-bold text-slate-900">예산 세부 금액 설정</h1>
     </header>
@@ -11,7 +15,7 @@
       <div class="h-1 w-full rounded-full bg-blue-100">
         <div class="h-1 w-full rounded-full bg-blue-600" />
       </div>
-      <p class="mt-1 text-right text-xs text-slate-400">2 / 2</p>
+      <p class="mt-1 text-right text-xs text-slate-400">3 / 3</p>
     </template>
 
     <div class="mt-4 grid grid-cols-2 rounded-xl bg-blue-50 p-1">
@@ -117,12 +121,27 @@
       @saved="applyRename"
       @close="renameTarget = null"
     />
+
+    <!--
+      등록을 마친 직후가 추천을 권하기 제일 좋은 순간이다.
+      여기서 놓쳐도 홈 카드로 다시 들어갈 수 있다.
+    -->
+    <BaseConfirmModal
+      :visible="recommendOpen"
+      title="이제 머물 곳을 정해볼까요?"
+      message="답해주신 취향으로 숙소와 공유오피스를 찾아드려요."
+      confirm-label="추천받기"
+      cancel-label="나중에 할게요"
+      @confirm="goRecommendation"
+      @cancel="goHome"
+    />
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { ChevronLeft } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useCategoryStore } from '@/stores/categoryStore';
@@ -131,6 +150,7 @@ import { won } from '@/components/workation/format';
 import WorkationBudgetItem from '@/components/workation/WorkationBudgetItem.vue';
 import WorkationCategoryAddSheet from '@/components/workation/WorkationCategoryAddSheet.vue';
 import WorkationCategoryRenameSheet from '@/components/workation/WorkationCategoryRenameSheet.vue';
+import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 
 const TABS = [
   { value: 'WORK', label: '법인 예산' },
@@ -166,6 +186,9 @@ const amountMap = reactive({ WORK: {}, PERSONAL: {} });
 const sheetOpen = ref(false);
 const renameTarget = ref(null);
 const shaking = ref(false);
+
+// 등록 3/3 을 마친 직후 뜨는 추천 안내
+const recommendOpen = ref(false);
 
 const budgetTotal = computed(() => budgetTotals[budgetType.value]);
 const categories = computed(() => categoryMap[budgetType.value]);
@@ -406,6 +429,13 @@ const submit = async () => {
       }
     }
     sessionStorage.removeItem(draftKey);
+
+    // 등록을 막 끝낸 경우에만 추천을 권한다.
+    // 메인에서 예산만 고치러 들어온 경우는 그냥 돌아간다
+    if (isCreateFlow) {
+      recommendOpen.value = true;
+      return;
+    }
     router.push('/workation');
   } catch (error) {
     showError(error, '예산을 저장하지 못했습니다.');
@@ -414,9 +444,23 @@ const submit = async () => {
   }
 };
 
+const goRecommendation = () => {
+  recommendOpen.value = false;
+  router.replace('/recommendation/accommodations');
+};
+
+const goHome = () => {
+  recommendOpen.value = false;
+  router.replace('/workation');
+};
+
 const goBack = () => {
-  // 등록·수정 흐름에서 넘어왔으면 앞 단계인 기본 정보 화면으로 돌아간다
-  router.push(isCreateFlow ? `/workation/${workationId}/edit` : '/workation');
+  // 등록 흐름이면 앞 단계인 설문(2/3)으로 돌아간다
+  router.push(
+    isCreateFlow
+      ? `/workation/${workationId}/survey?step=create`
+      : '/workation',
+  );
 };
 </script>
 
