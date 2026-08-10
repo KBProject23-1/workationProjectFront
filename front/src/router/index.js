@@ -12,6 +12,7 @@ import devRouter from './devRouter';
 import merchantRouter from './merchantRouter';
 import reservationRouter from './reservationRouter';
 import recommendationRouter from './recommendationRouter';
+import reviewRouter from './reviewRouter';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,6 +30,7 @@ const router = createRouter({
     ...merchantRouter,
     ...reservationRouter,
     ...recommendationRouter,
+    ...reviewRouter,
   ],
 });
 

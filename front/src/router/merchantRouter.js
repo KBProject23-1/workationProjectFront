@@ -24,4 +24,9 @@ export default [
     name: 'ActivityDetail',
     component: () => import('@/pages/merchant/ActivityDetail.vue'),
   },
+  {
+    path: '/merchants/:merchantId/reviews',
+    name: 'MerchantReviewList',
+    component: () => import('@/pages/review/MerchantReviewList.vue'),
+  },
 ];
