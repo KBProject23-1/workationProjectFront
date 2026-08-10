@@ -33,6 +33,14 @@ export const deleteWorkation = (workationId) => {
   return axiosInstance.delete(`/workations/${workationId}`);
 };
 
+// 기간 변경·삭제 전에 예약이 어떻게 어긋나는지 확인한다
+// 날짜를 주지 않으면 현재 기간 기준으로 조회한다
+export const checkReservations = (workationId, params) => {
+  return axiosInstance.get(`/workations/${workationId}/reservation-check`, {
+    params,
+  });
+};
+
 // 워케이션 종료(정산 완료 처리)
 export const settleWorkation = (workationId) => {
   return axiosInstance.patch(`/workations/${workationId}/settle`);
