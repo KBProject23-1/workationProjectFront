@@ -14,6 +14,10 @@ const props = defineProps({
   title: { type: String, default: '' },
   message: { type: String, default: '' },
   loading: { type: Boolean, default: false },
+  cancelLabel: { type: String, default: '취소' },
+  confirmLabel: { type: String, default: '확인' },
+  contentClass: { type: String, default: 'max-w-sm' },
+  headerClass: { type: String, default: '' },
 });
 
 const emit = defineEmits(['confirm', 'cancel']);
@@ -25,9 +29,12 @@ function handleOpenChange(open) {
 
 <template>
   <Dialog :open="visible" @update:open="handleOpenChange">
-    <DialogContent :show-close-button="false" class="max-w-sm">
-      <DialogHeader class="text-center">
-        <DialogTitle>{{ title }}</DialogTitle>
+    <DialogContent
+      :show-close-button="false"
+      :class="contentClass"
+    >
+      <DialogHeader :class="['text-center', headerClass]">
+        <DialogTitle class="whitespace-pre-line">{{ title }}</DialogTitle>
         <DialogDescription>{{ message }}</DialogDescription>
       </DialogHeader>
       <DialogFooter class="flex-row gap-2 sm:justify-center">
@@ -38,7 +45,7 @@ function handleOpenChange(open) {
           :disabled="loading"
           @click="$emit('cancel')"
         >
-          취소
+          {{ cancelLabel }}
         </Button>
         <Button
           type="button"
@@ -46,7 +53,7 @@ function handleOpenChange(open) {
           :disabled="loading"
           @click="$emit('confirm')"
         >
-          확인
+          {{ confirmLabel }}
         </Button>
       </DialogFooter>
     </DialogContent>
