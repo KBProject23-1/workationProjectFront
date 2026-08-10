@@ -8,6 +8,7 @@ import BaseButton from '@/components/common/BaseButton.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import TransactionReceiptModal from '@/components/transaction/TransactionReceiptModal.vue';
 import { formatDateTime } from '@/utils/date';
+import { getStatusMeta, isInactiveStatus } from '@/utils/transactionStatus';
 
 const router = useRouter();
 const route = useRoute();
@@ -39,7 +40,9 @@ async function loadDetail() {
 }
 
 const isDeposit = computed(() => detail.value?.transactionType === 'DEPOSIT');
-const isCanceled = computed(() => detail.value?.status === 'CANCELED');
+const statusMeta = computed(() => getStatusMeta(detail.value?.status));
+// 취소/환불/실패 등 무효·역거래 상태 (금액 취소선 처리)
+const isInactive = computed(() => isInactiveStatus(detail.value?.status));
 
 const signedAmount = computed(() => {
   if (!detail.value) return '';
@@ -130,10 +133,11 @@ onMounted(loadDetail);
             {{ detail.categoryAssigned || '기타' }}
           </span>
           <span
-            v-if="isCanceled"
-            class="text-[11px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-md"
+            v-if="detail.status !== 'PAID'"
+            class="text-[11px] font-bold px-1.5 py-0.5 rounded-md"
+            :class="statusMeta.badgeClass"
           >
-            승인취소
+            {{ statusMeta.label }}
           </span>
         </div>
         <p class="text-[20px] font-bold text-gray-900 mb-2 truncate">
@@ -142,7 +146,7 @@ onMounted(loadDetail);
         <p
           class="text-[32px] font-extrabold tracking-tight"
           :class="
-            isCanceled
+            isInactive
               ? 'text-gray-300 line-through'
               : isDeposit
                 ? 'text-blue-600'
@@ -181,19 +185,8 @@ onMounted(loadDetail);
           class="flex justify-between items-center text-[13px] pt-3 border-t border-gray-200/60"
         >
           <span class="text-gray-400 font-medium">거래 상태</span>
-          <span
-            class="font-bold text-[13px]"
-            :class="
-              detail.status === 'CANCELED' ? 'text-red-500' : 'text-blue-600'
-            "
-          >
-            {{
-              detail.status === 'PAID'
-                ? '결제완료'
-                : detail.status === 'CANCELED'
-                  ? '승인취소'
-                  : '실패'
-            }}
+          <span class="font-bold text-[13px]" :class="statusMeta.textClass">
+            {{ statusMeta.label }}
           </span>
         </div>
       </div>
@@ -215,7 +208,7 @@ onMounted(loadDetail);
       <div class="w-full mt-auto pt-4 pb-2 text-center">
         <BaseButton
           v-if="
-            detail.transactionType === 'PAYMENT' && detail.status !== 'CANCELED'
+            detail.transactionType === 'PAYMENT' && detail.status === 'PAID'
           "
           class="w-full py-3.5 text-[15px] font-bold rounded-2xl shadow-xs"
           @click="openReceipt"
