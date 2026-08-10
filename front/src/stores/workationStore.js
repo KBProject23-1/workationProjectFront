@@ -7,6 +7,7 @@ import {
   deleteWorkation as deleteWorkationApi,
   settleWorkation as settleWorkationApi,
   getRegions,
+  checkReservations as checkReservationsApi,
 } from '@/api/workation';
 
 export const useWorkationStore = defineStore('workation', {
@@ -107,6 +108,17 @@ export const useWorkationStore = defineStore('workation', {
       try {
         const { data } = await settleWorkationApi(workationId);
         await Promise.all([this.fetchCurrent(), this.fetchRecords()]);
+        return data;
+      } catch (err) {
+        this.error = err.message;
+        throw err;
+      }
+    },
+
+    // 기간 변경·삭제 전에 예약 상태를 확인한다. 예약을 고치지는 않는다
+    async checkReservations(workationId, params) {
+      try {
+        const { data } = await checkReservationsApi(workationId, params);
         return data;
       } catch (err) {
         this.error = err.message;

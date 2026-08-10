@@ -149,23 +149,37 @@
       </div>
     </section>
 
+    <!-- ① 삭제 확인 -->
     <BaseConfirmModal
       :visible="confirmOpen"
       :loading="deleting"
       title="워케이션을 삭제할까요?"
-      :message="deleteMessage"
-      @confirm="remove"
+      message="일정과 예산, 등록한 지출이 모두 사라져요."
+      @confirm="checkBeforeDelete"
       @cancel="confirmOpen = false"
     />
 
+    <!-- ② 아직 시작하지 않은 예약이 있으면 사용자가 먼저 취소해야 한다 -->
     <BaseConfirmModal
-      :visible="reservationBlockOpen"
+      :visible="upcomingOpen"
       title="예약을 먼저 취소해 주세요"
-      :message="reservationBlockMessage"
-      confirm-label="예약 확인하기"
+      :message="upcomingMessage"
+      confirm-label="예약 확인하러 가기"
       cancel-label="닫기"
       @confirm="goReservationsToCancel"
-      @cancel="reservationBlockOpen = false"
+      @cancel="upcomingOpen = false"
+    />
+
+    <!-- ③ 이미 시작된 예약은 손댈 수 없으므로 그대로 두고 삭제한다 -->
+    <BaseConfirmModal
+      :visible="ongoingOpen"
+      :loading="deleting"
+      title="진행 중인 예약이 있어요"
+      :message="ongoingMessage"
+      confirm-label="그래도 삭제"
+      cancel-label="취소"
+      @confirm="remove"
+      @cancel="ongoingOpen = false"
     />
   </div>
 </template>
@@ -208,9 +222,10 @@ const deleting = ref(false);
 // 예약이 있으면 추천 카드를 감춘다. 목록 전체가 필요하지 않아 건수만 본다
 const reservationCount = ref(0);
 
-// 예약이 남아 삭제가 막혔을 때 안내한다
-const reservationBlockOpen = ref(false);
-const reservationBlockMessage = ref('');
+// 삭제는 세 단계다. 확인 → (예약 상태에 따라) 안내 → 실행
+const upcomingOpen = ref(false);
+const ongoingOpen = ref(false);
+const reservationCheck = ref(null);
 
 const loadSetupState = async () => {
   const workationId = workationStore.workationId;
@@ -300,39 +315,75 @@ const goEdit = () => {
   router.push(`/workation/${workationStore.workationId}/edit`);
 };
 
-// 예약이 남아 있으면 서버가 삭제를 막는다. 누르기 전에 미리 알려 준다
-// BaseConfirmModal 의 본문은 줄바꿈을 살리지 않아 한 문단으로 쓴다
-const deleteMessage = computed(() => {
-  const base = '일정과 예산, 등록한 지출이 모두 사라져요.';
-  if (reservationCount.value === 0) return base;
-  return `${base} 예약 ${reservationCount.value}건이 남아 있으면 삭제할 수 없어요. 예약을 먼저 취소해 주세요.`;
-});
+// 숙박 0건, 공유오피스 0건 형태로 풀어 쓴다
+const describe = (summary) => {
+  if (!summary) return '';
+  const parts = [];
+  if (summary.room > 0) parts.push(`숙박 예약 ${summary.room}건`);
+  if (summary.office > 0) parts.push(`공유오피스 예약 ${summary.office}건`);
+  return parts.join(', ');
+};
 
-const remove = async () => {
+const upcomingMessage = computed(
+  () =>
+    `${describe(reservationCheck.value?.upcoming)}이 남아있어요. 예약을 먼저 취소해 주세요.`,
+);
+
+const ongoingMessage = computed(
+  () =>
+    `${describe(reservationCheck.value?.ongoing)}이 진행 중이에요. 이미 이용이 시작돼 취소할 수 없어요. 예약 내역은 그대로 남아요.`,
+);
+
+// 확인을 누르면 바로 지우지 않고 예약 상태를 먼저 본다.
+// 서버도 같은 검증을 하지만, 화면에서 무엇이 걸리는지 구체적으로 알려주려면 미리 알아야 한다
+const checkBeforeDelete = async () => {
   if (deleting.value) return;
 
   deleting.value = true;
   try {
-    await workationStore.deleteWorkation(workationStore.workationId);
+    const result = await workationStore.checkReservations(
+      workationStore.workationId,
+    );
+    reservationCheck.value = result;
     confirmOpen.value = false;
-    reservationCount.value = 0;
-  } catch (error) {
-    // 예약이 남아 있으면 서버가 삭제를 거부한다.
-    // 예약에는 결제와 환불이 걸려 있어 워케이션과 같이 지울 수 없다
-    if (error.response?.data?.errorCode === 'RESERVATION_EXISTS') {
-      confirmOpen.value = false;
-      reservationBlockMessage.value = error.message;
-      reservationBlockOpen.value = true;
+
+    // 취소할 수 있는 예약이 있으면 사용자가 먼저 정리해야 한다
+    if (result.upcoming && result.upcoming.room + result.upcoming.office > 0) {
+      upcomingOpen.value = true;
       return;
     }
-    showError(error, '워케이션을 삭제하지 못했습니다.');
+
+    // 이미 시작된 예약은 손댈 수 없으니 그대로 두고 지운다는 것만 알린다
+    if (result.ongoing && result.ongoing.room + result.ongoing.office > 0) {
+      ongoingOpen.value = true;
+      return;
+    }
+
+    await remove();
+  } catch (error) {
+    confirmOpen.value = false;
+    showError(error, '예약 상태를 확인하지 못했습니다.');
   } finally {
     deleting.value = false;
   }
 };
 
+const remove = async () => {
+  deleting.value = true;
+  try {
+    await workationStore.deleteWorkation(workationStore.workationId);
+    reservationCount.value = 0;
+  } catch (error) {
+    showError(error, '워케이션을 삭제하지 못했습니다.');
+  } finally {
+    deleting.value = false;
+    confirmOpen.value = false;
+    ongoingOpen.value = false;
+  }
+};
+
 const goReservationsToCancel = () => {
-  reservationBlockOpen.value = false;
+  upcomingOpen.value = false;
   router.push('/reservations');
 };
 

@@ -145,12 +145,13 @@
       @cancel="outOfPeriodOpen = false"
     />
 
+    <!-- 기간이 바뀌면 예약이 어긋난다. 무엇이 걸리는지에 따라 안내가 갈린다 -->
     <BaseConfirmModal
       :visible="reservationOpen"
-      title="일정이 바뀌었어요"
-      message="잡아 둔 숙소와 공유오피스 예약은 자동으로 바뀌지 않아요. 예약 화면에서 날짜를 확인해 주세요."
-      confirm-label="예약 확인하기"
-      cancel-label="나중에"
+      title="일정이 변경되었습니다."
+      :message="reservationMessage"
+      :confirm-label="reservationConfirmLabel"
+      :cancel-label="reservationCancelLabel"
       @confirm="goReservations"
       @cancel="goHome"
     />
@@ -215,6 +216,39 @@ const periodHint = computed(() => {
 
 // 기간 변경 후 예약을 어떻게 할지 물어본다
 const reservationOpen = ref(false);
+const reservationCheck = ref(null);
+
+// 기간을 벗어난 예약 중 취소할 수 없는 것 (이미 이용이 시작됨)
+const blockedReservation = computed(() =>
+  (reservationCheck.value?.outOfPeriod ?? []).find((item) => !item.cancelable),
+);
+
+// 취소할 수 있는 것
+const cancelableReservation = computed(() =>
+  (reservationCheck.value?.outOfPeriod ?? []).find((item) => item.cancelable),
+);
+
+const reservationMessage = computed(() => {
+  // 취소 규정에 막힌 예약이 있으면 그것부터 알린다. 사용자가 할 수 있는 게 없어서다
+  if (blockedReservation.value) {
+    return `${blockedReservation.value.merchantName} 예약 기간이 변경되었으나, 숙소 측 취소 규정 상 취소할 수 없습니다. 숙소에 직접 문의해 주세요.`;
+  }
+  if (cancelableReservation.value) {
+    return `${cancelableReservation.value.merchantName} 예약을 변경하세요.`;
+  }
+  // availability 가 붙으면 "같은 숙소에서 더 묵으시겠어요?" 로 나뉜다
+  return '늘어난 기간에 묵을 곳이 없어요.';
+});
+
+const reservationConfirmLabel = computed(() => {
+  if (blockedReservation.value) return '예약 내역 확인하기';
+  if (cancelableReservation.value) return '예약 확인하러 가기';
+  return '숙소 예약하러 가기';
+});
+
+const reservationCancelLabel = computed(() =>
+  blockedReservation.value ? '확인' : '나중에',
+);
 
 const submitLabel = computed(() => {
   if (submitting.value) return '저장 중...';
@@ -390,9 +424,11 @@ const save = async (force) => {
       toast('총예산이 바뀌었어요. 세부 예산도 다시 배정해 주세요.');
     }
 
-    // 기간이 바뀌었으면 예약도 손봐야 한다. 예약 취소·변경은 예약 파트 화면에서 한다
+    // 기간이 바뀌었으면 예약이 어긋난다.
+    // 저장을 먼저 하고 조회한다. 예약을 고치려면 새 기간이 반영돼 있어야 한다
+    // (예약 생성 시 워케이션 기간 안인지 검증한다)
     if (periodChanged()) {
-      reservationOpen.value = true;
+      await loadReservationCheck(id);
       return;
     }
     router.push('/workation');
@@ -429,6 +465,24 @@ const submitWithForce = async () => {
   if (submitting.value) return;
   outOfPeriodOpen.value = false;
   await save(true);
+};
+
+// 어긋나는 예약이 없으면 팝업 없이 그냥 홈으로 간다
+const loadReservationCheck = async (id) => {
+  try {
+    const result = await workationStore.checkReservations(id);
+
+    if (!result.needsAction) {
+      router.push('/workation');
+      return;
+    }
+    reservationCheck.value = result;
+    reservationOpen.value = true;
+  } catch (error) {
+    // 조회에 실패해도 저장은 이미 끝났다. 알리고 넘어간다
+    showError(error, '예약 상태를 확인하지 못했습니다.');
+    router.push('/workation');
+  }
 };
 
 const goReservations = () => {
