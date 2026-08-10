@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { getStatusMeta, isInactiveStatus } from '@/utils/transactionStatus';
 
 const props = defineProps({
   transaction: { type: Object, required: true },
@@ -15,7 +16,11 @@ const isDeposit = computed(
   () => props.transaction.transactionType === 'DEPOSIT',
 );
 
-const isCanceled = computed(() => props.transaction.status === 'CANCELED');
+const statusMeta = computed(() => getStatusMeta(props.transaction.status));
+// 취소/환불/실패 등 무효·역거래 상태 (금액 취소선 처리)
+const isInactive = computed(() => isInactiveStatus(props.transaction.status));
+// 완료(PAID) 외의 상태는 목록에서도 배지로 표시
+const showStatusBadge = computed(() => props.transaction.status !== 'PAID');
 
 const signedAmount = computed(() => {
   const sign = isDeposit.value ? '+' : '';
@@ -23,7 +28,7 @@ const signedAmount = computed(() => {
 });
 
 const amountColor = computed(() =>
-  isCanceled.value
+  isInactive.value
     ? 'text-gray-300 line-through'
     : isDeposit.value
       ? 'text-blue-600'
@@ -64,10 +69,11 @@ const amountColor = computed(() =>
         {{ signedAmount }}
       </p>
       <p
-        v-if="isCanceled"
-        class="text-[11px] font-semibold text-red-500 mt-0.5"
+        v-if="showStatusBadge"
+        class="text-[11px] font-semibold mt-0.5"
+        :class="statusMeta.textClass"
       >
-        승인취소
+        {{ statusMeta.label }}
       </p>
     </div>
   </button>

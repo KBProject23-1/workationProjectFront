@@ -1,6 +1,14 @@
 <script setup>
-import { computed } from 'vue';
-import { ChevronRight, Plus, RotateCcw, History, QrCode } from '@lucide/vue';
+import { ref, computed } from 'vue';
+import {
+  ChevronRight,
+  Plus,
+  RotateCcw,
+  History,
+  QrCode,
+  Eye,
+  EyeOff,
+} from '@lucide/vue';
 
 const props = defineProps({
   balance: { type: Number, default: 0 },
@@ -8,7 +16,10 @@ const props = defineProps({
 
 defineEmits(['edit-accounts', 'charge', 'refund', 'history', 'pay']);
 
-const formattedBalance = computed(() => props.balance.toLocaleString('ko-KR'));
+const isHidden = ref(false);
+const displayBalance = computed(() =>
+  isHidden.value ? '•••••' : props.balance.toLocaleString('ko-KR'),
+);
 </script>
 
 <template>
@@ -16,9 +27,20 @@ const formattedBalance = computed(() => props.balance.toLocaleString('ko-KR'));
     class="w-full rounded-[20px] bg-white p-4 text-left border border-gray-100 shadow-[0_12px_40px_rgba(0,0,0,0.03)]"
   >
     <div class="flex items-center justify-between mb-2">
-      <span class="text-[13px] font-bold text-gray-400 tracking-tight"
-        >페이머니</span
-      >
+      <div class="flex items-center gap-1.5">
+        <span class="text-[13px] font-bold text-gray-400 tracking-tight"
+          >페이머니</span
+        >
+        <button
+          type="button"
+          class="text-gray-300 hover:text-gray-500 transition-colors"
+          :aria-label="isHidden ? '잔액 표시' : '잔액 숨기기'"
+          @click="isHidden = !isHidden"
+        >
+          <EyeOff v-if="isHidden" :size="14" />
+          <Eye v-else :size="14" />
+        </button>
+      </div>
 
       <button
         type="button"
@@ -35,7 +57,7 @@ const formattedBalance = computed(() => props.balance.toLocaleString('ko-KR'));
         <p
           class="text-[28px] font-extrabold tracking-tight text-gray-900 leading-none"
         >
-          {{ formattedBalance
+          {{ displayBalance
           }}<span class="text-[20px] font-bold text-gray-800 ml-1">원</span>
         </p>
       </div>

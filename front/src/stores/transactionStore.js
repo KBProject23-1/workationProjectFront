@@ -106,6 +106,7 @@ export const useTransactionStore = defineStore('transaction', {
     async fetchTransactionDetail(transactionId) {
       this.isLoading = true;
       this.error = null;
+      this.currentDetail = null; // 이전 거래 정보 노출 방지 (로딩 스켈레톤 표시)
       try {
         const { data } = await getTransactionDetail(transactionId);
         this.currentDetail = data;
