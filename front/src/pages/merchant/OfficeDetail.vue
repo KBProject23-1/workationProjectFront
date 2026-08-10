@@ -1,37 +1,16 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
 import { ChevronLeft, MapPin, Phone } from '@lucide/vue';
 import OfficeProductCard from '@/components/merchant/OfficeProductCard.vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationGuestModal from '@/components/reservation/ReservationGuestModal.vue';
+import { useOfficeStore } from '@/stores/merchant/officeStore';
 
-const officeResponse = {
-  success: true,
-  data: {
-    merchantId: 201,
-    name: '제주 워크라운지',
-    address: '제주특별자치도 제주시 중앙로 10',
-    phoneNumber: '064-000-0000',
-    description: '업무와 휴식에 적합한 공유오피스입니다.',
-    rating: 4.7,
-    reviewCount: 128,
-    bookmarked: false,
-    thumbnailUrl: 'https://example.com/merchants/201.jpg',
-    products: [
-      { productName: '오픈좌석', description: '오픈좌석, Wi-Fi 이용가능', productDetailType: 'OFFICE_SEAT', maxHeadcount: 1, thumbnailURL: 'https://example.com/merchants/201-open-seat.jpg', price: 120000 },
-      { productName: '미팅룸', description: '독립 회의실, 모니터 이용가능', productDetailType: 'MEETING_ROOM', maxHeadcount: 4, thumbnailURL: 'https://example.com/merchants/201-meeting-room.jpg', price: 180000 },
-    ],
-  },
-};
-
-const office = officeResponse.data;
-const startDate = ref('2026-08-10');
-const endDate = ref('2026-08-12');
-const guestCount = ref(2);
+const officeStore = useOfficeStore();
+const { office, startDate, endDate, guestCount, selectedProductName, selectedProduct } = storeToRefs(officeStore);
 const dateModalMode = ref('');
 const isGuestModalOpen = ref(false);
-const selectedProductName = ref(office.products[0].productName);
-const selectedProduct = computed(() => office.products.find((product) => product.productName === selectedProductName.value));
 
 function displayDate(value) {
   const date = new Date(`${value}T00:00:00`);
@@ -39,8 +18,7 @@ function displayDate(value) {
 }
 
 function selectDate(value) {
-  if (dateModalMode.value === 'checkIn') startDate.value = value;
-  else endDate.value = value;
+  officeStore.setDate(dateModalMode.value, value);
   dateModalMode.value = '';
 }
 </script>
@@ -63,7 +41,7 @@ function selectDate(value) {
       <p class="address"><MapPin :size="22" /> {{ office.address }}</p>
       <div class="rating-row">
         <p class="rating"><span>★</span> {{ office.rating }} <b>· 리뷰 {{ office.reviewCount }}개</b></p>
-        <button type="button" class="review-button">리뷰 보기</button>
+        <button type="button" class="review-button" @click="$router.push(`/merchants/${office.merchantId}/reviews`)">리뷰 보기</button>
       </div>
     </section>
 
@@ -96,7 +74,7 @@ function selectDate(value) {
           :key="product.productName"
           :product="product"
           :selected="selectedProductName === product.productName"
-          @select="selectedProductName = $event"
+          @select="officeStore.selectProduct"
         />
       </div>
     </section>

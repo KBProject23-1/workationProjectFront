@@ -1,17 +1,14 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
 import { CalendarDays, ChevronDown, ChevronLeft, Users } from '@lucide/vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationGuestModal from '@/components/reservation/ReservationGuestModal.vue';
 import ReservationMerchantCard from '@/components/merchant/ReservationMerchantCard.vue';
+import { useReservationMerchantStore } from '@/stores/merchant/reservationMerchantStore';
 
-const checkIn = ref('2026-06-01');
-const checkOut = ref('2026-06-05');
-const guestCount = ref(2);
-const category = ref('');
-const sort = ref('RATING_DESC');
-const minPrice = ref('');
-const maxPrice = ref('');
+const merchantStore = useReservationMerchantStore();
+const { checkIn, checkOut, guestCount, category, sort, minPrice, maxPrice, filteredResults, hasNext } = storeToRefs(merchantStore);
 const dateModalMode = ref('');
 const isGuestModalOpen = ref(false);
 const isFiltersExpanded = ref(true);
@@ -25,47 +22,6 @@ const sortOptions = [
   { label: '가격 낮은순', value: 'PRICE_ASC' },
 ];
 
-const initialResponse = {
-  status: 'SUCCESS',
-  message: '요청 성공',
-  data: {
-    content: [
-      { category: 'ACCOMMODATION', merchantId: 101, name: '제주 스테이', address: '제주특별자치도 제주시 중앙로 10', price: 120000, rating: 4.7, reviewCount: 128, thumbnailUrl: 'https://example.com/merchants/101.jpg', bookmarked: false },
-      { category: 'OFFICE', merchantId: 102, name: '제주 워크 라운지', address: '제주특별자치도 제주시 연동 24', price: 45000, rating: 4.9, reviewCount: 94, thumbnailUrl: 'https://example.com/merchants/102.jpg', bookmarked: true },
-      { category: 'ACCOMMODATION', merchantId: 103, name: '오션뷰 호텔 강릉', address: '강원특별자치도 강릉시 창해로 123', price: 89000, rating: 4.6, reviewCount: 100, thumbnailUrl: 'https://example.com/merchants/103.jpg', bookmarked: false },
-    ],
-    size: 20,
-    hasNext: true,
-    nextCursor: 'eyJyYXRpbmciOjQuNSwibWVyY2hhbnRJZCI6MTIwfQ',
-  },
-};
-
-const nextResponse = {
-  status: 'SUCCESS',
-  message: '요청 성공',
-  data: {
-    content: [
-      { category: 'OFFICE', merchantId: 201, name: '파도 공유오피스', address: '부산광역시 해운대구 해운대로 52', price: 38000, rating: 4.5, reviewCount: 76, thumbnailUrl: 'https://example.com/merchants/201.jpg', bookmarked: false },
-      { category: 'ACCOMMODATION', merchantId: 202, name: '경포 스테이', address: '강원특별자치도 강릉시 경포로 201', price: 135000, rating: 4.4, reviewCount: 72, thumbnailUrl: 'https://example.com/merchants/202.jpg', bookmarked: false },
-    ],
-    size: 20,
-    hasNext: false,
-    nextCursor: null,
-  },
-};
-
-const merchants = ref([...initialResponse.data.content]);
-const hasNext = ref(initialResponse.data.hasNext);
-const nextCursor = ref(initialResponse.data.nextCursor);
-
-const filteredResults = computed(() => {
-  let list = category.value ? merchants.value.filter((item) => item.category === category.value) : [...merchants.value];
-  const minimum = Number(minPrice.value.replace(/\D/g, '')) || 0;
-  const maximum = Number(maxPrice.value.replace(/\D/g, '')) || Infinity;
-  list = list.filter((item) => item.price >= minimum && item.price <= maximum);
-  return list.sort((a, b) => sort.value === 'RATING_DESC' ? b.rating - a.rating : a.price - b.price);
-});
-
 function displayDate(value) {
   const date = new Date(`${value}T00:00:00`);
   const days = ['일', '월', '화', '수', '목', '금', '토'];
@@ -73,22 +29,12 @@ function displayDate(value) {
 }
 
 function selectDate(value) {
-  if (dateModalMode.value === 'checkIn') checkIn.value = value;
-  else checkOut.value = value;
+  merchantStore.setDate(dateModalMode.value, value);
   dateModalMode.value = '';
 }
 
 function sanitizePrice(target, field) {
-  const value = target.value.replace(/\D/g, '').slice(0, 9);
-  if (field === 'min') minPrice.value = value;
-  else maxPrice.value = value;
-}
-
-function loadNextPage() {
-  if (!hasNext.value || !nextCursor.value) return;
-  merchants.value.push(...nextResponse.data.content);
-  hasNext.value = nextResponse.data.hasNext;
-  nextCursor.value = nextResponse.data.nextCursor;
+  merchantStore.setPrice(field, target.value);
 }
 </script>
 
@@ -163,9 +109,9 @@ function loadNextPage() {
     <section class="results">
       <h2>검색 결과 {{ filteredResults.length }}개</h2>
       <div class="result-list">
-        <ReservationMerchantCard v-for="item in filteredResults" :key="item.merchantId" :merchant="item" />
+        <ReservationMerchantCard v-for="item in filteredResults" :key="item.merchantId" :merchant="item" @toggle-bookmark="merchantStore.toggleBookmark" />
         <p v-if="filteredResults.length === 0" class="empty">조건에 맞는 검색 결과가 없습니다.</p>
-        <button v-if="hasNext" type="button" class="load-more-button" @click="loadNextPage">더보기</button>
+        <button v-if="hasNext" type="button" class="load-more-button" @click="merchantStore.loadNextPage">더보기</button>
       </div>
     </section>
 
@@ -182,8 +128,8 @@ button,input { font:inherit; }
 .page-header button { width:34px; height:34px; display:grid; place-items:center; padding:0; border:0; background:none; }
 .page-header h1 { margin:0; text-align:center; font-size:22px; font-weight:800; }
 .date-controls { display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; padding:14px 34px 16px; }
-.date-controls button { min-width:0; height:72px; display:flex; align-items:center; gap:7px; padding:10px; text-align:left; color:#526274; border:1.5px solid #dbe3ee; border-radius:17px; background:#fff; }
-.date-controls span { min-width:0; display:flex; flex-direction:column; gap:3px; }.date-controls small { color:#8a96a5; font-size:12px; }.date-controls strong { color:#111827; font-size:16px; white-space:nowrap; }
+.date-controls button { min-width:0; height:72px; display:flex; align-items:center; gap:4px; padding:8px; overflow:hidden; text-align:left; color:#526274; border:1.5px solid #dbe3ee; border-radius:17px; background:#fff; }.date-controls button > svg { width:22px; height:22px; flex:none; }
+.date-controls span { min-width:0; display:flex; flex:1; flex-direction:column; gap:3px; overflow:hidden; }.date-controls small { color:#8a96a5; font-size:12px; }.date-controls strong { max-width:100%; overflow:hidden; color:#111827; font-size:12px; text-overflow:ellipsis; white-space:nowrap; }
 .filters { padding:0 34px 18px; }.filters h2,.results h2 { margin:0; font-size:16px; font-weight:800; }.filter-header { display:flex; align-items:center; justify-content:space-between; }.filter-toggle { width:36px; height:32px; display:grid; place-items:center; padding:0; color:#526274; border:1.5px solid #d7e0eb; border-radius:999px; background:#fff; cursor:pointer; }.filter-toggle svg { transition:transform 0.2s ease; }.filter-toggle svg.expanded { transform:rotate(180deg); }.divider { height:2px; margin:13px 0 15px; background:#e7ebf0; }
 fieldset { padding:0; margin:0 0 18px; border:0; } legend { margin-bottom:11px; font-size:16px; font-weight:800; } legend span { color:#8a96a5; }
 .chips { display:flex; gap:8px; }.chips label { min-width:75px; height:40px; display:grid; place-items:center; padding:0 20px; border:1.5px solid #d7e0eb; border-radius:999px; color:#4a5565; font-size:12px; font-weight:700; cursor:pointer; }.chips label.active { color:#fff; border-color:#3087ed; background:#3087ed; }.chips input { position:absolute; opacity:0; pointer-events:none; }

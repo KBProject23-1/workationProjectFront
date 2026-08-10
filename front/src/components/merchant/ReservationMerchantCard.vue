@@ -1,12 +1,11 @@
 <script setup>
-import { ref } from 'vue';
 import { Heart } from '@lucide/vue';
 
-const props = defineProps({
+defineProps({
   merchant: { type: Object, required: true },
 });
 
-const isBookmarked = ref(props.merchant.bookmarked);
+defineEmits(['toggle-bookmark']);
 </script>
 
 <template>
@@ -18,11 +17,12 @@ const isBookmarked = ref(props.merchant.bookmarked);
       <button
         type="button"
         class="bookmark-button"
-        :aria-label="isBookmarked ? '북마크 해제' : '북마크 추가'"
-        :aria-pressed="isBookmarked"
-        @click="isBookmarked = !isBookmarked"
+        :class="{ bookmarked: merchant.bookmarked }"
+        :aria-label="merchant.bookmarked ? '북마크 해제' : '북마크 추가'"
+        :aria-pressed="merchant.bookmarked"
+        @click="$emit('toggle-bookmark', merchant.merchantId)"
       >
-        <Heart :size="29" :fill="isBookmarked ? '#3087ed' : 'none'" />
+        <Heart :size="18" :fill="merchant.bookmarked ? 'currentColor' : 'none'" />
       </button>
       <h3>{{ merchant.name }}</h3>
       <p class="address">{{ merchant.address }}</p>
@@ -38,7 +38,9 @@ const isBookmarked = ref(props.merchant.bookmarked);
 .result-image { width:116px; flex:none; border-radius:16px; display:grid; place-items:center; font-size:40px; }
 .result-image.accommodation { background:#ddebff; }.result-image.office { background:#e7f5ef; }
 .result-content { position:relative; min-width:0; flex:1; padding:2px 2px 0 0; }
-.bookmark-button { position:absolute; top:0; right:0; color:#526274; background:none; border:0; cursor:pointer; padding:0; }
+.bookmark-button { position:absolute; top:0; right:0; padding:0; color:#88a0bf; border:0; background:transparent; cursor:pointer; transition:color .16s ease,transform .16s ease; }
+.bookmark-button:hover { color:#3087ed; transform:scale(1.1); }
+.bookmark-button.bookmarked { color:#3087ed; }
 h3 { margin:0 38px 7px 0; font-size:16px; line-height:1.25; color:#111827; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 p { margin:0; }
 .address { color:#8a96a5; font-size:12px; margin-bottom:8px; }
