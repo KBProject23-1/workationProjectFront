@@ -1,11 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { ChevronLeft } from '@lucide/vue';
 import { useWalletStore } from '@/stores/walletStore';
 import { useCardStore } from '@/stores/cardStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
-import BaseBottomNavigation from '@/components/common/BaseBottomNavigation.vue';
 import WalletBalanceCard from '@/components/wallet/WalletBalanceCard.vue';
 import WalletCardCarousel from '@/components/wallet/WalletCardCarousel.vue';
 
@@ -16,6 +16,11 @@ const { showError } = useErrorToast();
 
 const confirmState = ref({ visible: false, type: null, cardId: null });
 const isProcessing = ref(false);
+
+// 지갑은 워케이션 허브의 하위 화면 — 뒤로가기는 항상 허브로 복귀
+function goBack() {
+  router.push('/workation');
+}
 
 function requestSetPrimary(cardId) {
   confirmState.value = { visible: true, type: 'primary', cardId };
@@ -63,10 +68,18 @@ onMounted(() => {
 
 <template>
   <div
-    class="flex flex-col items-center w-full min-h-screen px-5 pt-6 pb-24 bg-white"
+    class="flex flex-col items-center w-full min-h-screen px-5 pt-6 pb-8 bg-white"
   >
-    <div class="w-full text-left mb-4">
-      <h1 class="text-xl font-bold">{{ '000' }}님, 안녕하세요</h1>
+    <div class="relative w-full flex items-center justify-center h-9 mb-4">
+      <button
+        type="button"
+        class="absolute left-0 -ml-1 rounded-full p-1 text-slate-700 active:bg-slate-100"
+        aria-label="뒤로 가기"
+        @click="goBack"
+      >
+        <ChevronLeft :size="24" />
+      </button>
+      <h1 class="text-[18px] font-bold text-slate-900">내 지갑</h1>
     </div>
 
     <WalletBalanceCard
@@ -99,6 +112,4 @@ onMounted(() => {
       @cancel="closeConfirm"
     />
   </div>
-
-  <BaseBottomNavigation />
 </template>

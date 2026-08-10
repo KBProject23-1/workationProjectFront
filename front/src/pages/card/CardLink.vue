@@ -6,22 +6,40 @@ import { useErrorToast } from '@/composables/useErrorToast';
 import CardLinkPrimarySelect from '@/components/card/CardLinkPrimarySelect.vue';
 import CardLinkExtraSelect from '@/components/card/CardLinkExtraSelect.vue';
 import CardLinkComplete from '@/components/card/CardLinkComplete.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 
 const router = useRouter();
 const cardStore = useCardStore();
 const { showError } = useErrorToast();
 
-const step = ref(0); // 0: 초기 상태 확인 중
+// 0: 목록 불러오는 중, 1: 주카드 선택, 2: 추가 선택, 3: 완료, 4: 연동 진행 중
+const step = ref(0);
 const linkedCards = ref([]);
 const isFirstLink = ref(true); // 최초 연동 여부 (주카드 유무로 판단)
 
+const LIST_LOADING_DURATION = 900; // 목록 로딩 최소 노출 시간(ms)
+const LINKING_DURATION = 900; // 연동 처리 최소 노출 시간(ms)
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// mock API 가 즉시 응답해도 최소 노출 시간을 보장해 "처리되는 느낌"을 유지
+async function runWithProgress(task) {
+  step.value = 4; // 연동 처리 로딩 시작
+  const [result] = await Promise.all([task(), delay(LINKING_DURATION)]);
+  return result;
+}
+
 async function handlePrimarySelect(linkableCardId) {
   try {
-    const data = await cardStore.linkCards([linkableCardId]);
-    await cardStore.setPrimaryCard(data[0].cardId);
+    const data = await runWithProgress(async () => {
+      const linked = await cardStore.linkCards([linkableCardId]);
+      await cardStore.setPrimaryCard(linked[0].cardId);
+      return linked;
+    });
     linkedCards.value = data.map((card) => ({ ...card, isPrimary: true }));
     step.value = 2;
   } catch (err) {
+    step.value = 1; // 실패 시 주카드 선택으로 복귀
     showError(err, '카드 연동에 실패했어요. 다시 시도해주세요.');
   }
 }
@@ -32,10 +50,11 @@ async function handleExtraComplete(extraIds) {
     return;
   }
   try {
-    const data = await cardStore.linkCards(extraIds);
+    const data = await runWithProgress(() => cardStore.linkCards(extraIds));
     linkedCards.value = [...linkedCards.value, ...data];
     step.value = 3;
   } catch (err) {
+    step.value = 2; // 실패 시 추가 선택으로 복귀
     showError(err, '카드 연동에 실패했어요. 다시 시도해주세요.');
   }
 }
@@ -63,9 +82,11 @@ function goToWallet() {
 }
 
 onMounted(async () => {
+  // 목록 조회도 즉시 끝나면 밋밋하므로 최소 노출 시간을 함께 보장
   await Promise.all([
     cardStore.fetchAvailableCards(),
     cardStore.fetchMyCards(),
+    delay(LIST_LOADING_DURATION),
   ]);
   isFirstLink.value = !cardStore.primaryCard;
   step.value = cardStore.primaryCard ? 2 : 1;
@@ -74,12 +95,14 @@ onMounted(async () => {
 
 <template>
   <div class="w-full mx-auto flex flex-col min-h-screen">
-    <p v-if="step === 0" class="text-[14px] text-gray-400 text-center mt-10">
-      불러오는 중...
-    </p>
+    <LoadingScreen
+      v-if="step === 0"
+      title="카드 정보를 불러오고 있어요"
+      description="연동 가능한 카드를 확인하고 있어요"
+    />
 
     <CardLinkPrimarySelect
-      v-if="step === 1"
+      v-else-if="step === 1"
       :cards="cardStore.availableCards"
       :is-loading="cardStore.isLoading"
       @select="handlePrimarySelect"
@@ -97,6 +120,11 @@ onMounted(async () => {
       v-else-if="step === 3"
       :linked-cards="linkedCards"
       @confirm="handleConfirm"
+    />
+    <LoadingScreen
+      v-else-if="step === 4"
+      title="카드를 안전하게 연결하고 있어요"
+      description="잠시만 기다려 주세요"
     />
   </div>
 </template>
