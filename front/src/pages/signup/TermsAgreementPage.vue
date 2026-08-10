@@ -1,7 +1,8 @@
 <script setup>
 // 회원가입 약관 동의 화면
-// - GET /api/v1/auth/terms (docs: 약관 목록 데이터 조회) 응답을 렌더링한다.
-// - BE 약관 API가 아직 미구현이라(docs: 시작 전) 실패 시 샘플 데이터로 폴백한다.
+// - GET /api/v1/auth/terms (docs: 약관 목록 데이터 조회) 로 백엔드 DB 에 저장된 약관 목록/본문을 조회해 렌더링한다.
+// - 약관 제목과 본문은 서버 응답만 사용한다. (프론트엔드 하드코딩 약관 전문 없음)
+// - 조회 실패 시 하드코딩 대체 데이터를 쓰지 않고 오류 상태 + 다시 시도 버튼을 노출한다.
 // - 전체 동의 / 개별 동의 상태를 동기화하고, 필수 약관이 모두 동의된 경우에만 '다음' 버튼을 활성화한다.
 // - '다음' 클릭 시 본인인증 화면으로 이동하는 연결은 회원가입 프로세스 통합 작업에서 진행한다.
 import { ref, computed, onMounted } from 'vue';
@@ -19,52 +20,9 @@ import {
 
 const router = useRouter();
 
-// docs '약관 목록 데이터 조회' 예시 응답과 동일한 구조의 샘플 데이터 (BE 연동 전 폴백용)
-const FALLBACK_TERMS = [
-  {
-    termId: 1,
-    title: '서비스 이용약관 (필수)',
-    content: `제1조 (목적)
-본 약관은 Workit(이하 "회사")이 제공하는 워케이션 서비스(이하 "서비스")의 이용조건 및 절차, 회사와 회원 간의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.
-
-제2조 (약관의 효력 및 변경)
-① 본 약관은 서비스 화면에 게시하거나 기타의 방법으로 회원에게 공지함으로써 효력이 발생합니다.
-② 회사는 관련 법령을 위배하지 않는 범위에서 본 약관을 개정할 수 있으며, 개정된 약관은 공지된 시점부터 효력이 발생합니다.
-
-제3조 (회원의 의무)
-① 회원은 서비스 이용 시 본 약관 및 관련 법령을 준수하여야 합니다.
-② 회원은 타인의 개인정보를 도용하거나 서비스의 정상적인 운영을 방해하는 행위를 해서는 안 됩니다.`,
-    required: true,
-  },
-  {
-    termId: 2,
-    title: '개인정보 수집 및 이용동의 (필수)',
-    content: `1. 수집 항목
-- 필수: 이름, 휴대폰 번호, 이메일(로그인 ID)
-- 선택: 생년월일, 프로필 사진
-
-2. 수집·이용 목적
-- 회원 가입 및 서비스 제공
-- 본인 인증 및 계정 관리
-- 서비스 개선 및 맞춤형 정보 제공
-
-3. 보유 및 이용 기간
-- 회원 탈퇴 시까지 또는 관련 법령이 정한 보존 기간`,
-    required: true,
-  },
-  {
-    termId: 3,
-    title: '마케팅 정보 수신 및 활용 동의 (선택)',
-    content: `이벤트 및 혜택 안내, 신규 서비스 소개, 맞춤형 광고 등 마케팅 정보를 이메일, 문자(SMS), 앱 푸시로 수신하는 것에 동의합니다.
-
-- 동의하지 않으셔도 기본 서비스 이용에는 제한이 없습니다.
-- 수신 동의는 언제든지 철회할 수 있습니다.`,
-    required: false,
-  },
-];
-
 const terms = ref([]);
 const loading = ref(true);
+const loadError = ref(false);
 const agreedTermIds = ref(new Set());
 const selectedTerm = ref(null);
 
@@ -109,17 +67,25 @@ function goNext() {
   toast.info('다음 단계(본인인증) 화면은 회원가입 통합 작업에서 연결될 예정이에요.');
 }
 
-onMounted(async () => {
+// 백엔드 DB 약관 목록 조회 (GET /api/v1/auth/terms)
+async function fetchTerms() {
+  loading.value = true;
+  loadError.value = false;
+  // 재조회 시 목록이 바뀔 수 있으므로 동의 상태도 함께 초기화한다.
+  agreedTermIds.value = new Set();
   try {
     const { data } = await getTerms();
-    terms.value = data?.termsList ?? FALLBACK_TERMS;
+    terms.value = data?.termsList ?? [];
   } catch {
-    // BE 미구현으로 조회 실패 시 샘플 데이터 사용 (독립 테스트 가능하도록)
-    terms.value = FALLBACK_TERMS;
+    // 하드코딩 폴백 없음 — 오류 상태를 표시하고 사용자가 다시 시도할 수 있게 한다.
+    terms.value = [];
+    loadError.value = true;
   } finally {
     loading.value = false;
   }
-});
+}
+
+onMounted(fetchTerms);
 </script>
 
 <template>
@@ -149,6 +115,26 @@ onMounted(async () => {
         <div class="h-14 animate-pulse rounded-[20px] bg-[#F0F4F9]" />
         <div class="h-14 animate-pulse rounded-[20px] bg-[#F0F4F9]" />
       </div>
+
+      <!-- 조회 실패 상태 (하드코딩 대체 데이터 없음) -->
+      <section
+        v-else-if="loadError"
+        class="mt-7 overflow-hidden rounded-[20px] border border-[#DFE7F0] bg-white"
+      >
+        <div class="flex flex-col items-center gap-3 px-6 py-10 text-center">
+          <p class="text-[15px] font-bold text-[#191F28]">약관 정보를 불러오지 못했어요</p>
+          <p class="text-[12.5px] font-medium leading-relaxed text-[#7186A0]">
+            네트워크 상태를 확인한 뒤 다시 시도해 주세요.
+          </p>
+          <button
+            type="button"
+            class="mt-2 rounded-full bg-[#2878F0] px-5 py-2.5 text-[13px] font-bold text-white transition-colors hover:bg-[#1E68D6] active:scale-95"
+            @click="fetchTerms"
+          >
+            다시 시도
+          </button>
+        </div>
+      </section>
 
       <!-- 약관 리스트 -->
       <section v-else class="mt-7 overflow-hidden rounded-[20px] border border-[#DFE7F0] bg-white">
