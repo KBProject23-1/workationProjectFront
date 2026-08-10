@@ -1,21 +1,49 @@
 <script setup>
-import { ref, computed } from 'vue';
-import { ChevronLeft, Landmark, Wallet, X } from '@lucide/vue';
+import { ref, computed, watch } from 'vue';
+import { ChevronLeft, Wallet, X } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseInput from '@/components/common/BaseInput.vue';
+import AccountSelectField from '@/components/wallet/AccountSelectField.vue';
 
 const props = defineProps({
   balance: { type: Number, default: 0 },
-  primaryAccount: { type: Object, default: null },
+  accounts: { type: Array, default: () => [] },
   isLoading: { type: Boolean, default: false },
+  accountsLoading: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['next', 'back']);
 
 const amountInput = ref('');
+const selectedAccountId = ref(null);
 const warningMessage = ref('');
 
 const amount = computed(() => Number(amountInput.value) || 0);
+
+const presets = [10000, 50000, 100000, 300000];
+
+// 계좌 목록이 로드되면 주 계좌(없으면 첫 계좌)를 기본 입금 계좌로 선택
+watch(
+  () => props.accounts,
+  (accounts) => {
+    const stillValid = accounts.some(
+      (a) => a.accountId === selectedAccountId.value,
+    );
+    if (selectedAccountId.value && stillValid) return;
+    selectedAccountId.value =
+      accounts.find((a) => a.isPrimary)?.accountId ??
+      accounts[0]?.accountId ??
+      null;
+  },
+  { immediate: true },
+);
+
+function addPreset(value) {
+  const next = (Number(amountInput.value) || 0) + value;
+  // 보유 잔액을 넘지 않도록 클램프
+  amountInput.value = String(Math.min(next, props.balance));
+  warningMessage.value = '';
+}
 
 function setMaxAmount() {
   amountInput.value = String(props.balance);
@@ -28,12 +56,12 @@ function clearAmount() {
 }
 
 function handleNext() {
-  if (!props.primaryAccount) {
-    warningMessage.value = '주 계좌가 설정되어 있지 않아요.';
+  if (!selectedAccountId.value) {
+    warningMessage.value = '입금 계좌를 먼저 연동해주세요.';
     return;
   }
   if (amount.value <= 0) {
-    warningMessage.value = '환급 금액을 입력해주세요.';
+    warningMessage.value = '환불 금액을 입력해주세요.';
     return;
   }
   if (amount.value > props.balance) {
@@ -41,7 +69,7 @@ function handleNext() {
     return;
   }
   warningMessage.value = '';
-  emit('next', { amount: amount.value });
+  emit('next', { accountId: selectedAccountId.value, amount: amount.value });
 }
 </script>
 
@@ -55,12 +83,12 @@ function handleNext() {
       >
         <ChevronLeft :size="24" />
       </button>
-      <h1 class="text-[18px] font-bold text-gray-900">내 계좌로 송금</h1>
+      <h1 class="text-[18px] font-bold text-gray-900">환불하기</h1>
     </div>
 
     <div class="mb-5">
       <p class="text-[12px] font-semibold text-gray-400 mb-1.5">
-        환급 가능 포인트
+        환불 가능 포인트
       </p>
       <div
         class="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/60 p-3.5 shadow-xs"
@@ -84,7 +112,7 @@ function handleNext() {
     <div class="mb-3">
       <div class="flex items-center justify-between mb-1">
         <p class="text-[12px] font-semibold text-gray-400">
-          얼마나 환급할까요?
+          얼마나 환불할까요?
         </p>
         <button
           type="button"
@@ -110,10 +138,22 @@ function handleNext() {
       </div>
     </div>
 
+    <div class="grid grid-cols-4 gap-1.5 mb-3">
+      <button
+        v-for="preset in presets"
+        :key="preset"
+        type="button"
+        class="rounded-xl py-2.5 text-[12px] font-bold bg-blue-50/80 text-blue-600 hover:bg-blue-100/70 active:scale-95 transition-all"
+        @click="addPreset(preset)"
+      >
+        +{{ preset / 10000 }}만원
+      </button>
+    </div>
+
     <div class="relative mb-5">
       <BaseInput
         v-model="amountInput"
-        placeholder="환급 금액 직접 입력"
+        placeholder="환불 금액 직접 입력"
         :has-error="!!warningMessage"
         :error-message="warningMessage"
       />
@@ -128,37 +168,13 @@ function handleNext() {
     </div>
 
     <div class="mb-6">
-      <p class="text-[12px] font-semibold text-gray-400 mb-2">
-        입금 계좌 (주 계좌)
-      </p>
-
-      <div
-        v-if="primaryAccount"
-        class="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/50 p-3.5 transition-all hover:bg-gray-50"
-      >
-        <div
-          class="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-xs border border-gray-100"
-        >
-          <Landmark :size="18" class="text-blue-600" />
-        </div>
-        <div class="min-w-0">
-          <p class="text-[14px] font-bold text-gray-900 truncate">
-            {{ primaryAccount.bankName }}
-          </p>
-          <p class="text-[12px] font-medium text-gray-400 mt-0.5">
-            {{ primaryAccount.maskedAccountNumber }}
-          </p>
-        </div>
-      </div>
-
-      <div
-        v-else
-        class="rounded-2xl border border-dashed border-gray-200 p-4 text-center"
-      >
-        <p class="text-[13px] font-medium text-gray-400">
-          설정된 주 계좌가 없어요
-        </p>
-      </div>
+      <AccountSelectField
+        v-model="selectedAccountId"
+        :accounts="accounts"
+        :is-loading="accountsLoading"
+        label="입금 계좌"
+        empty-text="연동된 입금 계좌가 없습니다."
+      />
     </div>
 
     <div class="mt-auto pt-4 pb-2 text-center">
@@ -167,7 +183,7 @@ function handleNext() {
         class="w-full py-3.5 text-[15px] font-bold rounded-2xl"
         @click="handleNext"
       >
-        {{ isLoading ? '처리 중...' : '환급 신청' }}
+        {{ isLoading ? '처리 중...' : '환불 신청' }}
       </BaseButton>
     </div>
   </div>

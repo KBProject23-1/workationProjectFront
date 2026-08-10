@@ -191,7 +191,7 @@ onUnmounted(() => {
             <span
               class="text-[11px] font-medium text-white/75 tracking-wider uppercase truncate"
             >
-              {{ card.cardCompanyName || card.cardName }}
+              {{ card.cardName || card.cardCompanyName }}
             </span>
             <span
               class="text-[13px] font-bold tracking-widest text-white/95 whitespace-nowrap mt-0.5"

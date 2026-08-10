@@ -29,6 +29,11 @@ function handleApplyFilter(filters) {
   transactionStore.fetchTransactions(filters);
 }
 
+// 현재 필터를 유지한 채 재조회
+function retryFetch() {
+  transactionStore.fetchTransactions();
+}
+
 onBeforeRouteLeave((to) => {
   transactionStore.setReturnedFromDetail(to.name === 'TransactionDetail');
 });
@@ -82,22 +87,59 @@ onUnmounted(() => {
     </div>
 
     <div class="flex flex-col w-full flex-1 px-5">
-      <TransactionListItem
-        v-for="transaction in transactionStore.transactions"
-        :key="transaction.transactionId"
-        :transaction="transaction"
-        @select="goToDetail"
-      />
-      <p
+      <!-- 초기 로딩 스켈레톤 -->
+      <div
         v-if="
-          transactionStore.transactions.length === 0 &&
-          !transactionStore.isLoading
+          transactionStore.isLoading &&
+          transactionStore.transactions.length === 0
         "
-        class="text-[14px] text-gray-400 text-center mt-8"
+        class="space-y-3 pt-2"
+        aria-label="거래내역을 불러오는 중"
       >
-        이번 달 거래내역이 없어요
-      </p>
+        <div
+          v-for="i in 5"
+          :key="i"
+          class="h-[72px] animate-pulse rounded-xl bg-gray-100"
+        ></div>
+      </div>
 
+      <!-- 에러 -->
+      <div
+        v-else-if="
+          transactionStore.error && transactionStore.transactions.length === 0
+        "
+        class="flex flex-1 flex-col items-center justify-center py-20 text-center"
+      >
+        <p class="text-[14px] font-semibold text-gray-600">
+          거래내역을 불러오지 못했어요
+        </p>
+        <p class="mt-2 text-[12px] text-gray-400">잠시 후 다시 시도해주세요</p>
+        <button
+          type="button"
+          class="mt-5 rounded-lg border border-gray-300 px-4 py-2 text-[14px] font-semibold text-gray-700 active:scale-95 transition-transform"
+          @click="retryFetch"
+        >
+          다시 시도
+        </button>
+      </div>
+
+      <!-- 목록 -->
+      <template v-else>
+        <TransactionListItem
+          v-for="transaction in transactionStore.transactions"
+          :key="transaction.transactionId"
+          :transaction="transaction"
+          @select="goToDetail"
+        />
+        <p
+          v-if="transactionStore.transactions.length === 0"
+          class="text-[14px] text-gray-400 text-center mt-8"
+        >
+          이번 달 거래내역이 없어요
+        </p>
+      </template>
+
+      <!-- sentinel 은 항상 렌더해 옵저버 부착이 깨지지 않도록 유지 -->
       <div ref="sentinel" class="h-4"></div>
       <p
         v-if="transactionStore.isLoadingMore"

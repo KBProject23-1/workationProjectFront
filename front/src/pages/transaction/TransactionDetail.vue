@@ -15,11 +15,28 @@ const transactionStore = useTransactionStore();
 const { showError } = useErrorToast();
 
 const transactionId = Number(route.params.transactionId);
+const isValidId = Number.isSafeInteger(transactionId) && transactionId > 0;
 const isReceiptOpen = ref(false);
 const isCancelConfirmOpen = ref(false);
 const isCanceling = ref(false);
 
 const detail = computed(() => transactionStore.currentDetail);
+const loading = ref(true); // 첫 렌더부터 스켈레톤 노출 (에러/빈 화면 깜빡임 방지)
+const loadError = ref(false);
+
+async function loadDetail() {
+  if (!isValidId) {
+    loading.value = false;
+    loadError.value = true;
+    return;
+  }
+  loading.value = true;
+  loadError.value = false;
+  await transactionStore.fetchTransactionDetail(transactionId);
+  loading.value = false;
+  // 조회가 끝났는데도 상세가 없으면 실패로 간주
+  loadError.value = !transactionStore.currentDetail;
+}
 
 const isDeposit = computed(() => detail.value?.transactionType === 'DEPOSIT');
 const isCanceled = computed(() => detail.value?.status === 'CANCELED');
@@ -49,7 +66,7 @@ async function handleCancel() {
   isCanceling.value = true;
   try {
     await transactionStore.cancelTransaction(transactionId);
-    await transactionStore.fetchTransactionDetail(transactionId);
+    await loadDetail();
   } catch (err) {
     showError(err, '거래 취소에 실패했어요.');
   } finally {
@@ -58,9 +75,7 @@ async function handleCancel() {
   }
 }
 
-onMounted(() => {
-  transactionStore.fetchTransactionDetail(transactionId);
-});
+onMounted(loadDetail);
 </script>
 
 <template>
@@ -79,7 +94,36 @@ onMounted(() => {
       <div class="w-[28px]"></div>
     </div>
 
-    <template v-if="detail">
+    <!-- 로딩 스켈레톤 -->
+    <div v-if="loading" class="w-full flex-1">
+      <div class="h-6 w-24 animate-pulse rounded bg-gray-100"></div>
+      <div class="mt-2 h-8 w-40 animate-pulse rounded bg-gray-100"></div>
+      <div class="mt-3 h-10 w-48 animate-pulse rounded bg-gray-100"></div>
+      <div class="mt-6 h-40 w-full animate-pulse rounded-2xl bg-gray-100"></div>
+    </div>
+
+    <!-- 에러 -->
+    <div
+      v-else-if="loadError"
+      class="w-full flex-1 flex flex-col items-center justify-center text-center"
+    >
+      <p class="text-[15px] font-semibold text-gray-600">
+        거래 정보를 불러오지 못했어요
+      </p>
+      <p class="mt-2 text-[12px] text-gray-400">
+        {{ isValidId ? '잠시 후 다시 시도해주세요' : '올바르지 않은 거래예요' }}
+      </p>
+      <button
+        v-if="isValidId"
+        type="button"
+        class="mt-5 rounded-lg border border-gray-300 px-4 py-2 text-[14px] font-semibold text-gray-700 active:scale-95 transition-transform"
+        @click="loadDetail"
+      >
+        다시 시도
+      </button>
+    </div>
+
+    <template v-else-if="detail">
       <div class="w-full text-left mb-6">
         <div class="flex items-center gap-2 mb-1">
           <span class="text-[13px] font-semibold text-gray-400">

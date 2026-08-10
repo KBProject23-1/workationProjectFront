@@ -14,7 +14,7 @@ defineEmits(['confirm']);
     class="flex flex-col items-center w-full min-h-screen px-5 py-6 text-center bg-white"
   >
     <div class="w-full flex items-center justify-center mb-4">
-      <h1 class="text-[16px] font-bold text-gray-800">환급 완료</h1>
+      <h1 class="text-[16px] font-bold text-gray-800">환불 완료</h1>
     </div>
 
     <div
@@ -35,7 +35,7 @@ defineEmits(['confirm']);
         ></div>
       </div>
 
-      <p class="text-[14px] font-semibold text-blue-600 mb-1">환급 신청 완료</p>
+      <p class="text-[14px] font-semibold text-blue-600 mb-1">환불 신청 완료</p>
 
       <p
         v-if="result?.refundedAmount"
@@ -46,7 +46,7 @@ defineEmits(['confirm']);
       </p>
 
       <p class="text-[13px] font-medium text-gray-400 mt-1">
-        주 계좌로 안전하게 입금됐어요
+        선택한 계좌로 안전하게 입금됐어요
       </p>
     </div>
 
@@ -55,7 +55,7 @@ defineEmits(['confirm']);
       class="rounded-2xl bg-gray-50/80 p-5 mb-6 w-full text-left space-y-3 border border-gray-100"
     >
       <div class="flex justify-between items-center text-[13px]">
-        <span class="text-gray-400 font-medium">환급 신청 포인트</span>
+        <span class="text-gray-400 font-medium">환불 신청 포인트</span>
         <span class="font-bold text-gray-900 text-[14px]">
           {{ result.refundedAmount?.toLocaleString('ko-KR') }} P
         </span>
@@ -63,13 +63,15 @@ defineEmits(['confirm']);
 
       <div class="flex justify-between items-center text-[13px]">
         <span class="text-gray-400 font-medium">입금 계좌</span>
-        <span class="font-semibold text-gray-700 text-[13px]">주 계좌</span>
+        <span class="font-semibold text-gray-700 text-[13px]">
+          {{ result.targetAccount?.maskedAccountNumber || '주 계좌' }}
+        </span>
       </div>
 
       <div
         class="flex justify-between items-center text-[13px] pt-3 border-t border-gray-200/60"
       >
-        <span class="text-gray-400 font-medium">환급 후 잔액</span>
+        <span class="text-gray-400 font-medium">환불 후 잔액</span>
         <span class="font-bold text-blue-600 text-[14px]">
           {{ result.remainingBalance?.toLocaleString('ko-KR') }}원
         </span>

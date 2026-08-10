@@ -1,30 +1,39 @@
 <script setup>
-import { ref, computed } from 'vue';
-import { ChevronLeft, Landmark, X } from '@lucide/vue';
+import { ref, computed, watch } from 'vue';
+import { ChevronLeft, X } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseInput from '@/components/common/BaseInput.vue';
+import AccountSelectField from '@/components/wallet/AccountSelectField.vue';
 
 const props = defineProps({
   accounts: { type: Array, default: () => [] },
   isLoading: { type: Boolean, default: false },
+  accountsLoading: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['next', 'back']);
 
 const presets = [10000, 50000, 100000, 300000];
 const amountInput = ref('');
-const selectedAccountId = computed(
-  () =>
-    props.accounts.find((a) => a.isPrimary)?.accountId ??
-    props.accounts[0]?.accountId ??
-    null,
-);
+const selectedAccountId = ref(null);
 const warningMessage = ref('');
 
 const amount = computed(() => Number(amountInput.value) || 0);
 
-const selectedAccount = computed(() =>
-  props.accounts.find((a) => a.accountId === selectedAccountId.value),
+// 계좌 목록이 로드되면 주 계좌(없으면 첫 계좌)를 기본 출금 계좌로 선택
+watch(
+  () => props.accounts,
+  (accounts) => {
+    const stillValid = accounts.some(
+      (a) => a.accountId === selectedAccountId.value,
+    );
+    if (selectedAccountId.value && stillValid) return;
+    selectedAccountId.value =
+      accounts.find((a) => a.isPrimary)?.accountId ??
+      accounts[0]?.accountId ??
+      null;
+  },
+  { immediate: true },
 );
 
 function addPreset(value) {
@@ -118,37 +127,13 @@ function handleNext() {
     </div>
 
     <div class="mb-6">
-      <p class="text-[12px] font-semibold text-gray-400 mb-2">출금 계좌</p>
-
-      <div
-        v-if="selectedAccount"
-        class="flex items-center justify-between rounded-2xl border border-gray-100 bg-gray-50/50 p-4 transition-all hover:bg-gray-50"
-      >
-        <div class="flex items-center gap-3 min-w-0">
-          <div
-            class="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-xs border border-gray-100"
-          >
-            <Landmark :size="18" class="text-blue-600" />
-          </div>
-          <div class="min-w-0">
-            <p class="text-[14px] font-bold text-gray-900 truncate">
-              {{ selectedAccount.bankName }}
-            </p>
-            <p class="text-[12px] font-medium text-gray-400 mt-0.5">
-              잔액 {{ selectedAccount.balance?.toLocaleString('ko-KR') }}원
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div
-        v-else
-        class="rounded-2xl border border-dashed border-gray-200 p-4 text-center"
-      >
-        <p class="text-[13px] font-medium text-gray-400">
-          연동된 출금 계좌가 없습니다.
-        </p>
-      </div>
+      <AccountSelectField
+        v-model="selectedAccountId"
+        :accounts="accounts"
+        :is-loading="accountsLoading"
+        label="출금 계좌"
+        empty-text="연동된 출금 계좌가 없습니다."
+      />
     </div>
 
     <div class="mt-auto pt-4 pb-2 text-center">
