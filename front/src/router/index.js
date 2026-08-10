@@ -12,6 +12,7 @@ import devRouter from './devRouter';
 import merchantRouter from './merchantRouter';
 import reservationRouter from './reservationRouter';
 import recommendationRouter from './recommendationRouter';
+import bookmarkRouter from './bookmarkRouter';
 import reviewRouter from './reviewRouter';
 
 const router = createRouter({
@@ -30,6 +31,7 @@ const router = createRouter({
     ...merchantRouter,
     ...reservationRouter,
     ...recommendationRouter,
+    ...bookmarkRouter,
     ...reviewRouter,
   ],
 });
