@@ -3,7 +3,7 @@
     <div class="max-w-[430px] mx-auto min-h-screen bg-white">
       <RouterView />
     </div>
-    <Toaster position="top-center" rich-colors />
+    <Toaster position="top-center" rich-colors :duration="2000" />
   </div>
 </template>
 

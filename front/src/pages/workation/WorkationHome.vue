@@ -1,7 +1,35 @@
 <template>
-  <div class="min-h-screen bg-white px-5 pt-4 pb-28">
+  <div class="min-h-screen bg-white px-5 pt-4 pb-8">
     <header class="mb-4 flex items-center justify-between">
       <h1 class="text-xl font-bold text-slate-900">나의 워케이션</h1>
+
+      <div class="flex items-center gap-1.5">
+        <!-- 지갑(PAY) 진입: 라운드 사각 버튼 -->
+        <button
+          type="button"
+          class="flex h-9 items-center justify-center rounded-lg bg-[#1E4268] px-5 text-[13px] font-extrabold tracking-wide text-white shadow-sm transition-transform active:scale-95"
+          aria-label="지갑으로 이동"
+          @click="goPay"
+        >
+          PAY
+        </button>
+        <button
+          type="button"
+          class="flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition-colors active:bg-slate-100"
+          aria-label="알림"
+          @click="goNotifications"
+        >
+          <Bell :size="22" />
+        </button>
+        <button
+          type="button"
+          class="flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition-colors active:bg-slate-100"
+          aria-label="프로필"
+          @click="goProfile"
+        >
+          <UserRound :size="22" />
+        </button>
+      </div>
     </header>
 
     <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
@@ -77,8 +105,6 @@
       @confirm="remove"
       @cancel="confirmOpen = false"
     />
-
-    <BaseBottomNavigation />
   </div>
 </template>
 
@@ -86,13 +112,14 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { toast } from 'vue-sonner';
+import { Bell, UserRound } from '@lucide/vue';
 import { useWorkationStore } from '@/stores/workationStore';
 import WorkationProgressCard from '@/components/workation/WorkationProgressCard.vue';
 import BudgetUsageCard from '@/components/workation/BudgetUsageCard.vue';
 import UncheckedExpenseAlert from '@/components/workation/UncheckedExpenseAlert.vue';
 import SettlementRecordItem from '@/components/workation/SettlementRecordItem.vue';
 import WorkationEmptyState from '@/components/workation/WorkationEmptyState.vue';
-import BaseBottomNavigation from '@/components/common/BaseBottomNavigation.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import { useErrorToast } from '@/composables/useErrorToast';
 
@@ -117,6 +144,19 @@ onMounted(async () => {
 const recordsTitle = computed(() =>
   current.value ? '워케이션 정산기록 보기' : '지난 워케이션 정산 보기',
 );
+
+const goPay = () => {
+  router.push('/wallet');
+};
+
+// 알림·프로필 화면은 아직 준비 전이라 안내 토스트만 노출
+const goNotifications = () => {
+  toast('알림 기능은 준비 중이에요');
+};
+
+const goProfile = () => {
+  toast('프로필 화면은 준비 중이에요');
+};
 
 const goCreate = () => {
   router.push('/workation/create');
