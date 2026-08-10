@@ -7,6 +7,7 @@ import {
   deleteExpense as deleteExpenseApi,
   updateExpenseCategory as updateExpenseCategoryApi,
   updateExpenseBudgetType as updateExpenseBudgetTypeApi,
+  confirmExpenses as confirmExpensesApi,
 } from '@/api/expense';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useWorkationStore } from '@/stores/workationStore';
@@ -154,6 +155,28 @@ export const useExpenseStore = defineStore('expense', {
           this.fetchDetail(expenseId),
           this.refreshRelated(workationId),
         ]);
+        return data;
+      } catch (err) {
+        this.error = err.message;
+        throw err;
+      }
+    },
+
+    // 자동분류 결과를 카테고리 변경 없이 승인한다.
+    // 카테고리 변경(changeCategory)은 같은 가맹점에 규칙까지 저장하므로 확정 용도로 쓰면 안 된다
+    async confirmExpenses(workationId, expenseIds) {
+      try {
+        const { data } = await confirmExpensesApi(workationId, expenseIds);
+
+        // 목록을 다시 받지 않아도 배지가 사라지도록 화면에 올라온 것부터 반영한다
+        this.expenses.forEach((expense) => {
+          if (expenseIds.includes(expense.expenseId)) {
+            expense.isAutoCategorized = false;
+          }
+        });
+        this.summary = { ...this.summary, uncheckedCount: data.uncheckedCount };
+
+        await this.refreshRelated(workationId);
         return data;
       } catch (err) {
         this.error = err.message;

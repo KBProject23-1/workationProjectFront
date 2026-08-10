@@ -47,6 +47,33 @@
         @delete="confirmOpen = true"
       />
 
+      <!--
+        1/3 에서 워케이션이 먼저 만들어지므로 설문이나 예산을 마치지 않고 나갈 수 있다.
+        이탈 자체는 막을 수 없으니 돌아올 길을 열어 준다.
+      -->
+      <button
+        v-if="setupIncomplete"
+        class="mt-5 flex w-full items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-left"
+        @click="goIncompleteStep"
+      >
+        <span
+          class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-white"
+        >
+          !
+        </span>
+        <span class="flex-1">
+          <span class="block text-sm font-bold text-slate-900">
+            아직 설정이 끝나지 않았어요
+          </span>
+          <span class="block text-xs text-slate-500">
+            {{ incompleteMessage }}
+          </span>
+        </span>
+        <span class="shrink-0 text-xs font-bold text-amber-600">
+          이어서 설정하기 ›
+        </span>
+      </button>
+
       <div class="mt-5 space-y-5">
         <BudgetUsageCard
           v-for="budget in current.budgetSummary"
@@ -56,6 +83,26 @@
         />
       </div>
 
+      <!--
+        3/3 직후 팝업은 놓치면 다시 볼 수 없어 홈에도 상시로 둔다.
+        예약이 하나라도 생기면 자연히 사라지므로 별도 플래그를 두지 않았다.
+      -->
+      <button
+        v-if="showRecommendCard"
+        class="mt-5 flex w-full items-center gap-3 rounded-xl bg-blue-600 px-4 py-4 text-left text-white"
+        @click="goRecommendation"
+      >
+        <span class="flex-1">
+          <span class="block text-sm font-bold">
+            아직 머물 곳을 안 정하셨네요
+          </span>
+          <span class="mt-0.5 block text-xs text-blue-100">
+            답해주신 취향으로 숙소와 공유오피스를 찾아드려요
+          </span>
+        </span>
+        <span class="shrink-0 text-xs font-bold">추천받기 ›</span>
+      </button>
+
       <div v-if="current.uncheckedExpenseCount > 0" class="mt-5">
         <UncheckedExpenseAlert
           :count="current.uncheckedExpenseCount"
@@ -63,21 +110,26 @@
         />
       </div>
 
-      <div class="mt-4 grid grid-cols-2 gap-3">
+      <div class="mt-4 grid grid-cols-3 gap-3">
+        <button
+          class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 py-5 text-xs text-slate-500"
+          @click="goReservations"
+        >
+          <CalendarCheck class="h-5 w-5" />
+          예약
+        </button>
         <button
           class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 py-5 text-xs text-slate-500"
           @click="goExpenses"
         >
-          <!-- 아이콘 자리 채워야 함 -->
-          <span class="h-5 w-5 rounded bg-slate-200" />
+          <ReceiptText class="h-5 w-5" />
           지출
         </button>
         <button
           class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 py-5 text-xs text-slate-500"
           @click="goSettlement"
         >
-          <!-- 아이콘 자리 채워야 함 -->
-          <span class="h-5 w-5 rounded bg-slate-200" />
+          <FileSpreadsheet class="h-5 w-5" />
           정산
         </button>
       </div>
@@ -100,10 +152,20 @@
     <BaseConfirmModal
       :visible="confirmOpen"
       :loading="deleting"
-      title="워케이션 삭제"
-      message="일정과 예산, 등록한 지출이 모두 삭제됩니다. 삭제하시겠어요?"
+      title="워케이션을 삭제할까요?"
+      :message="deleteMessage"
       @confirm="remove"
       @cancel="confirmOpen = false"
+    />
+
+    <BaseConfirmModal
+      :visible="reservationBlockOpen"
+      title="예약을 먼저 취소해 주세요"
+      :message="reservationBlockMessage"
+      confirm-label="예약 확인하기"
+      cancel-label="닫기"
+      @confirm="goReservationsToCancel"
+      @cancel="reservationBlockOpen = false"
     />
   </div>
 </template>
@@ -113,8 +175,17 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { toast } from 'vue-sonner';
-import { Bell, UserRound } from '@lucide/vue';
+import {
+  Bell,
+  CalendarCheck,
+  FileSpreadsheet,
+  ReceiptText,
+  UserRound,
+} from '@lucide/vue';
 import { useWorkationStore } from '@/stores/workationStore';
+import { useBudgetStore } from '@/stores/budgetStore';
+import { useSurveyStore } from '@/stores/surveyStore';
+import { getReservationList } from '@/api/reservations';
 import WorkationProgressCard from '@/components/workation/WorkationProgressCard.vue';
 import BudgetUsageCard from '@/components/workation/BudgetUsageCard.vue';
 import UncheckedExpenseAlert from '@/components/workation/UncheckedExpenseAlert.vue';
@@ -125,6 +196,8 @@ import { useErrorToast } from '@/composables/useErrorToast';
 
 const router = useRouter();
 const workationStore = useWorkationStore();
+const budgetStore = useBudgetStore();
+const surveyStore = useSurveyStore();
 const { showError } = useErrorToast();
 const { current, records, error: errorMessage } = storeToRefs(workationStore);
 
@@ -132,13 +205,74 @@ const loading = ref(true);
 const confirmOpen = ref(false);
 const deleting = ref(false);
 
+// 예약이 있으면 추천 카드를 감춘다. 목록 전체가 필요하지 않아 건수만 본다
+const reservationCount = ref(0);
+
+// 예약이 남아 삭제가 막혔을 때 안내한다
+const reservationBlockOpen = ref(false);
+const reservationBlockMessage = ref('');
+
+const loadSetupState = async () => {
+  const workationId = workationStore.workationId;
+  if (!workationId) return;
+
+  // 하나가 실패해도 홈은 떠야 하므로 개별로 삼킨다
+  await Promise.all([
+    budgetStore.fetchBudgets(workationId).catch(() => {}),
+    surveyStore.fetchMySurvey().catch(() => {}),
+    getReservationList({ workationId })
+      .then(({ data }) => {
+        reservationCount.value = data?.content?.length ?? 0;
+      })
+      .catch(() => {}),
+  ]);
+};
+
 onMounted(async () => {
   await Promise.all([
     workationStore.fetchCurrent(),
     workationStore.fetchRecords(),
   ]);
+  await loadSetupState();
   loading.value = false;
 });
+
+// 설문과 예산 배분 중 하나라도 안 끝났으면 미완으로 본다
+const surveyDone = computed(() => surveyStore.hasAnswered);
+
+const budgetDone = computed(
+  () =>
+    budgetStore.itemsOf('WORK').length > 0 &&
+    budgetStore.itemsOf('PERSONAL').length > 0,
+);
+
+const setupIncomplete = computed(
+  () => Boolean(current.value) && (!surveyDone.value || !budgetDone.value),
+);
+
+const incompleteMessage = computed(() => {
+  if (!surveyDone.value) return '취향 설문을 마쳐야 숙소를 추천받을 수 있어요';
+  return '예산을 카테고리별로 나눠야 지출을 기록할 수 있어요';
+});
+
+// 미완인 단계로 바로 데려간다
+const goIncompleteStep = () => {
+  const workationId = workationStore.workationId;
+  router.push(
+    !surveyDone.value
+      ? `/workation/${workationId}/survey?step=create`
+      : `/workation/${workationId}/budgets?step=create`,
+  );
+};
+
+// 설정을 다 마쳤는데 예약이 없으면 추천을 권한다
+const showRecommendCard = computed(
+  () => !setupIncomplete.value && reservationCount.value === 0,
+);
+
+const goRecommendation = () => {
+  router.push('/recommendation/accommodations');
+};
 
 // 시안 기준으로 진행 중 워케이션이 있을 때와 없을 때 목록 제목이 다르다
 const recordsTitle = computed(() =>
@@ -166,6 +300,14 @@ const goEdit = () => {
   router.push(`/workation/${workationStore.workationId}/edit`);
 };
 
+// 예약이 남아 있으면 서버가 삭제를 막는다. 누르기 전에 미리 알려 준다
+// BaseConfirmModal 의 본문은 줄바꿈을 살리지 않아 한 문단으로 쓴다
+const deleteMessage = computed(() => {
+  const base = '일정과 예산, 등록한 지출이 모두 사라져요.';
+  if (reservationCount.value === 0) return base;
+  return `${base} 예약 ${reservationCount.value}건이 남아 있으면 삭제할 수 없어요. 예약을 먼저 취소해 주세요.`;
+});
+
 const remove = async () => {
   if (deleting.value) return;
 
@@ -173,11 +315,25 @@ const remove = async () => {
   try {
     await workationStore.deleteWorkation(workationStore.workationId);
     confirmOpen.value = false;
+    reservationCount.value = 0;
   } catch (error) {
+    // 예약이 남아 있으면 서버가 삭제를 거부한다.
+    // 예약에는 결제와 환불이 걸려 있어 워케이션과 같이 지울 수 없다
+    if (error.response?.data?.errorCode === 'RESERVATION_EXISTS') {
+      confirmOpen.value = false;
+      reservationBlockMessage.value = error.message;
+      reservationBlockOpen.value = true;
+      return;
+    }
     showError(error, '워케이션을 삭제하지 못했습니다.');
   } finally {
     deleting.value = false;
   }
+};
+
+const goReservationsToCancel = () => {
+  reservationBlockOpen.value = false;
+  router.push('/reservations');
 };
 
 // 누른 카드의 예산 유형 탭이 열리도록 쿼리로 넘긴다
@@ -192,6 +348,11 @@ const goUncheckedExpenses = () => {
   router.push(
     `/workation/${workationStore.workationId}/expenses?uncheckedOnly=true`,
   );
+};
+
+// 예약 목록은 예약 파트 화면이다
+const goReservations = () => {
+  router.push('/reservations');
 };
 
 const goExpenses = () => {

@@ -1,8 +1,12 @@
 <template>
   <div class="min-h-screen bg-white px-5 pt-4 pb-8">
     <header class="relative mb-4 flex items-center justify-center">
-      <button class="absolute left-0 text-xl text-slate-900" @click="goBack">
-        ‹
+      <button
+        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
+        aria-label="뒤로 가기"
+        @click="goBack"
+      >
+        <ChevronLeft class="h-7 w-7" />
       </button>
       <h1 class="text-base font-bold text-slate-900">
         {{ settled ? '지난 워케이션 상세' : '정산 내역 보기' }}
@@ -188,6 +192,16 @@
       @confirm="remove"
       @cancel="removeOpen = false"
     />
+
+    <BaseConfirmModal
+      :visible="reservationBlockOpen"
+      title="예약을 먼저 취소해 주세요"
+      :message="reservationBlockMessage"
+      confirm-label="예약 확인하기"
+      cancel-label="닫기"
+      @confirm="goReservationsToCancel"
+      @cancel="reservationBlockOpen = false"
+    />
   </div>
 </template>
 
@@ -195,7 +209,7 @@
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { Trash2 } from '@lucide/vue';
+import { ChevronLeft, Trash2 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { useSettlementStore } from '@/stores/settlementStore';
 import { useWorkationStore } from '@/stores/workationStore';
@@ -231,6 +245,10 @@ const settling = ref(false);
 const removing = ref(false);
 const confirmOpen = ref(false);
 const removeOpen = ref(false);
+
+// 예약이 남아 삭제가 막혔을 때 안내한다
+const reservationBlockOpen = ref(false);
+const reservationBlockMessage = ref('');
 
 const { workation, validation } = storeToRefs(settlementStore);
 
@@ -335,11 +353,23 @@ const remove = async () => {
     await workationStore.fetchRecords();
     router.push('/workation');
   } catch (error) {
+    // 예약이 남아 있으면 서버가 삭제를 거부한다
+    if (error.response?.data?.errorCode === 'RESERVATION_EXISTS') {
+      removeOpen.value = false;
+      reservationBlockMessage.value = error.message;
+      reservationBlockOpen.value = true;
+      return;
+    }
     showError(error, '워케이션 기록을 삭제하지 못했습니다.');
   } finally {
     removing.value = false;
     removeOpen.value = false;
   }
+};
+
+const goReservationsToCancel = () => {
+  reservationBlockOpen.value = false;
+  router.push('/reservations');
 };
 
 const goBack = () => {

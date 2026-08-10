@@ -25,7 +25,11 @@ export const deleteExpense = (expenseId) => {
 };
 
 // 카테고리 수동 변경. applyToMerchant 가 true 면 같은 가맹점에 규칙으로 저장된다
-export const updateExpenseCategory = (expenseId, expenseCategoryId, applyToMerchant = true) => {
+export const updateExpenseCategory = (
+  expenseId,
+  expenseCategoryId,
+  applyToMerchant = true,
+) => {
   return axiosInstance.patch(`/expenses/${expenseId}/category`, {
     expenseCategoryId,
     applyToMerchant,
@@ -33,9 +37,20 @@ export const updateExpenseCategory = (expenseId, expenseCategoryId, applyToMerch
 };
 
 // 경비/개인소비 구분 변경. 예산 유형이 바뀌면 카테고리도 함께 지정해야 한다
-export const updateExpenseBudgetType = (expenseId, budgetType, expenseCategoryId) => {
+export const updateExpenseBudgetType = (
+  expenseId,
+  budgetType,
+  expenseCategoryId,
+) => {
   return axiosInstance.patch(`/expenses/${expenseId}/budget-type`, {
     budgetType,
     expenseCategoryId,
+  });
+};
+
+// 자동분류 결과 일괄 확정. 카테고리는 그대로 두고 확인 표시만 내린다
+export const confirmExpenses = (workationId, expenseIds) => {
+  return axiosInstance.patch(`/workations/${workationId}/expenses/confirm`, {
+    expenseIds,
   });
 };

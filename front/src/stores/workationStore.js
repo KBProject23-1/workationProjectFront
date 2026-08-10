@@ -90,9 +90,10 @@ export const useWorkationStore = defineStore('workation', {
       }
     },
 
-    async updateWorkation(workationId, payload) {
+    // force = true 면 기간을 벗어나는 지출을 떼어내고 저장한다
+    async updateWorkation(workationId, payload, force = false) {
       try {
-        const { data } = await updateWorkationApi(workationId, payload);
+        const { data } = await updateWorkationApi(workationId, payload, force);
         await this.fetchCurrent();
         return data;
       } catch (err) {

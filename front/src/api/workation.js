@@ -21,8 +21,11 @@ export const getWorkations = (params) => {
 };
 
 // 워케이션 수정
-export const updateWorkation = (workationId, payload) => {
-  return axiosInstance.put(`/workations/${workationId}`, payload);
+// force 를 주면 새 기간을 벗어나는 지출을 워케이션에서 떼어내고 진행한다
+export const updateWorkation = (workationId, payload, force = false) => {
+  return axiosInstance.put(`/workations/${workationId}`, payload, {
+    params: force ? { force: true } : undefined,
+  });
 };
 
 // 워케이션 삭제

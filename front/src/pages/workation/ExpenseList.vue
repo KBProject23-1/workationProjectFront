@@ -1,13 +1,18 @@
 <template>
   <div class="min-h-screen bg-white px-5 pt-4 pb-8">
     <header class="relative mb-4 flex items-center justify-center">
-      <button class="absolute left-0 text-xl text-slate-900" @click="goBack">
-        ‹
+      <button
+        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
+        aria-label="뒤로 가기"
+        @click="goBack"
+      >
+        <ChevronLeft class="h-7 w-7" />
       </button>
       <h1 class="text-base font-bold text-slate-900">지출 내역</h1>
     </header>
 
-    <div class="grid grid-cols-3 rounded-xl bg-blue-50 p-1">
+    <!-- 선택 모드에서는 확인 필요 건만 다루므로 탭·필터를 감춘다 -->
+    <div v-if="!selectMode" class="grid grid-cols-3 rounded-xl bg-blue-50 p-1">
       <button
         v-for="tab in TABS"
         :key="tab.label"
@@ -21,7 +26,7 @@
       </button>
     </div>
 
-    <div class="mt-3 flex flex-wrap gap-2">
+    <div v-if="!selectMode" class="mt-3 flex flex-wrap gap-2">
       <button
         v-if="summary.uncheckedCount > 0"
         class="rounded-full border px-3 py-1 text-xs"
@@ -50,8 +55,56 @@
       </button>
     </div>
 
-    <p class="mt-3 text-xs text-slate-400">
-      총 {{ summary.totalCount }}건 · {{ won(summary.totalAmount) }}
+    <div class="mt-3 flex items-center justify-between">
+      <p class="text-xs text-slate-400">
+        <template v-if="selectMode"> 확인이 필요한 지출만 모았어요 </template>
+        <template v-else>
+          총 {{ summary.totalCount }}건 · {{ won(summary.totalAmount) }}
+        </template>
+      </p>
+
+      <!-- 확인이 필요한 건이 있을 때만 일괄 처리를 열 수 있다 -->
+      <button
+        v-if="summary.uncheckedCount > 0"
+        class="rounded-lg border px-3 py-1.5 text-xs font-bold"
+        :class="
+          selectMode
+            ? 'border-slate-300 text-slate-500'
+            : 'border-blue-600 bg-blue-600 text-white'
+        "
+        @click="toggleSelectMode"
+      >
+        {{ selectMode ? '취소' : '일괄 완료처리' }}
+      </button>
+    </div>
+
+    <!-- 아래 항목들과 같은 자리·같은 모양으로 둬야 전체 선택인 걸 바로 안다 -->
+    <div v-if="selectMode" class="mt-3 flex items-center gap-2">
+      <button
+        class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border"
+        :class="
+          allUncheckedSelected
+            ? 'border-blue-600 bg-blue-600 text-white'
+            : 'border-slate-300'
+        "
+        aria-label="확인 필요 전체 선택"
+        @click="toggleAll"
+      >
+        <Check v-if="allUncheckedSelected" class="h-4 w-4" />
+      </button>
+
+      <span class="text-xs font-bold text-slate-700">전체 선택</span>
+      <span class="text-xs text-slate-400">
+        {{ uncheckedExpenses.length }}건 중 {{ selectedIds.length }}건 선택
+      </span>
+    </div>
+
+    <p
+      v-if="selectMode && hasMoreThanLimit"
+      class="mt-1 text-xs text-amber-600"
+    >
+      한 번에 {{ SELECT_MODE_SIZE }}건까지 확인할 수 있어요. 나머지는 확정 후
+      다시 눌러 주세요
     </p>
 
     <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
@@ -66,16 +119,39 @@
     </p>
 
     <div v-else class="mt-2 space-y-2">
-      <ExpenseListItem
+      <div
         v-for="expense in expenses"
         :key="expense.expenseId"
-        :expense="expense"
-        @click="goDetail"
-      />
+        class="flex items-center gap-2"
+      >
+        <!-- 선택 모드에서는 확인 필요 건만 조회하므로 전부 고를 수 있다 -->
+        <button
+          v-if="selectMode"
+          class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border"
+          :class="
+            selectedIds.includes(expense.expenseId)
+              ? 'border-blue-600 bg-blue-600 text-white'
+              : 'border-slate-300'
+          "
+          :aria-label="`${expense.merchantName} 선택`"
+          @click="toggleOne(expense)"
+        >
+          <Check
+            v-if="selectedIds.includes(expense.expenseId)"
+            class="h-4 w-4"
+          />
+        </button>
+
+        <ExpenseListItem
+          class="min-w-0 flex-1"
+          :expense="expense"
+          @click="goDetail"
+        />
+      </div>
     </div>
 
     <div
-      v-if="totalPages > 1"
+      v-if="!selectMode && totalPages > 1"
       class="mt-5 flex items-center justify-center gap-4"
     >
       <button
@@ -101,7 +177,26 @@
       </button>
     </div>
 
-    <Button class="mt-8 h-12 w-full rounded-xl text-base" @click="goCreate">
+    <!-- 선택 모드에서는 확정 버튼만 남긴다. 두 버튼이 나란히 있으면 뭘 눌러야 할지 헷갈린다 -->
+    <template v-if="selectMode">
+      <Button
+        class="mt-8 h-12 w-full rounded-xl text-base"
+        :disabled="selectedIds.length === 0 || confirming"
+        @click="confirmSelected"
+      >
+        {{ confirming ? '처리 중...' : `${selectedIds.length}건 확인 완료` }}
+      </Button>
+
+      <p class="mt-2 text-center text-xs text-slate-400">
+        고른 지출을 지금 카테고리 그대로 확정해요
+      </p>
+    </template>
+
+    <Button
+      v-else
+      class="mt-8 h-12 w-full rounded-xl text-base"
+      @click="goCreate"
+    >
       지출 내역 추가하기
     </Button>
   </div>
@@ -110,6 +205,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { Check, ChevronLeft } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { storeToRefs } from 'pinia';
 import { useExpenseStore } from '@/stores/expenseStore';
@@ -146,8 +242,18 @@ const categoryId = ref(
 
 const PAGE_SIZE = 10;
 
+// 일괄 확인은 페이지를 나누지 않고 확인 필요 건을 한 화면에 모아 보여준다.
+// 페이지를 넘나들며 고르게 하면 "20건 중 몇 건"이 페이지마다 달라져 헷갈린다.
+// 서버 상한이 100 이라 그보다 많으면 나눠서 처리하게 안내한다
+const SELECT_MODE_SIZE = 100;
+
 const loading = ref(true);
 const page = ref(Number(route.query.page ?? 0));
+
+// 일괄 확인 모드. 켜면 항목마다 체크박스가 붙는다
+const selectMode = ref(false);
+const confirming = ref(false);
+const selectedIds = ref([]);
 
 const { expenses, summary, totalPages } = storeToRefs(expenseStore);
 
@@ -166,13 +272,18 @@ const filterCategories = computed(() =>
 const loadExpenses = async () => {
   loading.value = true;
   try {
-    await expenseStore.fetchExpenses(workationId, {
-      budgetType: budgetType.value ?? undefined,
-      expenseCategoryId: categoryId.value ?? undefined,
-      uncheckedOnly: uncheckedOnly.value ? true : undefined,
-      page: page.value,
-      size: PAGE_SIZE,
-    });
+    // 선택 모드에서는 필터를 무시하고 확인 필요 건만 한 번에 받는다
+    const params = selectMode.value
+      ? { uncheckedOnly: true, page: 0, size: SELECT_MODE_SIZE }
+      : {
+          budgetType: budgetType.value ?? undefined,
+          expenseCategoryId: categoryId.value ?? undefined,
+          uncheckedOnly: uncheckedOnly.value ? true : undefined,
+          page: page.value,
+          size: PAGE_SIZE,
+        };
+
+    await expenseStore.fetchExpenses(workationId, params);
   } catch (error) {
     showError(error, '지출 목록을 불러오지 못했습니다.');
   } finally {
@@ -226,6 +337,71 @@ const toggleCategory = async (value) => {
   await reload();
 };
 
+// =====================================================================================
+// 일괄 확인
+// =====================================================================================
+
+// 자동분류 상태 그대로인 건만 확정 대상이다
+const uncheckedExpenses = computed(() =>
+  expenses.value.filter((expense) => expense.isAutoCategorized),
+);
+
+const allUncheckedSelected = computed(
+  () =>
+    uncheckedExpenses.value.length > 0 &&
+    selectedIds.value.length === uncheckedExpenses.value.length,
+);
+
+// 확인 필요 건이 한 번에 받을 수 있는 양을 넘으면 나눠서 처리해야 한다
+const hasMoreThanLimit = computed(
+  () => summary.value.uncheckedCount > SELECT_MODE_SIZE,
+);
+
+const toggleSelectMode = async () => {
+  selectMode.value = !selectMode.value;
+  selectedIds.value = [];
+
+  // 목록 자체가 달라지므로 다시 받아야 한다.
+  // 나갈 때는 보던 필터·페이지로 돌아간다
+  await loadExpenses();
+  window.scrollTo({ top: 0 });
+};
+
+const toggleOne = (expense) => {
+  if (!expense.isAutoCategorized) return;
+
+  const index = selectedIds.value.indexOf(expense.expenseId);
+  if (index === -1) {
+    selectedIds.value.push(expense.expenseId);
+    return;
+  }
+  selectedIds.value.splice(index, 1);
+};
+
+const toggleAll = () => {
+  selectedIds.value = allUncheckedSelected.value
+    ? []
+    : uncheckedExpenses.value.map((expense) => expense.expenseId);
+};
+
+const confirmSelected = async () => {
+  if (confirming.value || selectedIds.value.length === 0) return;
+
+  confirming.value = true;
+  try {
+    await expenseStore.confirmExpenses(workationId, [...selectedIds.value]);
+    selectMode.value = false;
+    selectedIds.value = [];
+
+    // 원래 보던 필터·페이지로 돌아간다
+    await loadExpenses();
+  } catch (error) {
+    showError(error, '확인 처리를 하지 못했습니다.');
+  } finally {
+    confirming.value = false;
+  }
+};
+
 // 상세에서 뒤로 돌아올 때 지금 보던 목록으로 오도록 필터를 넘긴다
 const goDetail = (expenseId) => {
   router.push({
@@ -242,6 +418,11 @@ const goCreate = () => {
 };
 
 const goBack = () => {
+  // 일괄 확인 중이면 화면을 벗어나는 게 아니라 모드만 빠져나온다
+  if (selectMode.value) {
+    toggleSelectMode();
+    return;
+  }
   router.push('/workation');
 };
 </script>
