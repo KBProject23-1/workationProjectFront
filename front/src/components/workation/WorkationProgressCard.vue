@@ -27,10 +27,16 @@
 
           <div
             v-if="menuOpen"
-            class="absolute top-7 right-0 z-10 w-28 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-md"
+            class="absolute top-7 right-0 z-10 w-32 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-md"
           >
             <button
               class="w-full px-3 py-2 text-left text-xs text-slate-700"
+              @click="select('budget')"
+            >
+              세부 예산 수정
+            </button>
+            <button
+              class="w-full border-t border-slate-100 px-3 py-2 text-left text-xs text-slate-700"
               @click="select('edit')"
             >
               일정 수정
@@ -74,7 +80,7 @@ const props = defineProps({
   workation: { type: Object, required: true },
 });
 
-const emit = defineEmits(['edit', 'delete']);
+const emit = defineEmits(['budget', 'edit', 'delete']);
 
 const menuOpen = ref(false);
 

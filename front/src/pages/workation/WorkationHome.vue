@@ -43,6 +43,7 @@
     <template v-else-if="current">
       <WorkationProgressCard
         :workation="current.workation"
+        @budget="goBudgetDetail"
         @edit="goEdit"
         @delete="confirmOpen = true"
       />
@@ -73,15 +74,6 @@
           이어서 설정하기 ›
         </span>
       </button>
-
-      <div class="mt-5 space-y-5">
-        <BudgetUsageCard
-          v-for="budget in current.budgetSummary"
-          :key="budget.budgetType"
-          :budget="budget"
-          @detail="goBudgetDetail"
-        />
-      </div>
 
       <!--
         3/3 직후 팝업은 놓치면 다시 볼 수 없어 홈에도 상시로 둔다.
@@ -201,7 +193,6 @@ import { useBudgetStore } from '@/stores/budgetStore';
 import { useSurveyStore } from '@/stores/surveyStore';
 import { getReservationList } from '@/api/reservations';
 import WorkationProgressCard from '@/components/workation/WorkationProgressCard.vue';
-import BudgetUsageCard from '@/components/workation/BudgetUsageCard.vue';
 import UncheckedExpenseAlert from '@/components/workation/UncheckedExpenseAlert.vue';
 import SettlementRecordItem from '@/components/workation/SettlementRecordItem.vue';
 import WorkationEmptyState from '@/components/workation/WorkationEmptyState.vue';
@@ -387,11 +378,9 @@ const goReservationsToCancel = () => {
   router.push('/reservations');
 };
 
-// 누른 카드의 예산 유형 탭이 열리도록 쿼리로 넘긴다
-const goBudgetDetail = (budgetType) => {
-  router.push(
-    `/workation/${workationStore.workationId}/budgets?budgetType=${budgetType}`,
-  );
+// 예산 화면은 법인 탭으로 열린다. 예산 유형은 그 화면에서 바꾼다
+const goBudgetDetail = () => {
+  router.push(`/workation/${workationStore.workationId}/budgets`);
 };
 
 // 확인이 필요한 건만 걸러 보여준다
