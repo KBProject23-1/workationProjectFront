@@ -4,6 +4,7 @@ import { MapPin } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { useReviewStore } from '@/stores/reviewStore';
+import AtmosphereTagSelector from '@/components/review/AtmosphereTagSelector.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -67,6 +68,11 @@ function goToMerchantReviews() {
         </div>
       </section>
 
+      <section v-if="reviewDetail.atmosphere" class="atmosphere-field" aria-labelledby="atmosphere-title">
+        <h2 id="atmosphere-title">분위기</h2>
+        <AtmosphereTagSelector :model-value="reviewDetail.atmosphere" readonly />
+      </section>
+
       <section class="text-field" aria-labelledby="content-title">
         <h2 id="content-title">리뷰 내용</h2>
         <p>{{ reviewDetail.content }}</p>
@@ -105,13 +111,14 @@ button { font:inherit; }
 .merchant-info > span { display:inline-block; padding:6px 13px; color:#3087ed; border-radius:14px; background:#eaf3ff; font-size:12px; }
 .author-field { display:grid; grid-template-columns:1fr 1fr; margin-top:27px; padding:14px 15px; border:1.5px solid #d5e1ef; border-radius:17px; }
 .author-field > div + div { padding-left:18px; border-left:1px solid #e1e7ee; }
-.author-field h2,.rating-field h2,.text-field h2,.photo-field h2 { margin:0 0 9px; font-size:12px; font-weight:800; }
+.author-field h2,.rating-field h2,.atmosphere-field h2,.text-field h2,.photo-field h2 { margin:0 0 9px; font-size:12px; font-weight:800; }
 .author-field strong,.author-field time { color:#52647b; font-size:12px; font-weight:500; }
 .rating-field { margin-top:27px; }
 .stars { display:flex; gap:2px; height:42px; }
 .stars span { width:38px; color:#ced9e5; font-size:40px; line-height:1; }
 .stars span.selected { color:#ff9500; }
-.text-field { margin-top:40px; }
+.atmosphere-field { margin-top:27px; }
+.text-field { margin-top:27px; }
 .text-field > p { min-height:160px; margin:0; padding:14px 15px; color:#42546a; border:1.5px solid #d5e1ef; border-radius:17px; font-size:12px; line-height:1.8; white-space:pre-line; }
 .photo-field { margin-top:27px; }
 .photo-field h2 { margin-bottom:17px; }
