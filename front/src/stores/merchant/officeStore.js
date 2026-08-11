@@ -30,6 +30,13 @@ export const useOfficeStore = defineStore('office', {
   }),
   getters: {
     selectedProduct: (state) => state.office.products.find((product) => product.productName === state.selectedProductName),
+    usageDayCount: (state) => Math.floor((new Date(state.endDate) - new Date(state.startDate)) / 86400000) + 1,
+    totalPrice() {
+      const multiplier = this.selectedProduct?.productDetailType === 'OFFICE_SEAT'
+        ? this.guestCount
+        : this.spaceCount;
+      return (this.selectedProduct?.price ?? 0) * this.usageDayCount * multiplier;
+    },
   },
   actions: {
     setDate(mode, value) {

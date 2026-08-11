@@ -9,7 +9,7 @@ import ReservationSpaceModal from '@/components/reservation/ReservationSpaceModa
 import { useOfficeStore } from '@/stores/merchant/officeStore';
 
 const officeStore = useOfficeStore();
-const { office, startDate, endDate, spaceCount, guestCount, selectedProductName, selectedProduct } = storeToRefs(officeStore);
+const { office, startDate, endDate, spaceCount, guestCount, selectedProductName, selectedProduct, totalPrice } = storeToRefs(officeStore);
 const dateModalMode = ref('');
 const isSpaceModalOpen = ref(false);
 const isGuestModalOpen = ref(false);
@@ -82,7 +82,7 @@ function selectDate(value) {
     </section>
 
     <section class="booking-summary">
-      <div><small>선택 상품 금액</small><strong>{{ selectedProduct.price.toLocaleString() }}원</strong></div>
+      <div><small>총 결제 금액</small><strong>{{ totalPrice.toLocaleString() }}원</strong></div>
       <button type="button">예약하기</button>
     </section>
 
