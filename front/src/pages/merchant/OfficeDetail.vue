@@ -5,11 +5,13 @@ import { ChevronLeft, MapPin, Phone } from '@lucide/vue';
 import OfficeProductCard from '@/components/merchant/OfficeProductCard.vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationGuestModal from '@/components/reservation/ReservationGuestModal.vue';
+import ReservationSpaceModal from '@/components/reservation/ReservationSpaceModal.vue';
 import { useOfficeStore } from '@/stores/merchant/officeStore';
 
 const officeStore = useOfficeStore();
-const { office, startDate, endDate, guestCount, selectedProductName, selectedProduct } = storeToRefs(officeStore);
+const { office, startDate, endDate, spaceCount, guestCount, selectedProductName, selectedProduct } = storeToRefs(officeStore);
 const dateModalMode = ref('');
+const isSpaceModalOpen = ref(false);
 const isGuestModalOpen = ref(false);
 
 function displayDate(value) {
@@ -56,7 +58,7 @@ function selectDate(value) {
       <div class="conditions">
         <button type="button" @click="dateModalMode = 'checkIn'"><small>이용 시작일</small><strong>{{ displayDate(startDate) }}</strong></button>
         <button type="button" @click="dateModalMode = 'checkOut'"><small>이용 종료일</small><strong>{{ displayDate(endDate) }}</strong></button>
-        <div><small>공간 수</small><strong>1개</strong></div>
+        <button type="button" @click="isSpaceModalOpen = true"><small>공간 수</small><strong>{{ spaceCount }}개</strong></button>
         <button type="button" @click="isGuestModalOpen = true"><small>이용 인원</small><strong>{{ guestCount }}명</strong></button>
       </div>
     </section>
@@ -93,6 +95,12 @@ function selectDate(value) {
       end-label="이용 종료일"
       @select="selectDate"
       @close="dateModalMode = ''"
+    />
+    <ReservationSpaceModal
+      v-if="isSpaceModalOpen"
+      v-model:count="spaceCount"
+      :product-detail-type="selectedProduct.productDetailType"
+      @close="isSpaceModalOpen = false"
     />
     <ReservationGuestModal v-if="isGuestModalOpen" v-model:count="guestCount" @close="isGuestModalOpen = false" />
   </main>

@@ -30,6 +30,10 @@ function formatDate(day) {
   return `${year}-${month}-${String(day).padStart(2, '0')}`;
 }
 
+function isDateDisabled(day) {
+  return props.mode === 'checkOut' && Boolean(props.checkIn) && formatDate(day) < props.checkIn;
+}
+
 function moveMonth(amount) {
   viewDate.value = new Date(viewDate.value.getFullYear(), viewDate.value.getMonth() + amount, 1);
 }
@@ -47,7 +51,15 @@ function moveMonth(amount) {
       <div class="calendar-grid weekday"><span v-for="day in weekDays" :key="day">{{ day }}</span></div>
       <div class="calendar-grid days">
         <span v-for="(day, index) in days" :key="index">
-          <button v-if="day" type="button" :class="{ selected: selectedDate === formatDate(day) }" @click="selectedDate = formatDate(day)">{{ day }}</button>
+          <button
+            v-if="day"
+            type="button"
+            :class="{ selected: selectedDate === formatDate(day) }"
+            :disabled="isDateDisabled(day)"
+            @click="selectedDate = formatDate(day)"
+          >
+            {{ day }}
+          </button>
         </span>
       </div>
       <button type="button" class="done" :disabled="!selectedDate" @click="emit('select', selectedDate)">선택 완료</button>
@@ -65,5 +77,6 @@ header button,.month-header button { display:grid; place-items:center; border:0;
 .weekday { color:#7b8794; font-size:12px; padding-bottom:9px; }
 .days span { height:45px; display:grid; place-items:center; } .days button { width:38px; height:38px; border:0; border-radius:50%; background:#fff; }
 .days button.selected { color:#fff; background:#3087ed; font-weight:750; }
+.days button:disabled { color:#c8d0da; background:#f5f7f9; cursor:not-allowed; opacity:.65; }
 .done { width:100%; height:56px; margin-top:18px; border:0; border-radius:16px; color:#fff; background:#3087ed; font-size:16px; font-weight:750; }
 </style>

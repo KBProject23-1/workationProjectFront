@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { MapPin, Plus, X } from '@lucide/vue';
+import AtmosphereTagSelector from '@/components/review/AtmosphereTagSelector.vue';
 
 const props = defineProps({
   mode: { type: String, required: true },
@@ -12,6 +13,7 @@ const props = defineProps({
 const emit = defineEmits(['submit']);
 const rating = ref(0);
 const content = ref('');
+const atmosphere = ref(null);
 const imageFile = ref(null);
 const imagePreview = ref('');
 const fileInput = ref(null);
@@ -19,7 +21,14 @@ const maxContentLength = 500;
 
 const title = computed(() => (props.mode === 'edit' ? '리뷰 수정하기' : '리뷰 등록하기'));
 const submitLabel = computed(() => (props.mode === 'edit' ? '저장하기' : '등록하기'));
-const canSubmit = computed(() => rating.value > 0 && content.value.trim().length > 0 && !props.isSaving);
+const isOffice = computed(() => ['OFFICE', '공유오피스'].includes(props.merchant.category));
+const canSubmit = computed(
+  () =>
+    rating.value > 0 &&
+    content.value.trim().length > 0 &&
+    (!isOffice.value || atmosphere.value) &&
+    !props.isSaving,
+);
 
 watch(
   () => props.initialReview,
@@ -27,6 +36,7 @@ watch(
     if (!review) return;
     rating.value = review.rating;
     content.value = review.content;
+    atmosphere.value = review.atmosphere || null;
     imagePreview.value = review.imageUrl || '';
   },
   { immediate: true },
@@ -53,7 +63,12 @@ function removeImage() {
 
 function submitReview() {
   if (!canSubmit.value) return;
-  emit('submit', { rating: rating.value, content: content.value.trim(), image: imageFile.value });
+  emit('submit', {
+    rating: rating.value,
+    content: content.value.trim(),
+    atmosphere: isOffice.value ? atmosphere.value : null,
+    image: imageFile.value,
+  });
 }
 
 onBeforeUnmount(() => {
@@ -89,6 +104,11 @@ onBeforeUnmount(() => {
           @click="rating = score"
         >★</button>
       </div>
+    </fieldset>
+
+    <fieldset v-if="isOffice" class="atmosphere-field">
+      <legend>분위기 태그</legend>
+      <AtmosphereTagSelector v-model="atmosphere" />
     </fieldset>
 
     <section class="content-field">
@@ -144,9 +164,10 @@ onBeforeUnmount(() => {
 .merchant-info { min-width:0; padding-top:7px; }.merchant-info h2 { margin:0 0 8px; font-size:16px; font-weight:800; }
 .merchant-info p { display:flex; align-items:center; gap:3px; margin:0 0 7px; color:#7c8ca3; font-size:12px; white-space:nowrap; }.merchant-info p svg { flex:none; }
 .merchant-info > span { display:inline-block; padding:6px 13px; color:#3087ed; border-radius:14px; background:#eaf3ff; font-size:12px; }
-fieldset { min-width:0; margin:0; padding:0; border:0; }.rating-field { margin-top:28px; }.rating-field legend,.content-field label,.photo-field h2 { margin:0 0 9px; color:#172033; font-size:12px; font-weight:800; }
+fieldset { min-width:0; margin:0; padding:0; border:0; }.rating-field { margin-top:28px; }.rating-field legend,.atmosphere-field legend,.content-field label,.photo-field h2 { margin:0 0 9px; color:#172033; font-size:12px; font-weight:800; }
 .star-buttons { display:flex; gap:2px; }.star-buttons button { width:38px; height:42px; padding:0; color:#ced9e5; border:0; background:transparent; font-size:40px; line-height:1; cursor:pointer; }.star-buttons button.selected { color:#ff9500; }
-.content-field { margin-top:40px; }.content-field label { display:block; }.textarea-wrap { position:relative; }.textarea-wrap textarea { width:100%; height:160px; resize:none; padding:14px 15px 35px; color:#42546a; border:1.5px solid #d5e1ef; border-radius:17px; outline:none; background:#fff; font:12px/1.8 inherit; }.textarea-wrap textarea:focus { border-color:#3087ed; }.textarea-wrap > span { position:absolute; right:26px; bottom:17px; color:#6f7e91; font-size:12px; }
+.atmosphere-field { margin-top:27px; }
+.content-field { margin-top:27px; }.content-field label { display:block; }.textarea-wrap { position:relative; }.textarea-wrap textarea { width:100%; height:160px; resize:none; padding:14px 15px 35px; color:#42546a; border:1.5px solid #d5e1ef; border-radius:17px; outline:none; background:#fff; font:12px/1.8 inherit; }.textarea-wrap textarea:focus { border-color:#3087ed; }.textarea-wrap > span { position:absolute; right:26px; bottom:17px; color:#6f7e91; font-size:12px; }
 .photo-field { margin-top:27px; }.photo-field h2 { margin-bottom:17px; }.photo-row { display:flex; gap:12px; }.photo-preview { position:relative; }.photo-preview > button { position:absolute; top:2px; right:2px; width:23px; height:23px; display:grid; place-items:center; padding:0; color:#66778c; border:1px solid #b9c7d6; border-radius:50%; background:#fff; cursor:pointer; }.add-photo { width:97px; height:97px; display:grid; place-items:center; padding:0; color:#8fa2b8; border:1.5px dashed #cad8e7; border-radius:14px; background:#fff; cursor:pointer; }.photo-field > p { margin:10px 0 0; color:#76879c; font-size:12px; }
-.submit-button { width:100%; max-width:340px; height:70px; align-self:center; margin-top:auto; color:#fff; border:0; border-radius:20px; background:#3087ed; font-size:24px; font-weight:800; cursor:pointer; }.submit-button:disabled { cursor:default; opacity:.55; }
+.submit-button { width:100%; height:48px; align-self:center; margin-top:auto; color:#fff; border:0; border-radius:12px; background:#3087ed; font-size:16px; font-weight:500; cursor:pointer; }.submit-button:disabled { cursor:default; opacity:.55; }
 </style>

@@ -5,11 +5,19 @@ defineProps({
   merchant: { type: Object, required: true },
 });
 
-defineEmits(['toggle-bookmark']);
+defineEmits(['select', 'toggle-bookmark']);
 </script>
 
 <template>
-  <article class="result-card">
+  <article
+    class="result-card"
+    role="link"
+    tabindex="0"
+    :aria-label="`${merchant.name} 상세보기`"
+    @click="$emit('select', merchant)"
+    @keydown.enter="$emit('select', merchant)"
+    @keydown.space.prevent="$emit('select', merchant)"
+  >
     <div class="result-image" :class="merchant.category.toLowerCase()">
       <span>{{ merchant.category === 'ACCOMMODATION' ? '🛏️' : '💻' }}</span>
     </div>
@@ -20,7 +28,8 @@ defineEmits(['toggle-bookmark']);
         :class="{ bookmarked: merchant.bookmarked }"
         :aria-label="merchant.bookmarked ? '북마크 해제' : '북마크 추가'"
         :aria-pressed="merchant.bookmarked"
-        @click="$emit('toggle-bookmark', merchant.merchantId)"
+        @click.stop="$emit('toggle-bookmark', merchant.merchantId)"
+        @keydown.stop
       >
         <Heart :size="18" :fill="merchant.bookmarked ? 'currentColor' : 'none'" />
       </button>
@@ -34,7 +43,8 @@ defineEmits(['toggle-bookmark']);
 </template>
 
 <style scoped>
-.result-card { display:flex; gap:16px; min-height:156px; padding:12px; border:1.5px solid #dbe3ee; border-radius:20px; background:#fff; }
+.result-card { display:flex; gap:16px; min-height:156px; padding:12px; border:1.5px solid #dbe3ee; border-radius:20px; background:#fff; cursor:pointer; }
+.result-card:focus-visible { outline:2px solid #3087ed; outline-offset:2px; }
 .result-image { width:116px; flex:none; border-radius:16px; display:grid; place-items:center; font-size:40px; }
 .result-image.accommodation { background:#ddebff; }.result-image.office { background:#e7f5ef; }
 .result-content { position:relative; min-width:0; flex:1; padding:2px 2px 0 0; }

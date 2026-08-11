@@ -15,6 +15,7 @@ const merchantReviewResponse = {
       reviewId: 101,
       nickname: '여행자',
       rating: 4,
+      atmosphere: 'QUIET',
       content: '분위기가 좋고 접근성도 뛰어나 만족했어요.\n강사님도 친절하게 잘 알려주셨어요!',
       createdAt: '2026-07-14T10:20:00',
     },
@@ -54,6 +55,7 @@ const reviewDetailResponse = {
   reviewId: 101,
   nickname: '여행자',
   rating: 4,
+  atmosphere: 'QUIET',
   content:
     '객실이 깨끗하고 위치도 좋아서 편하게 잘 쉬다 왔어요.\n직원분들도 친절했고 주변에 식당과 카페가 많아서\n이용하기 좋았습니다. 다음에도 다시 방문하고 싶어요.',
   createdAt: '2026-07-14T10:20:00',
@@ -62,7 +64,7 @@ const reviewDetailResponse = {
     merchantId: 31,
     merchantName: '스테이 호텔 강남',
     address: '강남구 도보 6분 (450m)',
-    category: '숙소',
+    category: '공유오피스',
     thumbnailUrl: 'https://example.com/merchants/31.jpg',
   },
   reservationId: 210,
@@ -77,8 +79,9 @@ const myReviewResponse = {
     nickname: '여행자',
     merchantId: 31,
     merchantName: '스테이 호텔 강남',
-    category: 'ACCOMMODATION',
+    category: 'OFFICE',
     rating: 4,
+    atmosphere: 'QUIET',
     content: '객실이 깨끗하고 위치도 좋아서\n편하게 잘 쉬다 왔어요.',
     createdAt: '2025-05-10T12:00:00',
     thumbnailUrl: `https://example.com/reviews/${201 + index}.jpg`,
@@ -91,7 +94,7 @@ const reviewFormResponse = {
     merchantId: 31,
     merchantName: '스테이 호텔 강남',
     address: '강남구 도보 6분 (450m)',
-    category: '숙소',
+    category: '공유오피스',
     thumbnailUrl: 'https://example.com/merchants/31.jpg',
   },
 };
@@ -205,7 +208,7 @@ export const useReviewStore = defineStore('review', {
       }
     },
 
-    async saveReview({ mode, sourceType, sourceId, reviewId, rating, content, image }) {
+    async saveReview({ mode, sourceType, sourceId, reviewId, rating, content, atmosphere, image }) {
       if (this.isReviewSaving) return null;
 
       this.isReviewSaving = true;
@@ -219,6 +222,7 @@ export const useReviewStore = defineStore('review', {
           nickname: reviewFormResponse.nickname,
           rating,
           content,
+          atmosphere,
           imageUrl: image ? URL.createObjectURL(image) : null,
         };
         return this.savedReview;

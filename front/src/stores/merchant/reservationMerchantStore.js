@@ -58,8 +58,12 @@ export const useReservationMerchantStore = defineStore('reservationMerchant', {
 
   actions: {
     setDate(mode, value) {
-      if (mode === 'checkIn') this.checkIn = value;
-      else this.checkOut = value;
+      if (mode === 'checkIn') {
+        this.checkIn = value;
+        if (this.checkOut < value) this.checkOut = value;
+        return;
+      }
+      if (value >= this.checkIn) this.checkOut = value;
     },
     setPrice(field, value) {
       const sanitizedValue = value.replace(/\D/g, '').slice(0, 9);

@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { CalendarDays, ChevronDown, ChevronLeft, Users } from '@lucide/vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
@@ -8,6 +9,7 @@ import ReservationMerchantCard from '@/components/merchant/ReservationMerchantCa
 import { useReservationMerchantStore } from '@/stores/merchant/reservationMerchantStore';
 
 const merchantStore = useReservationMerchantStore();
+const router = useRouter();
 const { checkIn, checkOut, guestCount, category, sort, minPrice, maxPrice, filteredResults, hasNext } = storeToRefs(merchantStore);
 const dateModalMode = ref('');
 const isGuestModalOpen = ref(false);
@@ -35,6 +37,11 @@ function selectDate(value) {
 
 function sanitizePrice(target, field) {
   merchantStore.setPrice(field, target.value);
+}
+
+function moveToMerchantDetails(merchant) {
+  const routeName = merchant.category === 'ACCOMMODATION' ? 'AccommodationDetail' : 'OfficeDetail';
+  router.push({ name: routeName, params: { merchantId: merchant.merchantId } });
 }
 </script>
 
@@ -109,7 +116,13 @@ function sanitizePrice(target, field) {
     <section class="results">
       <h2>검색 결과 {{ filteredResults.length }}개</h2>
       <div class="result-list">
-        <ReservationMerchantCard v-for="item in filteredResults" :key="item.merchantId" :merchant="item" @toggle-bookmark="merchantStore.toggleBookmark" />
+        <ReservationMerchantCard
+          v-for="item in filteredResults"
+          :key="item.merchantId"
+          :merchant="item"
+          @select="moveToMerchantDetails"
+          @toggle-bookmark="merchantStore.toggleBookmark"
+        />
         <p v-if="filteredResults.length === 0" class="empty">조건에 맞는 검색 결과가 없습니다.</p>
         <button v-if="hasNext" type="button" class="load-more-button" @click="merchantStore.loadNextPage">더보기</button>
       </div>
