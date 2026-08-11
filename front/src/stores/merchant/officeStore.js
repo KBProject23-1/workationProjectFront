@@ -24,6 +24,7 @@ export const useOfficeStore = defineStore('office', {
     office: officeResponse.data,
     startDate: '2026-08-10',
     endDate: '2026-08-12',
+    spaceCount: 1,
     guestCount: 2,
     selectedProductName: officeResponse.data.products[0].productName,
   }),
@@ -32,11 +33,18 @@ export const useOfficeStore = defineStore('office', {
   },
   actions: {
     setDate(mode, value) {
-      if (mode === 'checkIn') this.startDate = value;
-      else this.endDate = value;
+      if (mode === 'checkIn') {
+        this.startDate = value;
+        if (this.endDate < value) this.endDate = value;
+        return;
+      }
+      if (value >= this.startDate) this.endDate = value;
     },
     selectProduct(productName) {
       this.selectedProductName = productName;
+      if (this.selectedProduct.productDetailType === 'OFFICE_SEAT') {
+        this.spaceCount = 1;
+      }
     },
   },
 });
