@@ -1,4 +1,6 @@
 <script setup>
+import AtmosphereTagSelector from '@/components/review/AtmosphereTagSelector.vue';
+
 defineProps({
   review: { type: Object, required: true },
 });
@@ -27,6 +29,7 @@ function formatDate(value) {
         </span>
       </div>
       <time :datetime="review.createdAt">{{ formatDate(review.createdAt) }}</time>
+      <AtmosphereTagSelector v-if="review.atmosphere" :model-value="review.atmosphere" readonly />
       <p>{{ review.content }}</p>
     </div>
   </article>
@@ -48,5 +51,6 @@ function formatDate(value) {
 .review-meta strong { overflow:hidden; font-size:12px; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
 .stars { display:flex; flex:none; color:#ff9500; font-size:16px; line-height:1; letter-spacing:0; }
 time { display:block; margin-top:7px; color:#8493a7; font-size:12px; }
+.atmosphere-tags { margin-top:7px; }
 p { margin:6px 0 0; color:#3f5066; font-size:12px; line-height:1.55; white-space:pre-line; }
 </style>

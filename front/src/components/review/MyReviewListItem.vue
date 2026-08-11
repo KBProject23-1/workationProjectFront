@@ -1,4 +1,6 @@
 <script setup>
+import AtmosphereTagSelector from '@/components/review/AtmosphereTagSelector.vue';
+
 defineProps({
   review: { type: Object, required: true },
 });
@@ -24,6 +26,7 @@ function formatDate(value) {
           <span v-for="score in 5" :key="score" :class="{ empty: score > review.rating }">★</span>
         </span>
       </div>
+      <AtmosphereTagSelector v-if="review.atmosphere" :model-value="review.atmosphere" readonly />
       <p>{{ review.content }}</p>
       <div class="review-footer">
         <time :datetime="review.createdAt">| {{ formatDate(review.createdAt) }}</time>
@@ -49,6 +52,7 @@ function formatDate(value) {
 .review-heading strong { overflow:hidden; font-size:12px; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
 .stars { display:flex; flex:none; color:#ff9500; font-size:16px; letter-spacing:0; }
 .stars .empty { color:#b9c6d2; }
+.atmosphere-tags { margin-top:6px; }
 .review-info > p { margin:6px 0 3px; color:#3f5066; font-size:12px; line-height:1.55; white-space:pre-line; }
 .review-footer { display:flex; align-items:end; justify-content:space-between; gap:6px; }
 time { padding-bottom:5px; color:#8493a7; font-size:12px; }
