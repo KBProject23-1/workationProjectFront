@@ -1,0 +1,151 @@
+<script setup>
+// 회원가입 본인인증(PASS) 화면 — /signup/verify
+// - 약관동의(/signup/terms) 완료 후 진입한다.
+// - 'PASS 인증하기' → PASS 팝업 1(통신사 선택 + 약관 전체 동의) → 팝업 2(이름/휴대폰/보안문자)
+// - 팝업 2 '확인' → 프론트가 identityVerificationId 를 생성해 백엔드(POST /auth/pass)로 전송
+//   → 백엔드가 VERIFIED 세션 등록 → 완료 화면
+// - 인증 성공 여부는 백엔드가 결정한다 (프론트는 VERIFIED 응답만 신뢰).
+// - 완료 후 기존 검증(/auth/signup/verify-identity)을 거쳐 identityToken/name 을 AuthStore 에
+//   보관하고 계정정보 입력(/signup)으로 이동한다.
+// - 인증 로직(상태 머신)은 useIdentityVerification 컴포저블에 분리되어 있다.
+import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { ChevronLeft } from '@lucide/vue';
+import { useAuthStore } from '@/stores/authStore';
+import { useErrorToast } from '@/composables/useErrorToast';
+import {
+  useIdentityVerification,
+  VERIFICATION_STATUS,
+} from '@/composables/useIdentityVerification';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import IdentityVerificationIntro from '@/components/identity/IdentityVerificationIntro.vue';
+import IdentityVerificationSuccess from '@/components/identity/IdentityVerificationSuccess.vue';
+import IdentityVerificationFailure from '@/components/identity/IdentityVerificationFailure.vue';
+import PassCarrierSelect from '@/components/identity/PassCarrierSelect.vue';
+import PassAuthForm from '@/components/identity/PassAuthForm.vue';
+
+const router = useRouter();
+const authStore = useAuthStore();
+const { showError } = useErrorToast();
+const verification = useIdentityVerification();
+
+const { status, isBusy, isPopupOpen, identityVerificationId, verifiedName, errorMessage, form } =
+  verification;
+
+// SUCCESS → 계정정보 입력(/signup)으로 이동하는 동안의 버튼 로딩
+const isContinuing = ref(false);
+
+// 성공/실패 화면은 자체 액션(계속/재시도)을 가지므로 헤더를 숨긴다
+const showHeader = computed(
+  () => status.value !== VERIFICATION_STATUS.SUCCESS && status.value !== VERIFICATION_STATUS.FAILURE,
+);
+
+function goBack() {
+  // 팝업이 열려 있으면 닫고 안내 화면으로 복귀
+  if (isPopupOpen.value) {
+    verification.cancel();
+    return;
+  }
+  // 단독 라우트(/signup/verify)로 직접 접근한 경우(히스토리 없음) 약관동의 화면으로 이동한다.
+  if (window.history.length > 1) router.back();
+  else router.replace('/signup/terms');
+}
+
+// 팝업 닫힘(ESC/백드롭/X) → 흐름 취소
+// SUBMITTING 중에는 로딩 화면이 팝업을 대체하므로 닫힘 이벤트를 무시한다
+function handlePopupClose(open) {
+  if (open) return;
+  if (verification.isBusy.value) return;
+  verification.cancel();
+}
+
+// 팝업 2 '확인' → 프론트에서 identityVerificationId 생성 → 백엔드 전송
+function handleFormSubmit(payload) {
+  verification.submitVerification(payload);
+}
+
+// SUCCESS → 백엔드 최종 검증(/auth/signup/verify-identity) 후 계정정보 입력으로 이동
+async function continueToSignup() {
+  if (isContinuing.value) return;
+  isContinuing.value = true;
+  try {
+    await authStore.verifyIdentity(identityVerificationId.value);
+    router.replace('/signup');
+  } catch (err) {
+    showError(err, '본인인증 결과를 확인하지 못했어요. 다시 시도해 주세요.');
+    verification.reset();
+    isContinuing.value = false;
+  }
+}
+</script>
+
+<template>
+  <!-- SUBMITTING — 전체 화면 로딩 (기존 LoadingScreen 재사용) -->
+  <LoadingScreen
+    v-if="isBusy"
+    title="본인인증을 처리하고 있어요"
+    description="잠시만 기다려 주세요"
+  />
+
+  <div v-else class="flex h-dvh flex-col overflow-hidden bg-white">
+    <!-- 헤더 -->
+    <header v-if="showHeader" class="flex shrink-0 items-center gap-1 px-2 pt-2">
+      <button
+        type="button"
+        aria-label="뒤로 가기"
+        class="flex h-10 w-10 items-center justify-center rounded-full text-[#0B3155] transition-colors hover:bg-[#F5F8FC] active:scale-95"
+        @click="goBack"
+      >
+        <ChevronLeft :size="24" :stroke-width="2.5" />
+      </button>
+      <h1 class="text-[17px] font-bold tracking-tight text-[#191F28]">본인인증</h1>
+    </header>
+
+    <!-- 상태별 화면 -->
+    <div class="flex min-h-0 flex-1 flex-col">
+      <!-- CANCELLED 도 안내 화면(IDLE)과 동일하게 렌더링한다 (상태는 구분해서 보관) -->
+      <IdentityVerificationIntro
+        v-if="status === VERIFICATION_STATUS.IDLE || status === VERIFICATION_STATUS.CANCELLED"
+        @start="verification.start"
+      />
+      <IdentityVerificationSuccess
+        v-else-if="status === VERIFICATION_STATUS.SUCCESS"
+        :name="verifiedName"
+        :loading="isContinuing"
+        @continue="continueToSignup"
+      />
+      <IdentityVerificationFailure
+        v-else-if="status === VERIFICATION_STATUS.FAILURE"
+        :message="errorMessage"
+        @retry="verification.retry"
+        @cancel="verification.cancel"
+      />
+    </div>
+  </div>
+
+  <!-- PASS 팝업 (통신사/약관 → 이름/휴대폰/보안문자) -->
+  <Dialog :open="isPopupOpen" @update:open="handlePopupClose">
+    <DialogContent
+      :show-close-button="false"
+      class="max-w-[430px] gap-0 overflow-hidden rounded-[20px] border-2 border-[#1F2937] p-0 shadow-[0_20px_50px_rgba(0,0,0,0.35)]"
+    >
+      <DialogTitle class="sr-only">PASS 본인인증</DialogTitle>
+      <div class="flex max-h-[86dvh] min-h-0 flex-col">
+        <PassCarrierSelect
+          v-if="status === VERIFICATION_STATUS.CARRIER"
+          @confirm="verification.confirmCarrier"
+          @close="verification.cancel"
+        />
+        <PassAuthForm
+          v-else-if="status === VERIFICATION_STATUS.FORM"
+          :form="form"
+          :error-message="errorMessage"
+          @update:form="verification.updateForm"
+          @submit="handleFormSubmit"
+          @back="verification.cancel"
+        />
+      </div>
+    </DialogContent>
+  </Dialog>
+</template>

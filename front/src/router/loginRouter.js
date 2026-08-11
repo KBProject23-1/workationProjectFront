@@ -11,11 +11,28 @@ export default [
     name: 'SignupPage',
     component: () => import('@/pages/signup/SignupPage.vue'),
   },
-  // 회원가입 약관 동의 화면 — 독립적으로 접근/테스트 가능한 단독 Route
-  // 본인인증 등 다음 단계와의 실제 연결은 회원가입 프로세스 통합 작업에서 진행한다.
+  // 회원가입 약관 동의 화면 — 약관동의 → 본인인증(/signup/verify) → 계정정보(/signup)
   {
     path: '/signup/terms',
     name: 'TermsAgreementPage',
     component: () => import('@/pages/signup/TermsAgreementPage.vue'),
+  },
+  // 회원가입 본인인증(PASS) 화면 — 약관동의 후 진입
+  {
+    path: '/signup/verify',
+    name: 'IdentityVerificationPage',
+    component: () => import('@/pages/signup/IdentityVerificationPage.vue'),
+  },
+  // 회원가입 완료 화면 — 계정정보 입력(/signup) 성공 후 진입 (Figma: 회원가입완료)
+  {
+    path: '/signup/complete',
+    name: 'SignupCompletePage',
+    component: () => import('@/pages/signup/SignupCompletePage.vue'),
+  },
+  // PIN 번호 최초 설정 — 회원가입 완료 화면에서 '시작하기' 후 진입 (Cookie 기반 인증 필요)
+  {
+    path: '/pin-setup',
+    name: 'PinSetupPage',
+    component: () => import('@/pages/signup/PinSetupPage.vue'),
   },
 ];
