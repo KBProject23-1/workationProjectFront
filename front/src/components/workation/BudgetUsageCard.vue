@@ -1,16 +1,6 @@
 <template>
   <section>
-    <div class="flex items-center justify-between">
-      <h3 class="text-sm font-bold text-slate-900">
-        {{ label }} 예산 사용 현황
-      </h3>
-      <button
-        class="text-xs text-blue-600"
-        @click="$emit('detail', budget.budgetType)"
-      >
-        세부예산 수정 ›
-      </button>
-    </div>
+    <h3 class="text-sm font-bold text-slate-900">{{ title }} 사용 현황</h3>
 
     <div class="mt-1 flex items-end justify-between">
       <span class="text-2xl font-bold text-slate-900">{{
@@ -48,13 +38,9 @@ import { won } from './format';
 
 const props = defineProps({
   budget: { type: Object, required: true },
+  // 법인 예산 / 숙박비 처럼 무엇의 사용 현황인지 부르는 이름
+  title: { type: String, required: true },
 });
-
-defineEmits(['detail']);
-
-const label = computed(() =>
-  props.budget.budgetType === 'WORK' ? '법인' : '개인',
-);
 
 // 예산을 초과해도 막대가 카드를 벗어나지 않도록 100 에서 자른다
 const barWidth = computed(() => Math.min(props.budget.usageRate, 100));
