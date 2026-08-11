@@ -11,7 +11,7 @@
       <h1 class="text-base font-bold text-slate-900">지출 내역</h1>
     </header>
 
-    <!-- 선택 모드에서는 확인 필요 건만 다루므로 탭·필터를 감춘다 -->
+    <!-- 선택 모드에서는 확인 필요 건만 다루므로 탭·예산·필터를 감춘다 -->
     <div v-if="!selectMode" class="grid grid-cols-3 rounded-xl bg-blue-50 p-1">
       <button
         v-for="tab in TABS"
@@ -40,8 +40,9 @@
         확인 필요 {{ summary.uncheckedCount }}
       </button>
 
+      <!-- 카테고리는 예산 유형별로 다르므로 전체 탭에서는 고를 수 없다 -->
       <button
-        v-for="category in filterCategories"
+        v-for="category in budgetType === null ? [] : filterCategories"
         :key="category.id"
         class="rounded-full border px-3 py-1 text-xs"
         :class="
@@ -55,9 +56,20 @@
       </button>
     </div>
 
+    <div v-if="!selectMode" class="my-5 space-y-5">
+      <BudgetUsageCard
+        v-for="card in budgetCards"
+        :key="card.key"
+        :budget="card.budget"
+        :title="card.title"
+      />
+    </div>
+
     <div class="mt-3 flex items-center justify-between">
       <p class="text-xs text-slate-400">
-        <template v-if="selectMode"> 확인이 필요한 지출만 모았어요 </template>
+        <template v-if="selectMode">{{ selectModeText }}</template>
+        <!-- 요약 금액은 워케이션 전체 기준이라 필터를 걸면 건수만 보여준다 -->
+        <template v-else-if="filtered"> 총 {{ totalElements }}건 </template>
         <template v-else>
           총 {{ summary.totalCount }}건 · {{ won(summary.totalAmount) }}
         </template>
@@ -212,6 +224,7 @@ import { useExpenseStore } from '@/stores/expenseStore';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { won } from '@/components/workation/format';
+import BudgetUsageCard from '@/components/workation/BudgetUsageCard.vue';
 import ExpenseListItem from '@/components/workation/ExpenseListItem.vue';
 
 const TABS = [
@@ -255,7 +268,59 @@ const selectMode = ref(false);
 const confirming = ref(false);
 const selectedIds = ref([]);
 
-const { expenses, summary, totalPages } = storeToRefs(expenseStore);
+const { expenses, summary, totalPages, totalElements } =
+  storeToRefs(expenseStore);
+
+const filtered = computed(
+  () =>
+    budgetType.value !== null ||
+    categoryId.value !== null ||
+    uncheckedOnly.value,
+);
+const { budgets } = storeToRefs(budgetStore);
+
+const typeLabel = (value) => (value === 'WORK' ? '법인 예산' : '개인 예산');
+
+// 고른 탭·카테고리에 맞춰 차트를 만든다
+// 전체 -> 법인·개인 둘 다 / 법인 -> 법인 하나 / 법인 + 숙박비 -> 숙박비 하나
+const budgetCards = computed(() => {
+  if (budgetType.value === null) {
+    return budgets.value.map((budget) => ({
+      key: budget.budgetType,
+      title: typeLabel(budget.budgetType),
+      budget,
+    }));
+  }
+
+  const budget = budgetStore.budgetOf(budgetType.value);
+  if (!budget) return [];
+
+  const label = typeLabel(budgetType.value);
+
+  if (categoryId.value === null) {
+    return [{ key: budget.budgetType, title: label, budget }];
+  }
+
+  const item = (budget.items ?? []).find(
+    (row) => row.expenseCategoryId === categoryId.value,
+  );
+  if (!item) return [];
+
+  // 카테고리 예산도 유형 예산과 같은 모양으로 그린다
+  return [
+    {
+      key: `category-${item.expenseCategoryId}`,
+      title: item.categoryName,
+      budget: {
+        budgetType: budget.budgetType,
+        budgetTotal: item.targetAmount,
+        spentTotal: item.spentAmount,
+        remainAmount: Number(item.targetAmount) - Number(item.spentAmount),
+        usageRate: item.usageRate,
+      },
+    },
+  ];
+});
 
 const hasPrev = computed(() => expenseStore.hasPrev);
 const hasNext = computed(() => expenseStore.hasNext);
@@ -272,9 +337,15 @@ const filterCategories = computed(() =>
 const loadExpenses = async () => {
   loading.value = true;
   try {
-    // 선택 모드에서는 필터를 무시하고 확인 필요 건만 한 번에 받는다
+    // 선택 모드에서도 보던 필터는 그대로 두고, 확인 필요 건만 한 번에 받는다
     const params = selectMode.value
-      ? { uncheckedOnly: true, page: 0, size: SELECT_MODE_SIZE }
+      ? {
+          budgetType: budgetType.value ?? undefined,
+          expenseCategoryId: categoryId.value ?? undefined,
+          uncheckedOnly: true,
+          page: 0,
+          size: SELECT_MODE_SIZE,
+        }
       : {
           budgetType: budgetType.value ?? undefined,
           expenseCategoryId: categoryId.value ?? undefined,
@@ -316,7 +387,8 @@ const goPage = async (value) => {
 };
 
 onMounted(async () => {
-  await budgetStore.fetchBudgets(workationId);
+  // 예산을 못 받아도 지출 목록은 보여야 한다
+  await budgetStore.fetchBudgets(workationId).catch(() => {});
   await loadExpenses();
 });
 
@@ -352,10 +424,24 @@ const allUncheckedSelected = computed(
     selectedIds.value.length === uncheckedExpenses.value.length,
 );
 
-// 확인 필요 건이 한 번에 받을 수 있는 양을 넘으면 나눠서 처리해야 한다
+// 확인 필요 건이 한 번에 받을 수 있는 양을 넘으면 나눠서 처리해야 한다.
+// 필터를 걸면 대상이 줄어들므로 전체 요약이 아니라 지금 조회된 건수로 판단한다
 const hasMoreThanLimit = computed(
-  () => summary.value.uncheckedCount > SELECT_MODE_SIZE,
+  () => selectMode.value && totalElements.value > SELECT_MODE_SIZE,
 );
+
+// 지금 어떤 조건의 확인 필요 건을 모았는지 알려준다
+const selectModeText = computed(() => {
+  if (budgetType.value === null) return '확인이 필요한 지출만 모았어요';
+
+  const parts = [budgetType.value === 'WORK' ? '법인' : '개인'];
+  const category = filterCategories.value.find(
+    (row) => row.id === categoryId.value,
+  );
+  if (category) parts.push(category.name);
+
+  return `${parts.join(' · ')} 중 확인이 필요한 지출만 모았어요`;
+});
 
 const toggleSelectMode = async () => {
   selectMode.value = !selectMode.value;
