@@ -33,3 +33,39 @@ export const logout = () => {
 export const getTerms = () => {
   return axiosInstance.get('/auth/terms');
 };
+
+// PASS 본인인증 검증 및 회원 중복 체크 (회원가입 1단계)
+// POST /api/v1/auth/signup/verify-identity
+// data: { identityToken, name }
+export const verifyIdentity = (identityVerificationId) => {
+  return axiosInstance.post('/auth/signup/verify-identity', {
+    identityVerificationId,
+  });
+};
+
+// 회원가입 이메일 중복 확인
+// GET /api/v1/auth/signup/check-email?email=...
+// 중복이어도 200 SUCCESS — data.available 로 판단한다 (false = 사용 불가)
+export const checkEmailAvailability = (email) => {
+  return axiosInstance.get('/auth/signup/check-email', {
+    params: { email },
+  });
+};
+
+// 최종 회원가입 완료 (회원가입 2단계 — DB 최종 저장 + 자동 로그인)
+// POST /api/v1/auth/signup
+// body: { identityToken, email, password, agreedTermsIds }
+// - 닉네임은 백엔드가 기본값(워케이너{userId})으로 자동 생성한다 (닉네임 입력 기능 제거)
+// - 성공 시 Backend가 ACCESS_TOKEN / REFRESH_TOKEN HttpOnly Cookie 를 발급한다 (자동 로그인)
+// - Access Token/Refresh Token 을 JavaScript에서 읽거나 저장하지 않는다 (Cookie 기반)
+// - data: { userId, name, token_info }
+export const signup = (payload) => {
+  return axiosInstance.post('/auth/signup', payload);
+};
+
+// PIN 번호 최초 설정 (로그인 사용자 전용 — Cookie 기반 인증)
+// POST /api/v1/auth/me/pin
+// body: { pinNumber, deviceId, deviceName }
+export const setupPin = (payload) => {
+  return axiosInstance.post('/auth/me/pin', payload);
+};
