@@ -30,9 +30,9 @@ export default [
     component: () => import('@/pages/signup/SignupCompletePage.vue'),
   },
   // PIN 번호 최초 설정 — 회원가입 완료 화면에서 '시작하기' 후 진입 (Cookie 기반 인증 필요)
-  {
-    path: '/pin-setup',
-    name: 'PinSetupPage',
-    component: () => import('@/pages/signup/PinSetupPage.vue'),
-  },
+  // {
+  //   path: '/pin-setup',
+  //   name: 'PinSetupPage',
+  //   component: () => import('@/pages/signup/PinSetupPage.vue'),
+  // },
 ];

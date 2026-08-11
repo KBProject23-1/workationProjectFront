@@ -276,8 +276,9 @@ const showRecommendCard = computed(
   () => !setupIncomplete.value && reservationCount.value === 0,
 );
 
+//추천 페이지
 const goRecommendation = () => {
-  router.push('/recommendation/accommodations');
+  router.push('/recommendation');
 };
 
 // 시안 기준으로 진행 중 워케이션이 있을 때와 없을 때 목록 제목이 다르다

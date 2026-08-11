@@ -446,7 +446,7 @@ const submit = async () => {
 
 const goRecommendation = () => {
   recommendOpen.value = false;
-  router.replace('/recommendation/accommodations');
+  router.replace('/recommendation');
 };
 
 const goHome = () => {
