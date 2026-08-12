@@ -82,7 +82,7 @@
       <button
         v-if="showRecommendCard"
         class="mt-5 flex w-full items-center gap-3 rounded-xl bg-blue-600 px-4 py-4 text-left text-white"
-        @click="goRecommendation"
+        @click="goRecommendationFlow"
       >
         <span class="flex-1">
           <span class="block text-sm font-bold">
@@ -102,13 +102,20 @@
         />
       </div>
 
-      <div class="mt-4 grid grid-cols-3 gap-3">
+      <div class="mt-4 grid grid-cols-4 gap-2">
         <button
           class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 py-5 text-xs text-slate-500"
           @click="goReservations"
         >
           <CalendarCheck class="h-5 w-5" />
           예약
+        </button>
+        <button
+          class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 py-5 text-xs text-slate-500"
+          @click="goRecommendation"
+        >
+          <Sparkles class="h-5 w-5" />
+          추천
         </button>
         <button
           class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 py-5 text-xs text-slate-500"
@@ -151,10 +158,10 @@
       @cancel="confirmOpen = false"
     />
 
-    <!-- ② 아직 시작하지 않은 예약이 있으면 사용자가 먼저 취소해야 한다 -->
+    <!-- ② 삭제는 끝났고, 남은 예약을 어떻게 할지는 사용자가 정한다 -->
     <BaseConfirmModal
       :visible="upcomingOpen"
-      title="예약을 먼저 취소해 주세요"
+      title="아직 예약이 남아 있어요"
       :message="upcomingMessage"
       confirm-label="예약 확인하러 가기"
       cancel-label="닫기"
@@ -162,17 +169,6 @@
       @cancel="upcomingOpen = false"
     />
 
-    <!-- ③ 이미 시작된 예약은 손댈 수 없으므로 그대로 두고 삭제한다 -->
-    <BaseConfirmModal
-      :visible="ongoingOpen"
-      :loading="deleting"
-      title="진행 중인 예약이 있어요"
-      :message="ongoingMessage"
-      confirm-label="그래도 삭제"
-      cancel-label="취소"
-      @confirm="remove"
-      @cancel="ongoingOpen = false"
-    />
   </div>
 </template>
 
@@ -186,6 +182,7 @@ import {
   CalendarCheck,
   FileSpreadsheet,
   ReceiptText,
+  Sparkles,
   UserRound,
 } from '@lucide/vue';
 import { useWorkationStore } from '@/stores/workationStore';
@@ -215,7 +212,6 @@ const reservationCount = ref(0);
 
 // 삭제는 세 단계다. 확인 → (예약 상태에 따라) 안내 → 실행
 const upcomingOpen = ref(false);
-const ongoingOpen = ref(false);
 const reservationCheck = ref(null);
 
 const loadSetupState = async () => {
@@ -261,13 +257,14 @@ const incompleteMessage = computed(() => {
   return '예산을 카테고리별로 나눠야 지출을 기록할 수 있어요';
 });
 
-// 미완인 단계로 바로 데려간다
+// 미완인 단계로 바로 데려간다.
+// 설문을 안 했으면 설문부터 시작하니 전체 3단계, 했으면 예산만 남아 2단계다
 const goIncompleteStep = () => {
   const workationId = workationStore.workationId;
   router.push(
     !surveyDone.value
       ? `/workation/${workationId}/survey?step=create`
-      : `/workation/${workationId}/budgets?step=create`,
+      : `/workation/${workationId}/budgets?step=create&steps=2`,
   );
 };
 
@@ -276,8 +273,14 @@ const showRecommendCard = computed(
   () => !setupIncomplete.value && reservationCount.value === 0,
 );
 
-//추천 페이지
+// 추천 탭은 한 항목만 골라 그 추천으로 바로 들어간다
 const goRecommendation = () => {
+  router.push('/recommendation?mode=single');
+};
+
+// 아직 아무것도 안 정한 사용자에게는 숙소부터 순서대로 훑게 한다.
+// 등록 직후 팝업을 놓친 경우라 그때와 같은 화면이어야 한다
+const goRecommendationFlow = () => {
   router.push('/recommendation');
 };
 
@@ -318,59 +321,38 @@ const describe = (summary) => {
 
 const upcomingMessage = computed(
   () =>
-    `${describe(reservationCheck.value?.upcoming)}이 남아있어요. 예약을 먼저 취소해 주세요.`,
+    `${describe(reservationCheck.value?.upcoming)}이 남아 있어요. 필요하면 예약 내역에서 직접 취소해 주세요.`,
 );
 
-const ongoingMessage = computed(
-  () =>
-    `${describe(reservationCheck.value?.ongoing)}이 진행 중이에요. 이미 이용이 시작돼 취소할 수 없어요. 예약 내역은 그대로 남아요.`,
-);
 
-// 확인을 누르면 바로 지우지 않고 예약 상태를 먼저 본다.
-// 서버도 같은 검증을 하지만, 화면에서 무엇이 걸리는지 구체적으로 알려주려면 미리 알아야 한다
+// 삭제를 먼저 하고, 남은 예약이 있으면 그 뒤에 알려준다.
+//
+// 예약 취소는 예약 파트의 정책이라 워케이션이 막을 일이 아니다.
+// 날짜만 보고 막으면 취소가 안 되는 예약에 걸린 사용자가 삭제도 못 하게 갇힌다.
 const checkBeforeDelete = async () => {
   if (deleting.value) return;
 
   deleting.value = true;
   try {
-    const result = await workationStore.checkReservations(
-      workationStore.workationId,
-    );
-    reservationCheck.value = result;
-    confirmOpen.value = false;
+    // 삭제하면 예약 연결이 끊겨 조회할 수 없으므로 먼저 확인해 둔다
+    reservationCheck.value = await workationStore
+      .checkReservations(workationStore.workationId)
+      .catch(() => null);
 
-    // 취소할 수 있는 예약이 있으면 사용자가 먼저 정리해야 한다
-    if (result.upcoming && result.upcoming.room + result.upcoming.office > 0) {
-      upcomingOpen.value = true;
-      return;
-    }
-
-    // 이미 시작된 예약은 손댈 수 없으니 그대로 두고 지운다는 것만 알린다
-    if (result.ongoing && result.ongoing.room + result.ongoing.office > 0) {
-      ongoingOpen.value = true;
-      return;
-    }
-
-    await remove();
-  } catch (error) {
-    confirmOpen.value = false;
-    showError(error, '예약 상태를 확인하지 못했습니다.');
-  } finally {
-    deleting.value = false;
-  }
-};
-
-const remove = async () => {
-  deleting.value = true;
-  try {
     await workationStore.deleteWorkation(workationStore.workationId);
     reservationCount.value = 0;
+    confirmOpen.value = false;
+
+    // 아직 이용하지 않은 예약이 남아 있으면 예약 내역으로 안내한다
+    const upcoming = reservationCheck.value?.upcoming;
+    if (upcoming && upcoming.room + upcoming.office > 0) {
+      upcomingOpen.value = true;
+    }
   } catch (error) {
+    confirmOpen.value = false;
     showError(error, '워케이션을 삭제하지 못했습니다.');
   } finally {
     deleting.value = false;
-    confirmOpen.value = false;
-    ongoingOpen.value = false;
   }
 };
 
@@ -391,9 +373,9 @@ const goUncheckedExpenses = () => {
   );
 };
 
-// 예약 목록은 예약 파트 화면이다
+// 예약 내역이 아니라 예약할 상품을 고르는 화면으로 보낸다
 const goReservations = () => {
-  router.push('/reservations');
+  router.push('/reservation/merchants');
 };
 
 const goExpenses = () => {
