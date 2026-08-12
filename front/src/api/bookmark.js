@@ -1,5 +1,9 @@
 import axiosInstance from './axiosInstance';
 
+export const getBookmarks = (params) => {
+  return axiosInstance.get('/bookmarks', { params });
+};
+
 // 가맹점 북마크 생성
 export const createBookmark = (merchantId) => {
   return axiosInstance.post('/bookmarks', { merchantId });
