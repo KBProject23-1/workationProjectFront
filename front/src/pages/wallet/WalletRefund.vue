@@ -6,7 +6,8 @@ import { useAccountStore } from '@/stores/accountStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { useIdempotencyKey } from '@/composables/useIdempotencyKey';
 import { classifyPinError } from '@/utils/pinError';
-import { clearDeviceId } from '@/utils/device';
+import { getCurrentUserId } from '@/utils/currentUser';
+import { unmarkPinRegistered } from '@/utils/pinRegistry';
 import { toast } from 'vue-sonner';
 import { ChevronLeft } from '@lucide/vue';
 import WalletRefundAmount from '@/components/wallet/WalletRefundAmount.vue';
@@ -75,7 +76,10 @@ async function handlePinComplete(pinNumber) {
       return;
     }
     if (pinKind === 'NOT_REGISTERED') {
-      clearDeviceId(); // 서버가 이 기기를 모름 → 재등록 유도
+      // 서버가 이 (userId, deviceId) PIN 을 모름 → 캐시 동기화 후 재설정 유도
+      // (deviceId 는 기기 신원이라 유지, setup 이 기존 deviceId 재사용)
+      const userId = getCurrentUserId();
+      if (userId != null) unmarkPinRegistered(userId);
       toast.error('PIN을 다시 설정해주세요');
       router.push('/pin/setup');
       return;

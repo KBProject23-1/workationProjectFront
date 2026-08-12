@@ -4,7 +4,9 @@ import { useRouter, useRoute } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { useAuthStore } from '@/stores/authStore';
 import { useErrorToast } from '@/composables/useErrorToast';
-import { issueDeviceId, persistDeviceId } from '@/utils/device';
+import { getDeviceId, issueDeviceId, persistDeviceId } from '@/utils/device';
+import { getCurrentUserId } from '@/utils/currentUser';
+import { markPinRegistered } from '@/utils/pinRegistry';
 import PinKeypad from '@/components/pin/PinKeypad.vue';
 
 const router = useRouter();
@@ -54,8 +56,10 @@ async function handleComplete(value) {
 async function submit(pinNumber) {
   submitting.value = true;
   error.value = '';
-  // deviceId 는 등록 성공 후에만 확정 저장한다(불변식: deviceId 존재 ⟺ PIN 등록 완료)
-  const deviceId = issueDeviceId();
+  // deviceId 는 기기 신원이라 한 번 발급하면 유지한다. 기존 값이 있으면 재사용(재등록),
+  // 없으면 새로 발급하고 등록 성공 후에만 확정 저장한다.
+  const deviceId = getDeviceId() ?? issueDeviceId();
+  const userId = getCurrentUserId();
   try {
     await authStore.setupPin({
       pinNumber,
@@ -63,13 +67,21 @@ async function submit(pinNumber) {
       deviceName: buildDeviceName(),
     });
     persistDeviceId(deviceId);
+    if (userId != null) markPinRegistered(userId);
     toast.success('PIN이 설정됐어요');
-    const redirect = route.query.redirect;
-    router.replace(typeof redirect === 'string' ? redirect : '/workation');
+    goAfterRegister();
   } catch (err) {
     const status = err?.response?.status;
-    // 400(형식 오류)·409(이미 등록된 기기)는 인라인 안내, 그 외는 토스트
-    if (status === 400 || status === 409) {
+    // 409 = 이 (userId, deviceId)에 이미 PIN 등록됨(서버 진실) → 캐시만 맞추고 통과
+    if (status === 409) {
+      persistDeviceId(deviceId);
+      if (userId != null) markPinRegistered(userId);
+      toast.success('이미 설정된 PIN이 있어요');
+      goAfterRegister();
+      return;
+    }
+    // 400 = 형식 오류 → 인라인 안내, 그 외 → 토스트
+    if (status === 400) {
       resetToEnter(err?.message || 'PIN 설정에 실패했어요. 다시 시도해주세요.');
     } else {
       resetToEnter();
@@ -78,6 +90,11 @@ async function submit(pinNumber) {
   } finally {
     submitting.value = false;
   }
+}
+
+function goAfterRegister() {
+  const redirect = route.query.redirect;
+  router.replace(typeof redirect === 'string' ? redirect : '/workation');
 }
 
 // user_device.device_name 표시용 라벨 (BE VARCHAR(100) 이내)

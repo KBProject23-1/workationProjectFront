@@ -28,7 +28,7 @@ export function persistDeviceId(deviceId) {
   localStorage.setItem(DEVICE_ID_KEY, deviceId);
 }
 
-// 로그아웃/기기 등록 해제, 또는 서버가 이 기기를 모른다고 응답할 때(재등록 유도) 사용.
+// deviceId 는 기기 신원이라 평소엔 지우지 않는다(로그아웃/재접속에도 유지).
 export function clearDeviceId() {
   localStorage.removeItem(DEVICE_ID_KEY);
 }
