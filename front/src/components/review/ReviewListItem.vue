@@ -4,6 +4,7 @@ import AtmosphereTagSelector from '@/components/review/AtmosphereTagSelector.vue
 defineProps({
   review: { type: Object, required: true },
 });
+const emit = defineEmits(['open']);
 
 function formatDate(value) {
   return value.slice(0, 10).replaceAll('-', '. ');
@@ -11,8 +12,9 @@ function formatDate(value) {
 </script>
 
 <template>
-  <article class="review-item">
-    <div class="review-thumbnail" aria-hidden="true">
+  <article class="review-item" role="link" tabindex="0" @click="emit('open', review.reviewId)" @keydown.enter="emit('open', review.reviewId)">
+    <img v-if="review.imageUrl" class="review-thumbnail" :src="review.imageUrl" alt="리뷰 사진" />
+    <div v-else class="review-thumbnail" aria-hidden="true">
       <span class="sun"></span>
       <span class="head"></span>
       <span class="wave wave-back"></span>
@@ -36,8 +38,8 @@ function formatDate(value) {
 </template>
 
 <style scoped>
-.review-item { width:100%; max-width:350px; min-height:130px; display:flex; gap:14px; padding:15px 12px 11px 16px; border:1.5px solid #dce6f2; border-radius:20px; background:#fff; }
-.review-thumbnail { position:relative; width:94px; height:94px; flex:none; overflow:hidden; border-radius:7px; background:#dbeaff; }
+.review-item { width:100%; max-width:350px; min-height:130px; display:flex; gap:14px; padding:15px 12px 11px 16px; border:1.5px solid #dce6f2; border-radius:20px; background:#fff; cursor:pointer; }
+.review-thumbnail { position:relative; width:94px; height:94px; flex:none; overflow:hidden; object-fit:cover; border-radius:7px; background:#dbeaff; }
 .sun { position:absolute; top:11px; right:4px; width:18px; height:18px; border-radius:50%; background:#ffd052; }
 .head { position:absolute; top:13px; right:18px; width:24px; height:24px; border-radius:50%; background:#d9d5df; }
 .wave { position:absolute; display:block; border-radius:50% 50% 0 0; }

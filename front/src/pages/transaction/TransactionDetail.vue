@@ -55,6 +55,19 @@ const canCancel = computed(
     detail.value?.transactionType === 'PAYMENT' &&
     detail.value?.status === 'PAID',
 );
+const isReviewPeriodExpired = computed(() => detail.value?.reviewDeadline
+  ? Date.now() > new Date(detail.value.reviewDeadline).getTime() : false);
+const canWriteOrEditReview = computed(() => ['WRITE', 'EDIT'].includes(detail.value?.reviewAction));
+const reviewButtonLabel = computed(() => {
+  if (isReviewPeriodExpired.value) return detail.value?.reviewId ? '리뷰 수정 기간 만료' : '리뷰 작성 기간 만료';
+  return detail.value?.reviewAction === 'EDIT' ? '리뷰 수정하기' : '리뷰 작성하기';
+});
+function goToReview() {
+  if (!canWriteOrEditReview.value) return;
+  router.push(detail.value.reviewAction === 'EDIT'
+    ? `/reviews/${detail.value.reviewId}/edit`
+    : `/transactions/${transactionId}/reviews/new`);
+}
 
 async function openReceipt() {
   try {
@@ -206,6 +219,9 @@ onMounted(loadDetail);
       </div>
 
       <div class="w-full mt-auto pt-4 pb-2 text-center">
+        <BaseButton v-if="detail.reviewDeadline" :disabled="!canWriteOrEditReview" class="mb-3 w-full rounded-2xl py-3.5 text-[15px] font-bold disabled:bg-gray-200 disabled:text-gray-400" @click="goToReview">
+          {{ reviewButtonLabel }}
+        </BaseButton>
         <BaseButton
           v-if="
             detail.transactionType === 'PAYMENT' && detail.status === 'PAID'

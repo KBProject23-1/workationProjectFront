@@ -111,27 +111,11 @@ onBeforeUnmount(() => {
       <AtmosphereTagSelector v-model="atmosphere" />
     </fieldset>
 
-    <section class="content-field">
-      <label for="review-content">리뷰 내용</label>
-      <div class="textarea-wrap">
-        <textarea
-          id="review-content"
-          v-model="content"
-          :maxlength="maxContentLength"
-          placeholder="이용 경험을 작성해 주세요."
-        ></textarea>
-        <span>{{ content.length }} / {{ maxContentLength }}</span>
-      </div>
-    </section>
-
     <section class="photo-field">
       <h2>사진 (선택)</h2>
       <div class="photo-row">
         <div v-if="imagePreview" class="photo-preview">
-          <div class="room-image" aria-hidden="true">
-            <span class="wall"></span><span class="window"></span>
-            <span class="bed"></span><span class="table"></span>
-          </div>
+          <img class="review-image-preview" :src="imagePreview" alt="선택한 리뷰 사진 미리보기" />
           <button type="button" aria-label="사진 제거" @click="removeImage"><X :size="18" /></button>
         </div>
         <button v-if="!imagePreview" type="button" class="add-photo" aria-label="사진 추가" @click="chooseImage">
@@ -140,9 +124,17 @@ onBeforeUnmount(() => {
         <button v-else type="button" class="add-photo" aria-label="사진 변경" @click="chooseImage">
           <Plus :size="47" :stroke-width="1.5" />
         </button>
-        <input ref="fileInput" type="file" accept="image/*" hidden @change="updateImage" />
+        <input ref="fileInput" type="file" accept="image/*" :multiple="false" hidden @change="updateImage" />
       </div>
       <p>최대 1장까지 업로드할 수 있어요.</p>
+    </section>
+
+    <section class="content-field">
+      <label for="review-content">리뷰 내용</label>
+      <div class="textarea-wrap">
+        <textarea id="review-content" v-model="content" :maxlength="maxContentLength" placeholder="이용 경험을 작성해 주세요."></textarea>
+        <span>{{ content.length }} / {{ maxContentLength }}</span>
+      </div>
     </section>
 
     <button type="submit" class="submit-button" :disabled="!canSubmit">
@@ -168,6 +160,7 @@ fieldset { min-width:0; margin:0; padding:0; border:0; }.rating-field { margin-t
 .star-buttons { display:flex; gap:2px; }.star-buttons button { width:38px; height:42px; padding:0; color:#ced9e5; border:0; background:transparent; font-size:40px; line-height:1; cursor:pointer; }.star-buttons button.selected { color:#ff9500; }
 .atmosphere-field { margin-top:27px; }
 .content-field { margin-top:27px; }.content-field label { display:block; }.textarea-wrap { position:relative; }.textarea-wrap textarea { width:100%; height:160px; resize:none; padding:14px 15px 35px; color:#42546a; border:1.5px solid #d5e1ef; border-radius:17px; outline:none; background:#fff; font:12px/1.8 inherit; }.textarea-wrap textarea:focus { border-color:#3087ed; }.textarea-wrap > span { position:absolute; right:26px; bottom:17px; color:#6f7e91; font-size:12px; }
-.photo-field { margin-top:27px; }.photo-field h2 { margin-bottom:17px; }.photo-row { display:flex; gap:12px; }.photo-preview { position:relative; }.photo-preview > button { position:absolute; top:2px; right:2px; width:23px; height:23px; display:grid; place-items:center; padding:0; color:#66778c; border:1px solid #b9c7d6; border-radius:50%; background:#fff; cursor:pointer; }.add-photo { width:97px; height:97px; display:grid; place-items:center; padding:0; color:#8fa2b8; border:1.5px dashed #cad8e7; border-radius:14px; background:#fff; cursor:pointer; }.photo-field > p { margin:10px 0 0; color:#76879c; font-size:12px; }
+.photo-field { margin-top:27px; }.photo-field h2 { margin-bottom:17px; }.photo-row { display:flex; gap:12px; }.photo-preview { position:relative; }.photo-preview > button { position:absolute; top:6px; right:6px; width:23px; height:23px; display:grid; place-items:center; padding:0; color:#66778c; border:1px solid #b9c7d6; border-radius:50%; background:#fff; cursor:pointer; }.add-photo { width:150px; height:150px; display:grid; place-items:center; padding:0; color:#8fa2b8; border:1.5px dashed #cad8e7; border-radius:14px; background:#fff; cursor:pointer; }.photo-field > p { margin:10px 0 0; color:#76879c; font-size:12px; }
+.review-image-preview { width:150px; height:150px; display:block; object-fit:cover; border-radius:14px; }
 .submit-button { width:100%; height:48px; align-self:center; margin-top:auto; color:#fff; border:0; border-radius:12px; background:#3087ed; font-size:16px; font-weight:500; cursor:pointer; }.submit-button:disabled { cursor:default; opacity:.55; }
 </style>

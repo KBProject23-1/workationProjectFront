@@ -56,6 +56,13 @@ const quantityLabel = computed(() => {
 });
 
 const isConfirmed = computed(() => detail.value?.status === 'CONFIRMED');
+const isReviewPeriodExpired = computed(() => detail.value?.reviewDeadline
+  ? Date.now() > new Date(detail.value.reviewDeadline).getTime() : false);
+const canWriteOrEditReview = computed(() => ['WRITE', 'EDIT'].includes(detail.value?.reviewAction));
+const reviewButtonLabel = computed(() => {
+  if (isReviewPeriodExpired.value) return detail.value?.reviewId ? '리뷰 수정 기간 만료' : '리뷰 작성 기간 만료';
+  return detail.value?.reviewAction === 'EDIT' ? '리뷰 수정하기' : '리뷰 작성하기';
+});
 
 // 직접 URL 진입 시에도 예약 목록으로 돌아갈 수 있는 뒤로 가기 처리
 function goBack() {
@@ -81,6 +88,12 @@ function goToCancellation() {
     name: 'ReservationCancelWarning',
     params: { reservationId: reservationId.value },
   });
+}
+function goToReview() {
+  if (!canWriteOrEditReview.value) return;
+  router.push(detail.value.reviewAction === 'EDIT'
+    ? `/reviews/${detail.value.reviewId}/edit`
+    : `/reservations/${reservationId.value}/reviews/new`);
 }
 
 onMounted(fetchDetail);
@@ -196,6 +209,9 @@ onMounted(fetchDetail);
               : '이용 당일부터는 취소가 불가능합니다.'
           }}
         </p>
+        <BaseButton v-if="detail.reviewDeadline" :disabled="!canWriteOrEditReview" class="mt-5 max-w-none rounded-lg py-3.5 text-[16px] font-bold disabled:bg-slate-200 disabled:text-slate-400" @click="goToReview">
+          {{ reviewButtonLabel }}
+        </BaseButton>
       </main>
 
       <footer v-if="isConfirmed" class="sticky bottom-0 bg-white px-4 pb-6 pt-3">
