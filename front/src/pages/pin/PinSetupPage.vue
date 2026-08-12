@@ -111,7 +111,7 @@ function buildDeviceName() {
 
 <template>
   <div
-    class="flex flex-col items-center w-full min-h-screen px-5 pt-16 pb-8 bg-white"
+    class="flex flex-col items-center w-full min-h-screen px-5 pt-16 pb-8 bg-[#F5F8FC]"
   >
     <PinKeypad
       v-model="pin"

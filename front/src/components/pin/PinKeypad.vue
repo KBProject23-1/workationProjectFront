@@ -2,10 +2,6 @@
 import { ref, watch } from 'vue';
 import { Delete } from '@lucide/vue';
 
-// 재사용 6자리 PIN 입력 키패드.
-// - PIN 설정(setup)·PIN 검증(충전/환불/결제 직전)·예약결제에서 공용으로 쓴다.
-// - 입력값은 v-model 로 부모가 소유한다. maxLength 도달 시 complete 이벤트로 알린다.
-// - 에러 표시/초기화는 부모 책임(에러 시 modelValue 를 '' 로 리셋). error prop 이 바뀌면 흔들림 연출.
 const props = defineProps({
   modelValue: { type: String, default: '' },
   title: { type: String, default: '' },
@@ -16,18 +12,26 @@ const props = defineProps({
 });
 const emit = defineEmits(['update:modelValue', 'complete']);
 
-const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'back'];
+// 보안: 숫자·아이콘 칸을 매 마운트마다 섞는다. back 은 우하단 고정.
+function shuffle(list) {
+  const a = [...list];
+  for (let i = a.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+const keys = [
+  ...shuffle(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '']),
+  'back',
+];
 
 const shaking = ref(false);
-// 에러가 표시되면 흔들림 애니메이션 트리거.
-// immediate: 재마운트되며 error 가 이미 세팅된 채로 뜨는 경우(지갑 PIN 스텝은 로딩 중 언마운트됨)와
-// 동일 문자열이 연속으로 오는 경우에도 확실히 재생되도록 한다.
 watch(
   () => props.error,
   (msg) => {
     if (!msg) return;
     shaking.value = false;
-    // 연속 에러도 재생되도록 다음 틱에 다시 켠다
     requestAnimationFrame(() => {
       shaking.value = true;
       setTimeout(() => (shaking.value = false), 400);
@@ -69,11 +73,11 @@ function press(key) {
       <span
         v-for="i in maxLength"
         :key="i"
-        class="w-3.5 h-3.5 rounded-full transition-colors"
+        class="w-3 h-3 rounded-full transition-all duration-200 ease-out"
         :class="
           i <= modelValue.length
-            ? 'bg-primary'
-            : 'border-2 border-gray-300 bg-transparent'
+            ? 'bg-primary scale-100'
+            : 'bg-gray-200 scale-90'
         "
       ></span>
     </div>
@@ -81,18 +85,30 @@ function press(key) {
     <!-- 에러 문구 자리(항상 높이 확보해 레이아웃 흔들림 방지) -->
     <p class="h-5 mt-2 text-[13px] font-medium text-red-500">{{ error }}</p>
 
-    <!-- 숫자 키패드 -->
-    <div class="grid grid-cols-3 gap-x-10 gap-y-5 mt-6">
+    <!-- 숫자 키패드: 각 숫자가 독립된 버튼으로 보이도록 옅은 배경 사용 -->
+    <div class="grid grid-cols-3 gap-x-4 gap-y-3 mt-8">
       <button
         v-for="(key, idx) in keys"
         :key="idx"
         type="button"
-        class="h-16 w-16 mx-auto flex items-center justify-center text-[26px] font-semibold text-gray-800 rounded-full transition-colors active:bg-gray-100 disabled:opacity-40"
-        :class="{ 'pointer-events-none': key === '' }"
-        :disabled="disabled || key === ''"
+        class="h-[68px] w-[68px] mx-auto flex items-center justify-center text-[24px] font-semibold rounded-2xl transition-all duration-150 disabled:opacity-40"
+        :class="
+          key === ''
+            ? 'pointer-events-none bg-white shadow-sm'
+            : key === 'back'
+              ? 'bg-white text-gray-400 shadow-sm active:bg-gray-100 active:scale-95'
+              : 'bg-white text-gray-900 shadow-sm active:bg-gray-100 active:scale-95'
+        "
+        :disabled="disabled"
         @click="press(key)"
       >
-        <Delete v-if="key === 'back'" :size="24" class="text-gray-500" />
+        <img
+          v-if="key === ''"
+          src="/icon.png"
+          alt=""
+          class="h-9 w-9 object-contain"
+        />
+        <Delete v-else-if="key === 'back'" :size="22" />
         <span v-else>{{ key }}</span>
       </button>
     </div>
