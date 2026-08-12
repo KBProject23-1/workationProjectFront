@@ -129,6 +129,16 @@
         >
       </button>
 
+      <!--
+        회사에 제출하기 전이 유일하게 정리가 의미 있는 순간이다.
+        빠뜨리면 받을 돈을 못 받으므로 이때 한 번만 권한다.
+      -->
+      <SettlementClaimPrompt
+        v-if="isWork && !settled"
+        :workation-id="workationId"
+        @claimed="loadSettlement"
+      />
+
       <div v-if="!isWork" class="mt-4">
         <div class="grid grid-cols-2 gap-3">
           <div class="rounded-xl bg-slate-50 px-4 py-3">
@@ -226,14 +236,13 @@ import { useSettlementStore } from '@/stores/settlementStore';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { useFileDownload } from '@/composables/useFileDownload';
+import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import { dotDate, won } from '@/components/workation/format';
 import SettlementCategoryItem from '@/components/workation/SettlementCategoryItem.vue';
+import SettlementClaimPrompt from '@/components/workation/SettlementClaimPrompt.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 
-const TABS = [
-  { value: 'WORK', label: '법인 내역', summaryLabel: '법인 사용 합계' },
-  { value: 'PERSONAL', label: '개인 내역', summaryLabel: '개인 사용 합계' },
-];
+const TAB_VALUES = ['WORK', 'PERSONAL'];
 
 const route = useRoute();
 const router = useRouter();
@@ -244,10 +253,20 @@ const { download } = useFileDownload();
 
 const workationId = route.params.workationId;
 
+const { workLabel, ensureCards } = useBudgetTypeLabel();
+
+// 법인카드 보유 여부에 따라 법인 / 업무로 갈린다
+const TABS = computed(() => [
+  {
+    value: 'WORK',
+    label: `${workLabel.value} 내역`,
+    summaryLabel: `${workLabel.value} 사용 합계`,
+  },
+  { value: 'PERSONAL', label: '개인 내역', summaryLabel: '개인 사용 합계' },
+]);
+
 const budgetType = ref(
-  TABS.some((tab) => tab.value === route.query.budgetType)
-    ? route.query.budgetType
-    : 'WORK',
+  TAB_VALUES.includes(route.query.budgetType) ? route.query.budgetType : 'WORK',
 );
 
 const loading = ref(true);
@@ -275,7 +294,8 @@ const settledAtText = computed(() =>
 );
 
 const currentTab = computed(
-  () => TABS.find((tab) => tab.value === budgetType.value) ?? TABS[0],
+  () =>
+    TABS.value.find((tab) => tab.value === budgetType.value) ?? TABS.value[0],
 );
 
 const current = computed(() => settlementStore.summaryOf(budgetType.value));
@@ -322,6 +342,7 @@ const loadSettlement = async () => {
 };
 
 loadSettlement();
+ensureCards();
 
 const downloadFile = async (request, fallbackName) => {
   if (downloading.value) return;

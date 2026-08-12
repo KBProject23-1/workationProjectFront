@@ -8,6 +8,7 @@ import {
   updateExpenseCategory as updateExpenseCategoryApi,
   updateExpenseBudgetType as updateExpenseBudgetTypeApi,
   confirmExpenses as confirmExpensesApi,
+  changeExpensesBudgetType as changeExpensesBudgetTypeApi,
 } from '@/api/expense';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useWorkationStore } from '@/stores/workationStore';
@@ -155,6 +156,23 @@ export const useExpenseStore = defineStore('expense', {
           this.fetchDetail(expenseId),
           this.refreshRelated(workationId),
         ]);
+        return data;
+      } catch (err) {
+        this.error = err.message;
+        throw err;
+      }
+    },
+
+    // 여러 건의 예산 유형을 한 번에 옮긴다. 계정과목은 서버가 코드를 맞춰 정한다
+    async changeBudgetTypeBulk(workationId, budgetType, expenseIds) {
+      try {
+        const { data } = await changeExpensesBudgetTypeApi(
+          workationId,
+          budgetType,
+          expenseIds,
+        );
+        this.summary = { ...this.summary, uncheckedCount: data.uncheckedCount };
+        await this.refreshRelated(workationId);
         return data;
       } catch (err) {
         this.error = err.message;
