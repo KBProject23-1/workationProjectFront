@@ -44,8 +44,8 @@ const router = createRouter({
 // 로그인 상태를 1회 복원(restoreSession)한 뒤 판단한다. restorePromise 로 중복 호출을 막는다.
 //
 // - 회원가입 플로우(/signup*)는 중간에 auto-login 되므로 게이트에서 완전히 제외한다.
-// - 비로그인: 공개(스플래시/온보딩/로그인)만 허용, 그 외엔 /login.
-// - 로그인 상태에서 스플래시/온보딩/로그인 접근 → 서비스 홈(/workation).
+// - 비로그인: 공개(스플래시/온보딩/로그인/아이디 찾기)만 허용, 그 외엔 /login.
+// - 로그인 상태에서 스플래시/온보딩/로그인/아이디 찾기 접근 → 서비스 홈(/workation).
 // - PIN 게이트: 이 기기 PIN 미등록이면 /pin/setup (설정 페이지 자체는 통과).
 let restorePromise = null;
 
@@ -64,7 +64,10 @@ router.beforeEach(async (to) => {
   if (path.startsWith('/signup')) return true;
 
   const isEntry =
-    path === '/' || path.startsWith('/onboarding') || path === '/login';
+    path === '/' ||
+    path.startsWith('/onboarding') ||
+    path === '/login' ||
+    path === '/find-id';
 
   if (!authStore.isAuthenticated) {
     return isEntry ? true : { path: '/login', query: { redirect: to.fullPath } };

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import {
   login as loginApi,
   signup as signupApi,
-  verifyIdentity as verifyIdentityApi,
+  findId as findIdApi,
   checkEmailAvailability as checkEmailAvailabilityApi,
   setupPin as setupPinApi,
 } from '@/api/auth';
@@ -12,12 +12,13 @@ import { getMe as getMeApi } from '@/api/user';
 //
 // 관리 데이터:
 // - isAuthenticated / user: 로그인·회원가입(자동 로그인) 상태
-// - signupAgreedTermIds / signupIdentityToken / signupName: 회원가입 플로우 상태 (인메모리 전용)
+// - signupAgreedTermIds / signupIdentityVerificationId / signupName: 회원가입 플로우 상태 (인메모리 전용)
 //
 // 보안 규칙:
 // - Access Token / Refresh Token 은 절대 저장하지 않는다 (HttpOnly Cookie — Backend 가 관리)
 // - localStorage/sessionStorage 에 인증 정보를 저장하지 않는다
-// - identityToken(본인인증 임시 JWT) 도 페이지 이동 간 전달을 위해 메모리에만 보관한다
+// - identityVerificationId(백엔드가 POST /auth/pass 에서 발급) 도 페이지 이동 간 전달을 위해
+//   메모리에만 보관한다 (이름/휴대폰/CI/생년월일 은 프론트가 보관하지 않는다)
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     isLoading: false,
@@ -28,7 +29,8 @@ export const useAuthStore = defineStore('auth', {
     sessionChecked: false,
     // 회원가입 플로우 상태 (인메모리 — 새로고침 시 초기화)
     signupAgreedTermIds: [],
-    signupIdentityToken: '',
+    // POST /auth/pass 가 발급한 본인인증 고유 번호 — 회원가입 API 에 전달 (프론트 생성 금지)
+    signupIdentityVerificationId: '',
     signupName: '',
     // 회원가입 완료 화면에서 로그인 아이디(이메일) 표시용 — 가입 성공 시 보관
     signupEmail: '',
@@ -42,14 +44,26 @@ export const useAuthStore = defineStore('auth', {
       this.signupAgreedTermIds = [...termIds];
     },
 
-    /** PASS 본인인증 검증 — 성공 시 identityToken/name 을 메모리에 보관하고 응답을 반환한다 */
-    async verifyIdentity(identityVerificationId) {
+    /**
+     * PASS 인증 완료 결과를 보관한다 — 백엔드가 POST /auth/pass 에서 발급한 identityVerificationId
+     * 와 화면 표시용 이름만 메모리에 저장한다 (이름/휴대폰/CI 등은 회원가입 API 에 다시 보내지 않는다).
+     */
+    setIdentityVerification(identityVerificationId, name) {
+      this.signupIdentityVerificationId = identityVerificationId;
+      this.signupName = name || '';
+    },
+
+    /**
+     * 아이디 찾기 — PASS 본인인증 완료 후 identityVerificationId 로 가입 이메일 조회
+     * - 이메일은 백엔드가 마스킹하여 반환한다 (프론트에서 마스킹하지 않음)
+     * - 성공: { email: 'user****@example.com', createdAt: '2026-07-24' }
+     * - 실패: INVALID_VERIFICATION_ID(400) / USER_NOT_FOUND(404) — err 를 그대로 throw
+     */
+    async findId(identityVerificationId) {
       this.isLoading = true;
       this.error = null;
       try {
-        const { data } = await verifyIdentityApi(identityVerificationId);
-        this.signupIdentityToken = data.identityToken;
-        this.signupName = data.name;
+        const { data } = await findIdApi(identityVerificationId);
         return data;
       } catch (err) {
         this.error = err;
@@ -67,6 +81,8 @@ export const useAuthStore = defineStore('auth', {
 
     /**
      * 최종 회원가입 완료 (자동 로그인)
+     * - 백엔드가 POST /auth/pass 에서 발급한 identityVerificationId 만 전달한다
+     *   (name/phoneNumber/ci 는 프론트에서 보내지 않는다 — 백엔드가 Redis 세션에서 복원).
      * - Backend 가 ACCESS_TOKEN / REFRESH_TOKEN HttpOnly Cookie 를 발급한다.
      * - 프론트는 토큰을 읽거나 저장하지 않는다 (Cookie 기반 인증).
      * - 닉네임은 백엔드가 기본값(워케이너{userId})으로 자동 생성한다 (닉네임 입력 기능 제거).
@@ -77,7 +93,7 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
       try {
         const payload = {
-          identityToken: this.signupIdentityToken,
+          identityVerificationId: this.signupIdentityVerificationId,
           email,
           password,
           agreedTermsIds: this.signupAgreedTermIds,
@@ -103,7 +119,7 @@ export const useAuthStore = defineStore('auth', {
     /** 회원가입 플로우 상태 초기화 */
     resetSignup() {
       this.signupAgreedTermIds = [];
-      this.signupIdentityToken = '';
+      this.signupIdentityVerificationId = '';
       this.signupName = '';
       this.signupEmail = '';
     },

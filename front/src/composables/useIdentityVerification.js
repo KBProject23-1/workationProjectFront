@@ -1,6 +1,5 @@
 import { computed, ref } from 'vue';
 import { getIdentityVerificationProvider } from '@/identity';
-import { generateUuid } from '@/utils/uuid';
 
 // Mock PASS 본인인증 상태 머신 컴포저블
 //
@@ -14,7 +13,8 @@ import { generateUuid } from '@/utils/uuid';
 //   CANCELLED   사용자 취소 (팝업 닫힘 → 안내 화면 복귀)
 //
 // 원칙:
-// - '확인' 클릭 시 프론트가 identityVerificationId 를 생성해 백엔드로 전송한다.
+// - identityVerificationId 는 프론트가 생성하지 않는다 — 백엔드(POST /auth/pass)가 생성해 발급한다.
+// - 프론트는 이름/휴대폰 번호만 전송하고, 발급받은 identityVerificationId 를 보관한다.
 // - 인증 성공 여부는 백엔드가 결정한다. 프론트는 VERIFIED 응답만 신뢰하고 화면에 반영한다.
 export const VERIFICATION_STATUS = Object.freeze({
   IDLE: 'IDLE',
@@ -69,25 +69,25 @@ export function useIdentityVerification() {
 
   /**
    * FORM → SUBMITTING → SUCCESS | FAILURE
-   * - '확인' 클릭: 프론트가 identityVerificationId 를 생성해 백엔드로 전송한다.
+   * - '확인' 클릭: 이름/휴대폰 번호만 백엔드(POST /auth/pass)로 전송하고,
+   *   백엔드가 생성·발급한 identityVerificationId 를 보관한다.
    * - 성공 여부는 백엔드 VERIFIED 응답이 결정한다 (버튼 클릭만으로 성공 처리 금지).
    */
   async function submitVerification(payload) {
     if (status.value !== VERIFICATION_STATUS.FORM || isBusy.value) return;
 
-    // 실제 PASS 에서 PortOne 이 반환하는 identityVerificationId 를 흉내 내어 프론트가 생성한다
-    identityVerificationId.value = `mock-${generateUuid()}`;
     updateForm({ name: payload.name, phoneNumber: payload.phoneNumber });
     setStatus(VERIFICATION_STATUS.SUBMITTING);
     errorMessage.value = '';
     errorCode.value = '';
 
     try {
+      // 백엔드가 identityVerificationId 를 생성해 발급한다 (프론트 생성/전송 금지)
       const result = await provider.complete({
-        identityVerificationId: identityVerificationId.value,
         name: payload.name,
         phoneNumber: payload.phoneNumber,
       });
+      identityVerificationId.value = result.identityVerificationId;
       verifiedName.value = result.name || payload.name;
       setStatus(VERIFICATION_STATUS.SUCCESS);
     } catch (err) {

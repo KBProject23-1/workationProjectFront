@@ -2,17 +2,16 @@
 // 회원가입 본인인증(PASS) 화면 — /signup/verify
 // - 약관동의(/signup/terms) 완료 후 진입한다.
 // - 'PASS 인증하기' → PASS 팝업 1(통신사 선택 + 약관 전체 동의) → 팝업 2(이름/휴대폰/보안문자)
-// - 팝업 2 '확인' → 프론트가 identityVerificationId 를 생성해 백엔드(POST /auth/pass)로 전송
-//   → 백엔드가 VERIFIED 세션 등록 → 완료 화면
-// - 인증 성공 여부는 백엔드가 결정한다 (프론트는 VERIFIED 응답만 신뢰).
-// - 완료 후 기존 검증(/auth/signup/verify-identity)을 거쳐 identityToken/name 을 AuthStore 에
-//   보관하고 계정정보 입력(/signup)으로 이동한다.
+// - 팝업 2 '확인' → 이름/휴대폰 번호만 백엔드(POST /auth/pass)로 전송
+//   → 백엔드가 VERIFIED 세션 생성 + identityVerificationId 발급 → 완료 화면
+// - identityVerificationId 는 백엔드가 발급한다 (프론트 생성 금지 — 요구사항)
+// - 완료 후 발급받은 identityVerificationId 를 AuthStore 에 보관하고 계정정보 입력(/signup)으로
+//   이동한다 (별도 검증 API 없이 회원가입 API 가 Redis 세션을 검증한다).
 // - 인증 로직(상태 머신)은 useIdentityVerification 컴포저블에 분리되어 있다.
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ChevronLeft } from '@lucide/vue';
 import { useAuthStore } from '@/stores/authStore';
-import { useErrorToast } from '@/composables/useErrorToast';
 import {
   useIdentityVerification,
   VERIFICATION_STATUS,
@@ -27,14 +26,10 @@ import PassAuthForm from '@/components/identity/PassAuthForm.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
-const { showError } = useErrorToast();
 const verification = useIdentityVerification();
 
 const { status, isBusy, isPopupOpen, identityVerificationId, verifiedName, errorMessage, form } =
   verification;
-
-// SUCCESS → 계정정보 입력(/signup)으로 이동하는 동안의 버튼 로딩
-const isContinuing = ref(false);
 
 // 성공/실패 화면은 자체 액션(계속/재시도)을 가지므로 헤더를 숨긴다
 const showHeader = computed(
@@ -60,23 +55,17 @@ function handlePopupClose(open) {
   verification.cancel();
 }
 
-// 팝업 2 '확인' → 프론트에서 identityVerificationId 생성 → 백엔드 전송
+// 팝업 2 '확인' → 이름/휴대폰 번호만 백엔드(POST /auth/pass)로 전송 (identityVerificationId 발급)
 function handleFormSubmit(payload) {
   verification.submitVerification(payload);
 }
 
-// SUCCESS → 백엔드 최종 검증(/auth/signup/verify-identity) 후 계정정보 입력으로 이동
-async function continueToSignup() {
-  if (isContinuing.value) return;
-  isContinuing.value = true;
-  try {
-    await authStore.verifyIdentity(identityVerificationId.value);
-    router.replace('/signup');
-  } catch (err) {
-    showError(err, '본인인증 결과를 확인하지 못했어요. 다시 시도해 주세요.');
-    verification.reset();
-    isContinuing.value = false;
-  }
+// SUCCESS → 백엔드가 발급한 identityVerificationId 를 AuthStore 에 보관 후 계정정보 입력으로 이동
+// - 별도 검증 API 호출 없이 이동한다. 회원가입(/auth/signup) 시 백엔드가
+//   identityVerificationId 로 Redis 세션을 검증·복원한다 (이름/휴대폰 재전송 없음).
+function continueToSignup() {
+  authStore.setIdentityVerification(identityVerificationId.value, verifiedName.value);
+  router.replace('/signup');
 }
 </script>
 
@@ -112,7 +101,6 @@ async function continueToSignup() {
       <IdentityVerificationSuccess
         v-else-if="status === VERIFICATION_STATUS.SUCCESS"
         :name="verifiedName"
-        :loading="isContinuing"
         @continue="continueToSignup"
       />
       <IdentityVerificationFailure
