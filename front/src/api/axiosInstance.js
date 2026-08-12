@@ -45,8 +45,8 @@ const resolveQueue = (token) => {
   waitingQueue = [];
 };
 
-// 로그인 화면 경로는 로그인 파트가 정한다. 실제 로그인 페이지가 붙으면 이 값을 바꾼다
-const LOGIN_PATH = '/dev-login';
+// 세션 만료 시 이동할 로그인 화면 경로 (실제 로그인 페이지 구현 완료)
+const LOGIN_PATH = '/login';
 
 const clearSession = () => {
   localStorage.removeItem('accessToken');

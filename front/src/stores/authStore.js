@@ -109,10 +109,10 @@ export const useAuthStore = defineStore('auth', {
 
     /**
      * 통합 로그인 (PASSWORD / PIN)
-     * - 지금은 회원가입 자동 로그인(위 signup)에서만 상태 설정이 필요해 이 액션은 스캐폴딩으로 둔다.
-     * - 현재 프론트 인프라는 axiosInstance 가 localStorage accessToken 을 Authorization 헤더로 실어 보내는
-     *   방식이라, 이 액션만으로는 다음 요청 인증이 보장되지 않는다. 로그인 화면 구현 시
-     *   Cookie 기반 인증(Backend ACCESS_TOKEN Cookie) 흐름과 함께 마저 연결한다.
+     * - 로그인 화면(/login)에서 호출한다. PASSWORD: loginId(이메일/휴대폰) + password + deviceId
+     * - Backend 가 ACCESS_TOKEN/REFRESH_TOKEN HttpOnly Cookie 를 발급한다 (Cookie 기반 인증).
+     * - 응답 data.pinSetupRequired: 기기 최초 로그인 여부 → 로그인 화면에서 PIN 등록 유도 분기
+     * - Access Token 은 localStorage 에 저장하지 않는다 (axiosInstance 가 Cookie 로만 인증).
      */
     async login(payload) {
       this.isLoading = true;
