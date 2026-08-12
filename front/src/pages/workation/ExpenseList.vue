@@ -11,8 +11,7 @@
       <h1 class="text-base font-bold text-slate-900">지출 내역</h1>
     </header>
 
-    <!-- 선택 모드에서는 확인 필요 건만 다루므로 탭·예산·필터를 감춘다 -->
-    <div v-if="!selectMode" class="grid grid-cols-3 rounded-xl bg-blue-50 p-1">
+    <div class="grid grid-cols-3 rounded-xl bg-blue-50 p-1">
       <button
         v-for="tab in TABS"
         :key="tab.label"
@@ -26,7 +25,7 @@
       </button>
     </div>
 
-    <div v-if="!selectMode" class="mt-3 flex flex-wrap gap-2">
+    <div class="mt-3 flex flex-wrap gap-2">
       <button
         v-if="summary.uncheckedCount > 0"
         class="rounded-full border px-3 py-1 text-xs"
@@ -56,7 +55,7 @@
       </button>
     </div>
 
-    <div v-if="!selectMode" class="my-5 space-y-5">
+    <div class="my-5 space-y-5">
       <BudgetUsageCard
         v-for="card in budgetCards"
         :key="card.key"
@@ -67,18 +66,20 @@
 
     <div class="mt-3 flex items-center justify-between">
       <p class="text-xs text-slate-400">
-        <template v-if="selectMode">{{ selectModeText }}</template>
         <!-- 요약 금액은 워케이션 전체 기준이라 필터를 걸면 건수만 보여준다 -->
-        <template v-else-if="filtered"> 총 {{ totalElements }}건 </template>
+        <template v-if="filtered"> 총 {{ totalElements }}건 </template>
+        <template v-else-if="selectMode">
+          확인이 필요한 지출만 모았어요
+        </template>
         <template v-else>
           총 {{ summary.totalCount }}건 · {{ won(summary.totalAmount) }}
         </template>
       </p>
 
-      <!-- 확인이 필요한 건이 있을 때만 일괄 처리를 열 수 있다 -->
+      <!-- 확인이 필요한 건이 있을 때만 열 수 있다 -->
       <button
-        v-if="summary.uncheckedCount > 0"
-        class="rounded-lg border px-3 py-1.5 text-xs font-bold"
+        v-if="summary.uncheckedCount > 0 || selectMode"
+        class="shrink-0 rounded-lg border px-3 py-1.5 text-xs font-bold"
         :class="
           selectMode
             ? 'border-slate-300 text-slate-500'
@@ -86,7 +87,7 @@
         "
         @click="toggleSelectMode"
       >
-        {{ selectMode ? '취소' : '일괄 완료처리' }}
+        {{ selectMode ? '취소' : '일괄 확인' }}
       </button>
     </div>
 
@@ -95,27 +96,24 @@
       <button
         class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border"
         :class="
-          allUncheckedSelected
+          allSelected
             ? 'border-blue-600 bg-blue-600 text-white'
             : 'border-slate-300'
         "
         aria-label="확인 필요 전체 선택"
         @click="toggleAll"
       >
-        <Check v-if="allUncheckedSelected" class="h-4 w-4" />
+        <Check v-if="allSelected" class="h-4 w-4" />
       </button>
 
       <span class="text-xs font-bold text-slate-700">전체 선택</span>
       <span class="text-xs text-slate-400">
-        {{ uncheckedExpenses.length }}건 중 {{ selectedIds.length }}건 선택
+        {{ expenses.length }}건 중 {{ selectedIds.length }}건 선택
       </span>
     </div>
 
-    <p
-      v-if="selectMode && hasMoreThanLimit"
-      class="mt-1 text-xs text-amber-600"
-    >
-      한 번에 {{ SELECT_MODE_SIZE }}건까지 확인할 수 있어요. 나머지는 확정 후
+    <p v-if="selectMode && hasMoreThanLimit" class="mt-1 text-xs text-amber-600">
+      한 번에 {{ SELECT_MODE_SIZE }}건까지 처리할 수 있어요. 나머지는 확정 후
       다시 눌러 주세요
     </p>
 
@@ -146,7 +144,7 @@
               : 'border-slate-300'
           "
           :aria-label="`${expense.merchantName} 선택`"
-          @click="toggleOne(expense)"
+          @click="toggleOne(expense.expenseId)"
         >
           <Check
             v-if="selectedIds.includes(expense.expenseId)"
@@ -162,10 +160,7 @@
       </div>
     </div>
 
-    <div
-      v-if="!selectMode && totalPages > 1"
-      class="mt-5 flex items-center justify-center gap-4"
-    >
+    <div v-if="totalPages > 1" class="mt-5 flex items-center justify-center gap-4">
       <button
         class="text-sm"
         :class="hasPrev ? 'text-slate-500' : 'text-slate-300'"
@@ -189,7 +184,7 @@
       </button>
     </div>
 
-    <!-- 선택 모드에서는 확정 버튼만 남긴다. 두 버튼이 나란히 있으면 뭘 눌러야 할지 헷갈린다 -->
+    <!-- 선택 모드에서는 확정 버튼만 남긴다. 두 버튼이 나란히 있으면 헷갈린다 -->
     <template v-if="selectMode">
       <Button
         class="mt-8 h-12 w-full rounded-xl text-base"
@@ -223,15 +218,12 @@ import { storeToRefs } from 'pinia';
 import { useExpenseStore } from '@/stores/expenseStore';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useErrorToast } from '@/composables/useErrorToast';
+import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import { won } from '@/components/workation/format';
 import BudgetUsageCard from '@/components/workation/BudgetUsageCard.vue';
 import ExpenseListItem from '@/components/workation/ExpenseListItem.vue';
 
-const TABS = [
-  { value: null, label: '전체' },
-  { value: 'WORK', label: '법인' },
-  { value: 'PERSONAL', label: '개인' },
-];
+const TAB_VALUES = [null, 'WORK', 'PERSONAL'];
 
 const route = useRoute();
 const router = useRouter();
@@ -244,10 +236,17 @@ const workationId = route.params.workationId;
 // 필터와 페이지를 쿼리에 담아 둔다
 // 상세 화면에 갔다 돌아와도 보던 탭과 페이지가 유지된다
 const budgetType = ref(
-  TABS.some((tab) => tab.value === route.query.budgetType)
-    ? route.query.budgetType
-    : null,
+  TAB_VALUES.includes(route.query.budgetType) ? route.query.budgetType : null,
 );
+
+const { workLabel, ensureCards } = useBudgetTypeLabel();
+
+// 법인카드 보유 여부에 따라 법인 / 업무로 갈린다
+const TABS = computed(() => [
+  { value: null, label: '전체' },
+  { value: 'WORK', label: workLabel.value },
+  { value: 'PERSONAL', label: '개인' },
+]);
 const uncheckedOnly = ref(route.query.uncheckedOnly === 'true');
 const categoryId = ref(
   route.query.categoryId ? Number(route.query.categoryId) : null,
@@ -279,7 +278,8 @@ const filtered = computed(
 );
 const { budgets } = storeToRefs(budgetStore);
 
-const typeLabel = (value) => (value === 'WORK' ? '법인 예산' : '개인 예산');
+const typeLabel = (value) =>
+  value === 'WORK' ? `${workLabel.value} 예산` : '개인 예산';
 
 // 고른 탭·카테고리에 맞춰 차트를 만든다
 // 전체 -> 법인·개인 둘 다 / 법인 -> 법인 하나 / 법인 + 숙박비 -> 숙박비 하나
@@ -388,7 +388,10 @@ const goPage = async (value) => {
 
 onMounted(async () => {
   // 예산을 못 받아도 지출 목록은 보여야 한다
-  await budgetStore.fetchBudgets(workationId).catch(() => {});
+  await Promise.all([
+    budgetStore.fetchBudgets(workationId).catch(() => {}),
+    ensureCards(),
+  ]);
   await loadExpenses();
 });
 
@@ -413,35 +416,17 @@ const toggleCategory = async (value) => {
 // 일괄 확인
 // =====================================================================================
 
-// 자동분류 상태 그대로인 건만 확정 대상이다
-const uncheckedExpenses = computed(() =>
-  expenses.value.filter((expense) => expense.isAutoCategorized),
-);
-
-const allUncheckedSelected = computed(
+// 선택 모드에서는 확인 필요 건만 조회하므로 조회된 전부가 대상이다
+const allSelected = computed(
   () =>
-    uncheckedExpenses.value.length > 0 &&
-    selectedIds.value.length === uncheckedExpenses.value.length,
+    expenses.value.length > 0 &&
+    selectedIds.value.length === expenses.value.length,
 );
 
-// 확인 필요 건이 한 번에 받을 수 있는 양을 넘으면 나눠서 처리해야 한다.
-// 필터를 걸면 대상이 줄어들므로 전체 요약이 아니라 지금 조회된 건수로 판단한다
+// 대상이 한 번에 받을 수 있는 양을 넘으면 나눠서 처리해야 한다
 const hasMoreThanLimit = computed(
   () => selectMode.value && totalElements.value > SELECT_MODE_SIZE,
 );
-
-// 지금 어떤 조건의 확인 필요 건을 모았는지 알려준다
-const selectModeText = computed(() => {
-  if (budgetType.value === null) return '확인이 필요한 지출만 모았어요';
-
-  const parts = [budgetType.value === 'WORK' ? '법인' : '개인'];
-  const category = filterCategories.value.find(
-    (row) => row.id === categoryId.value,
-  );
-  if (category) parts.push(category.name);
-
-  return `${parts.join(' · ')} 중 확인이 필요한 지출만 모았어요`;
-});
 
 const toggleSelectMode = async () => {
   selectMode.value = !selectMode.value;
@@ -453,21 +438,19 @@ const toggleSelectMode = async () => {
   window.scrollTo({ top: 0 });
 };
 
-const toggleOne = (expense) => {
-  if (!expense.isAutoCategorized) return;
-
-  const index = selectedIds.value.indexOf(expense.expenseId);
+const toggleOne = (expenseId) => {
+  const index = selectedIds.value.indexOf(expenseId);
   if (index === -1) {
-    selectedIds.value.push(expense.expenseId);
+    selectedIds.value.push(expenseId);
     return;
   }
   selectedIds.value.splice(index, 1);
 };
 
 const toggleAll = () => {
-  selectedIds.value = allUncheckedSelected.value
+  selectedIds.value = allSelected.value
     ? []
-    : uncheckedExpenses.value.map((expense) => expense.expenseId);
+    : expenses.value.map((expense) => expense.expenseId);
 };
 
 const confirmSelected = async () => {
