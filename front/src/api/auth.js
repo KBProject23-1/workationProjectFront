@@ -35,13 +35,14 @@ export const getTerms = () => {
   return axiosInstance.get('/auth/terms');
 };
 
-// PASS 본인인증 검증 및 회원 중복 체크 (회원가입 1단계)
-// POST /api/v1/auth/signup/verify-identity
-// data: { identityToken, name }
-export const verifyIdentity = (identityVerificationId) => {
-  return axiosInstance.post('/auth/signup/verify-identity', {
-    identityVerificationId,
-  });
+// 아이디 찾기 — PASS 본인인증 기반 가입 이메일(로그인 ID) 조회
+// POST /api/v1/auth/find-id
+// body: { identityVerificationId }
+// - 이름/휴대폰 번호는 전달하지 않는다 (백엔드가 CI 로 가입 회원 조회)
+// - 이메일은 백엔드가 마스킹하여 반환한다 (프론트 마스킹 불필요)
+// - data: { email: 'user****@example.com', createdAt: '2026-07-24' }
+export const findId = (identityVerificationId) => {
+  return axiosInstance.post('/auth/find-id', { identityVerificationId });
 };
 
 // 회원가입 이메일 중복 확인
@@ -53,9 +54,11 @@ export const checkEmailAvailability = (email) => {
   });
 };
 
-// 최종 회원가입 완료 (회원가입 2단계 — DB 최종 저장 + 자동 로그인)
+// 최종 회원가입 완료 (DB 최종 저장 + 자동 로그인)
 // POST /api/v1/auth/signup
-// body: { identityToken, email, password, agreedTermsIds }
+// body: { identityVerificationId, email, password, agreedTermsIds }
+// - identityVerificationId 는 POST /auth/pass 에서 백엔드가 발급한 값 (프론트 생성 금지)
+// - name/phoneNumber/ci 는 전송하지 않는다 (백엔드가 Redis 세션에서 복원)
 // - 닉네임은 백엔드가 기본값(워케이너{userId})으로 자동 생성한다 (닉네임 입력 기능 제거)
 // - 성공 시 Backend가 ACCESS_TOKEN / REFRESH_TOKEN HttpOnly Cookie 를 발급한다 (자동 로그인)
 // - Access Token/Refresh Token 을 JavaScript에서 읽거나 저장하지 않는다 (Cookie 기반)

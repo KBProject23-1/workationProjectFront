@@ -1,7 +1,8 @@
 <script setup>
 // 본인인증 완료 화면 (SUCCESS 상태)
-// - 백엔드가 세션을 VERIFIED 로 전환한 뒤에만 도달한다 (프론트 임의 성공 처리 금지).
-// - '계속하기' → 백엔드 최종 검증(/auth/signup/verify-identity) 후 계정정보 입력으로 이동한다.
+// - 백엔드가 VERIFIED 세션을 생성하고 identityVerificationId 를 발급한 뒤에만 도달한다
+//   (프론트 임의 성공 처리 금지).
+// - '계속하기' → 발급받은 identityVerificationId 를 보관하고 계정정보 입력(/signup)으로 이동한다.
 import { CheckCircle2 } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 

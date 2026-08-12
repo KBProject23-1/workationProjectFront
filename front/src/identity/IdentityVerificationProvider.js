@@ -7,12 +7,13 @@
 //
 // 원칙 (Mock 에서도 동일):
 // - 인증 성공 여부를 프론트가 결정하지 않는다.
+// - identityVerificationId 를 프론트가 생성하지 않는다 — 백엔드가 발급한 값만 신뢰한다.
 // - 모든 인증 상태 변경/판정은 백엔드 API 응답을 신뢰한다.
 export class IdentityVerificationProvider {
   /**
-   * Mock 인증 완료 등록 — 프론트가 생성한 identityVerificationId 를 백엔드로 전송
-   * @param payload {{ identityVerificationId: string, name: string, phoneNumber: string }}
-   * @returns { identityVerificationId, status: 'VERIFIED', name }
+   * Mock 본인인증 처리 — 이름/휴대폰 번호를 전송하고 백엔드가 발급한 identityVerificationId 를 받는다
+   * @param payload {{ name: string, phoneNumber: string }}
+   * @returns { identityVerificationId, status: 'VERIFIED' }
    */
   async complete(_payload) {
     throw new Error('Not implemented');

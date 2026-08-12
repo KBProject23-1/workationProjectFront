@@ -6,6 +6,13 @@ export default [
     name: 'LoginPage',
     component: () => import('@/pages/login/LoginPage.vue'),
   },
+  // 아이디 찾기 — 로그인 화면에서 PASS 본인인증 후 가입 이메일(로그인 ID) 조회 (Figma: 아이디찾기)
+  // - 비로그인 공개 화면: 기존 회원가입 PASS 인증 구조(useIdentityVerification)를 재사용한다
+  {
+    path: '/find-id',
+    name: 'FindIdPage',
+    component: () => import('@/pages/login/FindIdPage.vue'),
+  },
   {
     path: '/signup',
     name: 'SignupPage',

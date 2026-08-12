@@ -10,7 +10,7 @@
 // - 로그인 성공 분기:
 //   * pinSetupRequired=true (기기 최초 로그인) → PIN 등록 화면(/pin/setup) 이동 + 미구현 안내 토스트
 //   * pinSetupRequired=false (기존 기기)       → 워케이션 홈(/workation) 이동
-// - 아이디 찾기 / 비밀번호 찾기 → 아직 미구현 안내 토스트 (진행 화면 없음)
+// - 아이디 찾기 → /find-id 화면 이동 (PASS 본인인증 기반) / 비밀번호 찾기 → 아직 미구현 안내 토스트
 import { ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { toast } from 'vue-sonner';
@@ -184,7 +184,7 @@ async function handleLogin() {
   }
 }
 
-// 아이디 찾기 / 비밀번호 찾기 — 아직 미구현 안내
+// 아이디 찾기 → /find-id 이동 / 비밀번호 찾기 — 아직 미구현 안내
 function showNotImplemented(feature) {
   toast.info(`${feature} 기능은 아직 준비 중이에요.`);
 }
@@ -297,12 +297,12 @@ function goBack() {
         </div>
       </div>
 
-      <!-- 아이디 찾기 · 비밀번호 찾기 (미구현 안내) -->
+      <!-- 아이디 찾기 · 비밀번호 찾기 -->
       <div class="mt-6 flex items-center justify-center gap-1">
         <button
           type="button"
           class="px-2 py-1 text-[13px] font-semibold text-[#2878F0] transition-colors hover:text-[#1E68D6] active:scale-95"
-          @click="showNotImplemented('아이디 찾기')"
+          @click="router.push('/find-id')"
         >
           아이디 찾기
         </button>

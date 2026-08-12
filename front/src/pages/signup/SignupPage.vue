@@ -1,7 +1,7 @@
 <script setup>
 // 회원가입 계정정보 입력 화면 — /signup
 // 흐름: 약관동의(/signup/terms) → 본인인증(/signup/verify) → 계정정보 입력(본 화면) → 회원가입 완료 → 로그인 화면
-// - AuthStore 에 보관된 identityToken(본인인증 성공)이 없으면 약관동의부터 시작하도록 리다이렉트한다.
+// - AuthStore 에 보관된 identityVerificationId(백엔드 발급)가 없으면 약관동의부터 시작하도록 리다이렉트한다.
 // - 이메일(중복 확인) / 비밀번호(정책) / 비밀번호 확인 을 프론트에서 1차 검증한다.
 // - API 호출 구조: SignupPage → authStore.signup() → api/auth.js → axiosInstance → Backend
 // - 회원가입 성공 시 Backend 가 ACCESS_TOKEN/REFRESH_TOKEN HttpOnly Cookie 를 발급한다 (자동 로그인).
@@ -39,7 +39,11 @@ onMounted(() => {
   // 약관동의부터 다시 시작한다.
   // - signupAgreedTermIds 가 비어 있으면 가입하기 시점에 백엔드가 MISSING_REQUIRED_TERMS(400)를
   //   반환하므로, 진입 시점에 미리 차단한다 (signupAgreedTermIds: 인메모리 — 새로고침 시 초기화).
-  if (!authStore.signupIdentityToken || authStore.signupAgreedTermIds.length === 0) {
+  // - signupIdentityVerificationId(백엔드가 POST /auth/pass 에서 발급) 없이는 회원가입이 불가능하다.
+  if (
+    !authStore.signupIdentityVerificationId ||
+    authStore.signupAgreedTermIds.length === 0
+  ) {
     router.replace('/signup/terms');
   }
 });
@@ -149,7 +153,7 @@ async function handleSubmit() {
     // 자동 로그인 완료 — 회원가입 완료 화면으로 이동 (거기서 '로그인하기' → 로그인 화면 이동)
     router.replace('/signup/complete');
   } catch (err) {
-    // 서버 ErrorCode 기반 메시지 (DUPLICATE_EMAIL / EXPIRED_IDENTITY_TOKEN 등)
+    // 서버 ErrorCode 기반 메시지 (DUPLICATE_EMAIL / INVALID_VERIFICATION_ID 등)
     showError(err, '회원가입에 실패했어요. 다시 시도해 주세요.');
   } finally {
     isSubmitting.value = false;
