@@ -76,9 +76,12 @@
         </template>
       </p>
 
-      <!-- 확인이 필요한 건이 있을 때만 열 수 있다 -->
+      <!--
+        확인 필요 필터를 켰을 때만 보여준다.
+        전체 목록에서는 무엇을 확정하는지 알 수 없어 눌러도 헷갈린다
+      -->
       <button
-        v-if="summary.uncheckedCount > 0 || selectMode"
+        v-if="(uncheckedOnly && summary.uncheckedCount > 0) || selectMode"
         class="shrink-0 rounded-lg border px-3 py-1.5 text-xs font-bold"
         :class="
           selectMode
@@ -402,13 +405,17 @@ const changeBudgetType = async (value) => {
   await reload();
 };
 
+// 칩은 한 번에 하나만 켠다. 다른 칩을 누르면 앞의 것이 풀린다.
+// 확인 필요와 카테고리를 겹쳐 걸 수 있으면 지금 무엇으로 걸러진 목록인지 읽기 어렵다
 const toggleUnchecked = async () => {
   uncheckedOnly.value = !uncheckedOnly.value;
+  categoryId.value = null;
   await reload();
 };
 
 const toggleCategory = async (value) => {
   categoryId.value = categoryId.value === value ? null : value;
+  uncheckedOnly.value = false;
   await reload();
 };
 
@@ -461,6 +468,13 @@ const confirmSelected = async () => {
     await expenseStore.confirmExpenses(workationId, [...selectedIds.value]);
     selectMode.value = false;
     selectedIds.value = [];
+
+    // 남은 확인 필요 건이 없으면 필터를 풀어야 한다.
+    // 그대로 두면 빈 목록만 보이고 왜 비었는지 알 수 없다
+    if (uncheckedOnly.value && summary.value.uncheckedCount === 0) {
+      uncheckedOnly.value = false;
+      syncQuery();
+    }
 
     // 원래 보던 필터·페이지로 돌아간다
     await loadExpenses();

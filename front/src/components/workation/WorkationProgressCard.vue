@@ -130,9 +130,7 @@ const progressText = computed(() => {
   return `전체 ${props.workation.totalDays}일 · ${props.workation.elapsedDays}일째`;
 });
 
-const remainText = computed(() => {
-  if (before.value) return `시작까지 ${props.workation.dday ?? 0}일`;
-  if (pending.value) return '정산이 필요해요';
-  return `${props.workation.dday ?? 0}일 남음`;
-});
+// 남은 일수는 위 D-day 배지와 같은 말이라 적지 않는다.
+// 정산 안내는 배지로 알 수 없는 내용이라 남긴다
+const remainText = computed(() => (pending.value ? '정산이 필요해요' : ''));
 </script>

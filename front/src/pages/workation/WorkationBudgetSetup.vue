@@ -11,11 +11,14 @@
       <h1 class="text-base font-bold text-slate-900">예산 세부 금액 설정</h1>
     </header>
 
+    <!-- 마지막 단계다. 설문을 건너뛰었으면 2/2, 했으면 3/3 -->
     <template v-if="isCreateFlow">
       <div class="h-1 w-full rounded-full bg-blue-100">
         <div class="h-1 w-full rounded-full bg-blue-600" />
       </div>
-      <p class="mt-1 text-right text-xs text-slate-400">3 / 3</p>
+      <p class="mt-1 text-right text-xs text-slate-400">
+        {{ totalSteps }} / {{ totalSteps }}
+      </p>
     </template>
 
     <div class="mt-4 grid grid-cols-2 rounded-xl bg-blue-50 p-1">
@@ -123,13 +126,28 @@
     />
 
     <!--
+      등록 도중 나가면 예산 없는 워케이션이 남는다.
+      지출도 추천도 안 되는데 진행 중 워케이션은 하나만 허용되어 새로 만들 수도 없다.
+    -->
+    <BaseConfirmModal
+      :visible="cancelOpen"
+      title="예산 없이 나가시겠어요?"
+      message="예산을 배정하지 않으면 지출을 기록할 수 없어요. 지금까지 입력한 워케이션 정보가 사라져요."
+      :loading="canceling"
+      confirm-label="등록 취소"
+      cancel-label="계속 작성"
+      @confirm="cancelRegistration"
+      @cancel="cancelOpen = false"
+    />
+
+    <!--
       등록을 마친 직후가 추천을 권하기 제일 좋은 순간이다.
       여기서 놓쳐도 홈 카드로 다시 들어갈 수 있다.
     -->
     <BaseConfirmModal
       :visible="recommendOpen"
       title="이제 머물 곳을 정해볼까요?"
-      message="답해주신 취향으로 숙소와 공유오피스를 찾아드려요."
+      :message="recommendMessage"
       confirm-label="추천받기"
       cancel-label="나중에 할게요"
       @confirm="goRecommendation"
@@ -140,10 +158,11 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { ChevronLeft } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { useBudgetStore } from '@/stores/budgetStore';
+import { useWorkationStore } from '@/stores/workationStore';
 import { useCategoryStore } from '@/stores/categoryStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
@@ -158,13 +177,19 @@ const TAB_VALUES = ['WORK', 'PERSONAL'];
 const route = useRoute();
 const router = useRouter();
 const budgetStore = useBudgetStore();
+const workationStore = useWorkationStore();
 const categoryStore = useCategoryStore();
 const { showError } = useErrorToast();
 
 const workationId = route.params.workationId;
 
-// 등록 흐름(2/2)으로 들어왔는지, 메인화면 세부내역 보기로 들어왔는지 구분한다
+// 등록 흐름으로 들어왔는지, 메인화면 세부내역 보기로 들어왔는지 구분한다
 const isCreateFlow = route.query.step === 'create';
+
+// 설문을 거쳐 왔으면 3, 건너뛰었으면 2. 앞 화면이 넘겨준다.
+// 설문 이력만 보고 판단하면 안 된다. 두 번째 워케이션도 이력은 있지만 2단계다.
+// 예산 화면은 언제나 마지막이라 현재 단계가 곧 전체 단계 수다
+const totalSteps = Number(route.query.steps) || 3;
 
 const { workLabel, ensureCards } = useBudgetTypeLabel();
 
@@ -193,8 +218,22 @@ const sheetOpen = ref(false);
 const renameTarget = ref(null);
 const shaking = ref(false);
 
-// 등록 3/3 을 마친 직후 뜨는 추천 안내
+// 마지막 단계를 마친 직후 뜨는 추천 안내.
+// 설문을 건너뛴 경우에는 이전에 답한 취향을 쓴다는 것을 알려준다
 const recommendOpen = ref(false);
+
+const recommendMessage = computed(() =>
+  totalSteps === 2
+    ? '이전에 답해주신 취향으로 숙소와 공유오피스를 찾아드려요. 취향이 바뀌었다면 추천 화면에서 설문을 다시 할 수 있어요.'
+    : '답해주신 취향으로 숙소와 공유오피스를 찾아드려요.',
+);
+
+// 등록 도중 이탈 확인
+const cancelOpen = ref(false);
+const canceling = ref(false);
+
+// 확인을 마치고 스스로 떠나는 중이면 라우터 가드를 통과시킨다
+const leaving = ref(false);
 
 const budgetTotal = computed(() => budgetTotals[budgetType.value]);
 const categories = computed(() => categoryMap[budgetType.value]);
@@ -351,11 +390,11 @@ const saveDraft = () => {
       amounts: { ...amountMap[value] },
     };
   });
-  sessionStorage.setItem(draftKey, JSON.stringify(draft));
+  localStorage.setItem(draftKey, JSON.stringify(draft));
 };
 
 const restoreDraft = () => {
-  const saved = sessionStorage.getItem(draftKey);
+  const saved = localStorage.getItem(draftKey);
   if (!saved) return;
 
   const draft = JSON.parse(saved);
@@ -434,7 +473,10 @@ const submit = async () => {
         await budgetStore.setupBudget(workationId, payload);
       }
     }
-    sessionStorage.removeItem(draftKey);
+    localStorage.removeItem(draftKey);
+
+    // 저장을 마쳤으니 이탈 확인을 걸지 않는다
+    leaving.value = true;
 
     // 등록을 막 끝낸 경우에만 추천을 권한다.
     // 메인에서 예산만 고치러 들어온 경우는 그냥 돌아간다
@@ -460,14 +502,38 @@ const goHome = () => {
   router.replace('/workation');
 };
 
-const goBack = () => {
-  // 등록 흐름이면 앞 단계인 설문(2/3)으로 돌아간다
-  router.push(
-    isCreateFlow
-      ? `/workation/${workationId}/survey?step=create`
-      : '/workation',
-  );
+// 등록 도중 나가면 예산 없는 워케이션이 남으므로 확인을 받는다
+const cancelRegistration = async () => {
+  if (canceling.value) return;
+  canceling.value = true;
+  try {
+    await workationStore.deleteWorkation(workationId);
+    localStorage.removeItem(draftKey);
+    leaving.value = true;
+    router.replace('/workation');
+  } catch (error) {
+    showError(error, '등록을 취소하지 못했습니다.');
+  } finally {
+    canceling.value = false;
+    cancelOpen.value = false;
+  }
 };
+
+const goBack = () => {
+  if (isCreateFlow) {
+    cancelOpen.value = true;
+    return;
+  }
+  router.push('/workation');
+};
+
+// 헤더 버튼뿐 아니라 브라우저 뒤로가기와 주소 직접 입력도 잡는다.
+// 새로고침과 탭 닫기는 여기서 못 막는다. 그때는 홈의 이어서 설정하기 배너로 돌아온다
+onBeforeRouteLeave(() => {
+  if (!isCreateFlow || leaving.value) return true;
+  cancelOpen.value = true;
+  return false;
+});
 </script>
 
 <style scoped>

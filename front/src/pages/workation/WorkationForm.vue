@@ -11,11 +11,15 @@
       <h1 class="text-base font-bold text-slate-900">{{ pageTitle }}</h1>
     </header>
 
+    <!-- 설문은 사용자당 1회다. 이미 했으면 단계가 하나 줄어든다 -->
     <template v-if="!isEdit">
       <div class="h-1 w-full rounded-full bg-blue-100">
-        <div class="h-1 w-1/3 rounded-full bg-blue-600" />
+        <div
+          class="h-1 rounded-full bg-blue-600"
+          :class="totalSteps === 3 ? 'w-1/3' : 'w-1/2'"
+        />
       </div>
-      <p class="mt-1 text-right text-xs text-slate-400">1 / 3</p>
+      <p class="mt-1 text-right text-xs text-slate-400">1 / {{ totalSteps }}</p>
     </template>
 
     <h2 class="mt-4 mb-3 text-base font-bold text-slate-900">기본 정보</h2>
@@ -183,6 +187,7 @@ import { useBudgetStore } from '@/stores/budgetStore';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
+import { useSurveyStore } from '@/stores/surveyStore';
 import WorkationFormField from '@/components/workation/WorkationFormField.vue';
 import WorkationDateInput from '@/components/workation/WorkationDateInput.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
@@ -193,6 +198,11 @@ const budgetStore = useBudgetStore();
 const workationStore = useWorkationStore();
 const { showError } = useErrorToast();
 const { hasCorporateCard, workLabel, ensureCards } = useBudgetTypeLabel();
+const surveyStore = useSurveyStore();
+
+// 설문은 사용자당 1회다. 이미 답했으면 등록이 2단계로 줄어든다
+const surveyDone = computed(() => surveyStore.hasAnswered);
+const totalSteps = computed(() => (surveyDone.value ? 2 : 3));
 
 // 법인카드가 없을 때 등록 화면에서 한 번 안내한다
 const cardNoticeOpen = ref(false);
@@ -351,6 +361,9 @@ onMounted(async () => {
   await Promise.all([
     loadRegions(),
     ensureCards(),
+    // 설문 이력이 있으면 단계 표기와 다음 화면이 달라진다.
+    // 응답이 없으면 404 가 오므로 스토어가 삼킨다
+    surveyStore.fetchMySurvey().catch(() => {}),
     isEdit ? loadWorkation() : guardCreate(),
   ]);
 
@@ -444,9 +457,13 @@ const save = async (force) => {
 
     const id = data.id ?? workationId;
 
-    // 등록이면 2/3 설문으로 이어진다
+    // 설문을 아직 안 했으면 설문으로, 했으면 예산 배분으로 이어진다
     if (!isEdit) {
-      router.push(`/workation/${id}/survey?step=create`);
+      router.push(
+        surveyDone.value
+          ? `/workation/${id}/budgets?step=create&steps=2`
+          : `/workation/${id}/survey?step=create`,
+      );
       return;
     }
 

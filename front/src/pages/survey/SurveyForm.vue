@@ -82,7 +82,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { ChevronLeft } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
@@ -108,6 +108,9 @@ const loading = ref(true);
 const submitting = ref(false);
 const cancelOpen = ref(false);
 const canceling = ref(false);
+
+// 확인을 마치고 스스로 떠나는 중이면 라우터 가드를 통과시킨다
+const leaving = ref(false);
 
 // { questionId: [optionId, ...] }
 const answers = reactive({});
@@ -186,10 +189,14 @@ const submit = async () => {
       await surveyStore.createSurvey(buildPayload());
     }
 
+    // 저장을 마쳤으니 이탈 확인을 걸지 않는다
+    leaving.value = true;
+
     // 등록 흐름이면 3/3 예산 배분으로, 아니면 메인으로 돌아간다
+    // 설문을 거쳤으니 전체 3단계다
     router.replace(
       isCreateFlow
-        ? `/workation/${workationId}/budgets?step=create`
+        ? `/workation/${workationId}/budgets?step=create&steps=3`
         : '/workation',
     );
   } catch (error) {
@@ -205,6 +212,8 @@ const cancelRegistration = async () => {
   canceling.value = true;
   try {
     await workationStore.deleteWorkation(workationId);
+    localStorage.removeItem(`workation-budget-draft-${workationId}`);
+    leaving.value = true;
     router.replace('/workation');
   } catch (error) {
     showError(error, '등록을 취소하지 못했습니다.');
@@ -221,4 +230,12 @@ const goBack = () => {
   }
   router.push('/workation');
 };
+
+// 헤더 버튼뿐 아니라 브라우저 뒤로가기와 주소 직접 입력도 잡는다.
+// 새로고침과 탭 닫기는 여기서 못 막는다. 그때는 홈의 이어서 설정하기 배너로 돌아온다
+onBeforeRouteLeave(() => {
+  if (!isCreateFlow || leaving.value) return true;
+  cancelOpen.value = true;
+  return false;
+});
 </script>
