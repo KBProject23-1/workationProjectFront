@@ -30,11 +30,16 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
-    async charge(accountId, amount, pinNumber) {
+    async charge(accountId, amount, pinNumber, idempotencyKey) {
       this.isLoading = true;
       this.error = null;
       try {
-        const { data } = await chargeWalletApi(accountId, amount, pinNumber);
+        const { data } = await chargeWalletApi(
+          accountId,
+          amount,
+          pinNumber,
+          idempotencyKey,
+        );
         // 응답 필드명이 currentBalance라 balance로 정규화
         this.balance = data.currentBalance;
         return data;
@@ -46,11 +51,16 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
-    async refund(accountId, amount, pinNumber) {
+    async refund(accountId, amount, pinNumber, idempotencyKey) {
       this.isLoading = true;
       this.error = null;
       try {
-        const { data } = await refundWalletApi(accountId, amount, pinNumber);
+        const { data } = await refundWalletApi(
+          accountId,
+          amount,
+          pinNumber,
+          idempotencyKey,
+        );
         // 응답 필드명이 remainingBalance라 balance로 정규화
         this.balance = data.remainingBalance;
         return data;

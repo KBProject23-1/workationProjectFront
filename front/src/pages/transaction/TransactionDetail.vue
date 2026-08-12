@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { useErrorToast } from '@/composables/useErrorToast';
+import { toast } from 'vue-sonner';
 import { ChevronLeft, RotateCcw } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
@@ -68,8 +69,14 @@ async function openReceipt() {
 async function handleCancel() {
   isCanceling.value = true;
   try {
-    await transactionStore.cancelTransaction(transactionId);
+    const res = await transactionStore.cancelTransaction(transactionId);
     await loadDetail();
+    const dest = res?.refundedTo === 'CARD' ? '카드' : '지갑';
+    const amountText =
+      res?.refundedAmount != null
+        ? `${res.refundedAmount.toLocaleString('ko-KR')}원 `
+        : '';
+    toast.success(`${dest}로 ${amountText}환불됐어요`);
   } catch (err) {
     showError(err, '거래 취소에 실패했어요.');
   } finally {
