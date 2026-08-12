@@ -4,7 +4,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { useAuthStore } from '@/stores/authStore';
 import { useErrorToast } from '@/composables/useErrorToast';
-import { getDeviceId, issueDeviceId, persistDeviceId } from '@/utils/device';
+import { getDeviceId } from '@/utils/device';
 import { getCurrentUserId } from '@/utils/currentUser';
 import { markPinRegistered } from '@/utils/pinRegistry';
 import PinKeypad from '@/components/pin/PinKeypad.vue';
@@ -56,9 +56,8 @@ async function handleComplete(value) {
 async function submit(pinNumber) {
   submitting.value = true;
   error.value = '';
-  // deviceId 는 기기 신원이라 한 번 발급하면 유지한다. 기존 값이 있으면 재사용(재등록),
-  // 없으면 새로 발급하고 등록 성공 후에만 확정 저장한다.
-  const deviceId = getDeviceId() ?? issueDeviceId();
+  // deviceId 는 기기 신원(설치 ID)이라 이미 발급·저장돼 있다. 그대로 재사용.
+  const deviceId = getDeviceId();
   const userId = getCurrentUserId();
   try {
     await authStore.setupPin({
@@ -66,7 +65,6 @@ async function submit(pinNumber) {
       deviceId,
       deviceName: buildDeviceName(),
     });
-    persistDeviceId(deviceId);
     if (userId != null) markPinRegistered(userId);
     toast.success('PIN이 설정됐어요');
     goAfterRegister();
@@ -74,7 +72,6 @@ async function submit(pinNumber) {
     const status = err?.response?.status;
     // 409 = 이 (userId, deviceId)에 이미 PIN 등록됨(서버 진실) → 캐시만 맞추고 통과
     if (status === 409) {
-      persistDeviceId(deviceId);
       if (userId != null) markPinRegistered(userId);
       toast.success('이미 설정된 PIN이 있어요');
       goAfterRegister();

@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { hasDeviceId } from '@/utils/device';
 import { getCurrentUserId } from '@/utils/currentUser';
 import { isPinRegistered } from '@/utils/pinRegistry';
 import splashRouter from './splashRouter';
@@ -41,11 +40,12 @@ const router = createRouter({
   ],
 });
 
-// PIN(deviceId) 없이는 결제성 API(충전/환불/결제)가 전부 400 이므로,
+// 결제성 API(충전/환불/결제)는 서버가 PIN(=user_device 등록)을 요구하므로,
 // 로그인된 사용자가 "이 기기에 자기 PIN 을 등록하지 않았으면" PIN 설정으로 강제 이동한다.
 // - PIN 등록은 (userId, deviceId)별 사실이라 유저 단위로 판단한다.
 //   현재 userId 는 accessToken(JWT sub)에서 얻고, 등록 여부는 pinRegistry 캐시로 본다.
-// - userId 를 못 읽으면 기기 단위(deviceId 존재)로 폴백한다.
+//   (캐시는 로그인 응답 pinSetupRequired 로 seed, 거래 응답으로 동기화 — 서버가 진실)
+// - userId 를 못 읽으면 판단 불가 → 통과(거래 시 NOT_REGISTERED 로 fail-safe).
 // - 공개/인증/설정 경로는 무한 리다이렉트 방지를 위해 예외로 둔다.
 const PIN_EXEMPT_PREFIXES = [
   '/onboarding',
@@ -64,8 +64,7 @@ router.beforeEach((to) => {
   const isAuthed = !!localStorage.getItem('accessToken');
   if (!isAuthed || isPinExempt(to.path)) return true;
   const userId = getCurrentUserId();
-  const registered = userId != null ? isPinRegistered(userId) : hasDeviceId();
-  if (registered) return true;
+  if (userId == null || isPinRegistered(userId)) return true;
   return { path: '/pin/setup', query: { redirect: to.fullPath } };
 });
 

@@ -1,34 +1,26 @@
 import { generateUuid } from '@/utils/uuid';
 
-// 이 브라우저(기기)를 식별하는 deviceId 관리.
+// deviceId = 이 브라우저(기기)의 신원 = 기기 설치 ID.
 //
-// 불변식: "localStorage 에 deviceId 존재" ⟺ "이 기기에서 PIN 등록 완료".
-// 그래서 getDeviceId() 는 자동 생성하지 않는다. 값 발급은 PIN 설정 플로우에서만
-// issueDeviceId() 로 하고, 서버 등록 성공 후 persistDeviceId() 로 확정 저장한다.
+// - 첫 접근 시 1회 생성해 localStorage 에 영구 저장하고, 이후(로그인마다 포함) 같은 값을 재사용한다.
+//   절대 매번 재생성하지 않는다.
+// - PIN 등록 여부와는 무관하다. "이 유저가 이 기기에 PIN 등록했나"는 서버 진실(로그인 응답
+//   pinSetupRequired) + pinRegistry 캐시로 판단한다. deviceId 는 그저 "어느 기기인가"만 나타낸다.
+// - BE 는 (userId, deviceId)로 PIN 을 저장/검증하고, 로그인 요청의 deviceId 로 기기 등록 여부를 판별한다.
 const DEVICE_ID_KEY = 'deviceId';
 
-// 저장된 deviceId. 없으면 null(= 아직 이 기기에서 PIN 미등록).
+// 저장된 deviceId 를 반환한다. 없으면 새로 발급·저장 후 반환(기기 설치 ID).
 export function getDeviceId() {
-  return localStorage.getItem(DEVICE_ID_KEY);
-}
-
-// 이 기기가 PIN 을 등록했는지 여부. 로그인 후 라우팅 가드에서 사용.
-export function hasDeviceId() {
-  return getDeviceId() !== null;
-}
-
-// PIN 설정 시 새 deviceId 후보를 발급한다(아직 저장하지 않음).
-// 서버 등록(setupPin)이 성공하면 persistDeviceId() 로 확정한다.
-export function issueDeviceId() {
-  return generateUuid();
-}
-
-// PIN 설정 성공 후 deviceId 를 확정 저장한다.
-export function persistDeviceId(deviceId) {
-  localStorage.setItem(DEVICE_ID_KEY, deviceId);
+  let id = localStorage.getItem(DEVICE_ID_KEY);
+  if (!id) {
+    id = generateUuid();
+    localStorage.setItem(DEVICE_ID_KEY, id);
+  }
+  return id;
 }
 
 // deviceId 는 기기 신원이라 평소엔 지우지 않는다(로그아웃/재접속에도 유지).
+// 명시적 기기 등록 해제 같은 특수 상황에서만 사용하는 유틸.
 export function clearDeviceId() {
   localStorage.removeItem(DEVICE_ID_KEY);
 }
