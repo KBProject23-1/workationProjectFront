@@ -6,6 +6,7 @@ import {
   checkEmailAvailability as checkEmailAvailabilityApi,
   setupPin as setupPinApi,
 } from '@/api/auth';
+import { getMe as getMeApi } from '@/api/user';
 
 // 인증 도메인 스토어 (knowledgeFront.md: Auth Store)
 //
@@ -23,6 +24,8 @@ export const useAuthStore = defineStore('auth', {
     error: null,
     isAuthenticated: false,
     user: null,
+    // 앱 부팅 시 GET /users/me 로 로그인 상태를 1회 복원했는지 여부 (라우터 가드에서 대기)
+    sessionChecked: false,
     // 회원가입 플로우 상태 (인메모리 — 새로고침 시 초기화)
     signupAgreedTermIds: [],
     signupIdentityToken: '',
@@ -108,6 +111,33 @@ export const useAuthStore = defineStore('auth', {
     // ---------- 인증 ----------
 
     /**
+     * 로그인 상태 복원 — 앱 부팅 시 1회 호출한다(쿠키 기반이라 새로고침하면 인메모리 상태가 사라지므로).
+     * GET /users/me 200 → 로그인, 401 → 비로그인. 둘 다 "확정"(sessionChecked=true)이라 이후 재호출 안 함.
+     * 네트워크/5xx 같은 비확정 실패는 sessionChecked 를 세우지 않아 다음 네비게이션에서 재시도된다
+     * (유효 세션 유저가 일시 장애로 로그아웃 취급되는 것 방지).
+     */
+    async restoreSession() {
+      if (this.sessionChecked) return;
+      try {
+        const { data } = await getMeApi();
+        this.isAuthenticated = true;
+        this.user = {
+          email: data.email,
+          name: data.name,
+          nickname: data.nickname,
+        };
+        this.sessionChecked = true;
+      } catch (err) {
+        if (err?.response?.status === 401) {
+          this.isAuthenticated = false;
+          this.user = null;
+          this.sessionChecked = true;
+        }
+        // 그 외(무응답/5xx)는 확정하지 않는다 → 재시도 여지 남김
+      }
+    },
+
+    /**
      * 통합 로그인 (PASSWORD / PIN)
      * - 로그인 화면(/login)에서 호출한다. PASSWORD: loginId(이메일/휴대폰) + password + deviceId
      * - Backend 가 ACCESS_TOKEN/REFRESH_TOKEN HttpOnly Cookie 를 발급한다 (Cookie 기반 인증).
@@ -120,6 +150,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const { data } = await loginApi(payload);
         this.isAuthenticated = true;
+        this.sessionChecked = true;
         if (data) {
           this.user = { userId: data.userId, name: data.name };
         }

@@ -8,34 +8,24 @@
 // - deviceId(기기 UUID)는 브라우저 localStorage 에 보관해 로그인 요청마다 함께 전송한다.
 //   백엔드가 user_device 등록 여부를 확인해 pinSetupRequired 로 알려준다.
 // - 로그인 성공 분기:
-//   * pinSetupRequired=true (기기 최초 로그인) → PIN 등록 화면(/pin-setup) 이동 + 미구현 안내 토스트
+//   * pinSetupRequired=true (기기 최초 로그인) → PIN 등록 화면(/pin/setup) 이동 + 미구현 안내 토스트
 //   * pinSetupRequired=false (기존 기기)       → 워케이션 홈(/workation) 이동
 // - 아이디 찾기 / 비밀번호 찾기 → 아직 미구현 안내 토스트 (진행 화면 없음)
 import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { ChevronLeft, Mail, Phone, Eye, EyeOff } from '@lucide/vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useErrorToast } from '@/composables/useErrorToast';
-import { generateUuid } from '@/utils/uuid';
+import { getDeviceId } from '@/utils/device';
+import { setPinRegistered } from '@/utils/pinRegistry';
 import BaseInput from '@/components/common/BaseInput.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 const { showError } = useErrorToast();
-
-// 기기 식별 UUID — 브라우저 localStorage 에 보관 (docs: 로그인 → deviceId "브라우저 로컬스토리지에 저장된 UUID")
-const DEVICE_ID_KEY = 'workitDeviceId';
-
-function getOrCreateDeviceId() {
-  let deviceId = localStorage.getItem(DEVICE_ID_KEY);
-  if (!deviceId) {
-    deviceId = generateUuid();
-    localStorage.setItem(DEVICE_ID_KEY, deviceId);
-  }
-  return deviceId;
-}
 
 const loginId = ref('');
 const password = ref('');
@@ -163,23 +153,32 @@ async function handleLogin() {
     const { data } = await authStore.login({
       loginType: 'PASSWORD',
       // 휴대폰은 하이픈 제거(숫자만) 전송 — 백엔드 findUserByLoginId 와 동일 정규화
-      loginId: isEmail.value ? loginId.value.trim() : loginId.value.replace(/\D/g, ''),
+      loginId: isEmail.value
+        ? loginId.value.trim()
+        : loginId.value.replace(/\D/g, ''),
       password: password.value,
-      deviceId: getOrCreateDeviceId(),
+      deviceId: getDeviceId(),
     });
 
-    // 기기 최초 로그인(device 미등록) → PIN 등록 화면으로 이동하되, 화면은 아직 준비 중 안내
-    if (data?.pinSetupRequired) {
-      toast.info('PIN 번호 등록 화면은 아직 준비 중인 기능이에요.');
-      router.replace('/pin-setup');
-      return;
-    }
+    // 서버 진실(pinSetupRequired)로 이 기기 PIN 등록 캐시를 seed → 라우터 가드가 정확히 분기
+    setPinRegistered(!data?.pinSetupRequired);
 
-    // 기존 기기 로그인 → 워케이션 홈
-    router.replace('/workation');
+    // 가드에 의해 튕겨왔다면 원래 가려던 곳으로 복귀 (없으면 워케이션 홈)
+    const redirect =
+      typeof route.query.redirect === 'string' ? route.query.redirect : '/workation';
+
+    // 기기 최초 로그인(PIN 미등록) → PIN 등록 화면(설정 후 redirect 로 이어짐), 기존 기기 → redirect
+    if (data?.pinSetupRequired) {
+      router.replace({ path: '/pin/setup', query: { redirect } });
+    } else {
+      router.replace(redirect);
+    }
   } catch (err) {
     // 서버 ErrorCode 기반 메시지 (INVALID_CREDENTIALS 등)
-    showError(err, '로그인에 실패했어요. 아이디와 비밀번호를 다시 확인해 주세요.');
+    showError(
+      err,
+      '로그인에 실패했어요. 아이디와 비밀번호를 다시 확인해 주세요.',
+    );
   } finally {
     isSubmitting.value = false;
   }
@@ -208,12 +207,16 @@ function goBack() {
       >
         <ChevronLeft :size="24" :stroke-width="2.5" />
       </button>
-      <h1 class="text-[17px] font-bold tracking-tight text-[#191F28]">로그인</h1>
+      <h1 class="text-[17px] font-bold tracking-tight text-[#191F28]">
+        로그인
+      </h1>
     </header>
 
     <!-- 본문 -->
     <main class="flex-1 min-h-0 overflow-y-auto px-6 pt-5 pb-6">
-      <h2 class="text-[22px] font-extrabold leading-snug tracking-tight text-[#0B3155]">
+      <h2
+        class="text-[22px] font-extrabold leading-snug tracking-tight text-[#0B3155]"
+      >
         다시 만나서 반가워요!
       </h2>
       <p class="mt-2 text-[13.5px] font-medium leading-relaxed text-[#7186A0]">
@@ -224,7 +227,10 @@ function goBack() {
       <div class="mt-7 flex flex-col gap-5">
         <!-- 아이디 (이메일 또는 휴대폰 번호) -->
         <div>
-          <label for="login-id" class="mb-2 block text-[13px] font-bold text-[#191F28]">
+          <label
+            for="login-id"
+            class="mb-2 block text-[13px] font-bold text-[#191F28]"
+          >
             아이디
           </label>
           <div class="relative">
@@ -252,7 +258,10 @@ function goBack() {
 
         <!-- 비밀번호 -->
         <div>
-          <label for="login-password" class="mb-2 block text-[13px] font-bold text-[#191F28]">
+          <label
+            for="login-password"
+            class="mb-2 block text-[13px] font-bold text-[#191F28]"
+          >
             비밀번호
           </label>
           <div class="relative">
@@ -273,7 +282,9 @@ function goBack() {
             <button
               type="button"
               class="absolute right-2 top-[25px] flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-[#B9C5D2] transition-colors hover:bg-[#F5F8FC] hover:text-[#2878F0] active:scale-95"
-              :aria-label="isPasswordVisible ? '비밀번호 숨기기' : '비밀번호 보기'"
+              :aria-label="
+                isPasswordVisible ? '비밀번호 숨기기' : '비밀번호 보기'
+              "
               :aria-pressed="isPasswordVisible"
               aria-controls="login-password"
               @mousedown.prevent
@@ -323,7 +334,8 @@ function goBack() {
         class="mt-5 text-[13.5px] font-semibold text-[#2878F0] transition-colors hover:text-[#1E68D6] active:scale-95"
         @click="router.push('/signup/terms')"
       >
-        아직 계정이 없으신가요? <span class="underline underline-offset-4">회원가입</span>
+        아직 계정이 없으신가요?
+        <span class="underline underline-offset-4">회원가입</span>
       </button>
     </footer>
   </div>

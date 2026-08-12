@@ -114,9 +114,11 @@ axiosInstance.interceptors.response.use(
       original.headers.Authorization = `Bearer ${accessToken}`;
       return axiosInstance(original);
     } catch (refreshError) {
-      // 리프레시 토큰까지 만료됐으면 다시 로그인해야 한다
+      // 리프레시 토큰까지 만료됐으면 다시 로그인해야 한다.
+      // 단, 세션 복원 probe(getMe) 처럼 skipAuthRedirect 를 준 요청은 하드 리다이렉트하지 않고
+      // 실패를 그대로 반환한다 → 라우터 가드가 온보딩/스플래시 허용 등 분기를 직접 처리한다.
       resolveQueue(null);
-      clearSession();
+      if (!original.skipAuthRedirect) clearSession();
       return Promise.reject(refreshError);
     } finally {
       refreshing = false;

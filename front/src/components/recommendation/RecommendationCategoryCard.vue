@@ -1,6 +1,4 @@
 <script setup>
-import { Check, ChevronRight } from '@lucide/vue';
-
 defineProps({
   category: {
     type: Object,
