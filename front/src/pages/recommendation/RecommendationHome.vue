@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { ChevronLeft } from '@lucide/vue';
 import { useRecommendationStore } from '@/stores/recommendationStore';
 import { useSurveyStore } from '@/stores/surveyStore';
 import { RECOMMENDATION_CATEGORIES } from '@/config/recommendation';
@@ -37,6 +38,16 @@ onMounted(async () => {
   }
 });
 
+// 어디서 들어왔는지 모르니 이전 화면으로 돌린다.
+// 히스토리가 없으면(주소 직접 입력) 워케이션 메인으로 보낸다
+function goBack() {
+  if (window.history.state?.back) {
+    router.back();
+    return;
+  }
+  router.push('/workation');
+}
+
 function selectCategory(categoryKey) {
   recommendationStore.toggleCategory(categoryKey);
 
@@ -66,6 +77,12 @@ function startRecommendation() {
   </main>
 
   <main v-else-if="hasSurvey" class="recommendation-home">
+    <header class="home-header">
+      <button type="button" aria-label="뒤로 가기" @click="goBack">
+        <ChevronLeft :size="28" />
+      </button>
+    </header>
+
     <section class="home-content">
       <div class="home-heading">
         <h1>어떤 항목을<br />추천받고 싶으신가요?</h1>
@@ -106,8 +123,29 @@ function startRecommendation() {
   margin: 0 auto;
   background: #ffffff;
   color: #10213d;
-  padding: 82px 34px 32px;
+  padding: 20px 34px 32px;
   font-family: 'SUIT', 'Pretendard Variable', sans-serif;
+}
+
+/* 뒤로가기가 없어 화면을 빠져나갈 방법이 없었다.
+   기존 상단 여백(82px)을 헤더가 대신한다 */
+.home-header {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  margin: 0 0 18px -8px;
+}
+
+.home-header button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: none;
+  color: #10213d;
+  cursor: pointer;
 }
 
 .home-content {
@@ -158,8 +196,8 @@ function startRecommendation() {
 }
 
 @media (max-height: 760px) {
-  .recommendation-home {
-    padding-top: 52px;
+  .home-header {
+    margin-bottom: 8px;
   }
 
   .category-grid {
