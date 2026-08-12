@@ -31,10 +31,10 @@ defineEmits(['select']);
     <component :is="category.icon" :size="34" stroke-width="1.8" />
     <strong>{{ category.title }}</strong>
     <span>상위 추천 보기</span>
-    <i>
+    <!-- <i>
       <Check v-if="selected" :size="13" stroke-width="3" />
       <ChevronRight v-else :size="14" stroke-width="1.8" />
-    </i>
+    </i> -->
   </button>
 </template>
 
