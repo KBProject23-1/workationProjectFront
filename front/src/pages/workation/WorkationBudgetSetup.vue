@@ -146,16 +146,14 @@ import { Button } from '@/components/ui/button';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useCategoryStore } from '@/stores/categoryStore';
 import { useErrorToast } from '@/composables/useErrorToast';
+import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import { won } from '@/components/workation/format';
 import WorkationBudgetItem from '@/components/workation/WorkationBudgetItem.vue';
 import WorkationCategoryAddSheet from '@/components/workation/WorkationCategoryAddSheet.vue';
 import WorkationCategoryRenameSheet from '@/components/workation/WorkationCategoryRenameSheet.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 
-const TABS = [
-  { value: 'WORK', label: '법인 예산' },
-  { value: 'PERSONAL', label: '개인 예산' },
-];
+const TAB_VALUES = ['WORK', 'PERSONAL'];
 
 const route = useRoute();
 const router = useRouter();
@@ -168,7 +166,15 @@ const workationId = route.params.workationId;
 // 등록 흐름(2/2)으로 들어왔는지, 메인화면 세부내역 보기로 들어왔는지 구분한다
 const isCreateFlow = route.query.step === 'create';
 
-const initialTab = TABS.some((tab) => tab.value === route.query.budgetType)
+const { workLabel, ensureCards } = useBudgetTypeLabel();
+
+// 법인카드 보유 여부에 따라 법인 / 업무로 갈린다
+const TABS = computed(() => [
+  { value: 'WORK', label: `${workLabel.value} 예산` },
+  { value: 'PERSONAL', label: '개인 예산' },
+]);
+
+const initialTab = TAB_VALUES.includes(route.query.budgetType)
   ? route.query.budgetType
   : 'WORK';
 
@@ -194,7 +200,7 @@ const budgetTotal = computed(() => budgetTotals[budgetType.value]);
 const categories = computed(() => categoryMap[budgetType.value]);
 
 const currentTabLabel = computed(
-  () => TABS.find((tab) => tab.value === budgetType.value)?.label ?? '',
+  () => TABS.value.find((tab) => tab.value === budgetType.value)?.label ?? '',
 );
 
 const isEtc = (category) => category.code === 'ETC';
@@ -214,7 +220,7 @@ const matched = computed(() => assignedSum.value === budgetTotal.value);
 
 // 두 유형 모두 총예산과 정확히 맞아야 저장할 수 있다
 const canSubmit = computed(() =>
-  TABS.every((tab) => sumOf(tab.value) === budgetTotals[tab.value]),
+  TAB_VALUES.every((value) => sumOf(value) === budgetTotals[value]),
 );
 
 const guideMessage = computed(() => {
@@ -224,7 +230,7 @@ const guideMessage = computed(() => {
       : '배정 합계가 총예산과 일치해야 완료할 수 있어요';
   }
   if (!canSubmit.value) {
-    const otherTab = TABS.find(
+    const otherTab = TABS.value.find(
       (tab) => sumOf(tab.value) !== budgetTotals[tab.value],
     );
     return otherTab ? `${otherTab.label} 배정이 아직 총예산과 맞지 않아요` : '';
@@ -339,10 +345,10 @@ const draftKey = `workation-budget-draft-${workationId}`;
 
 const saveDraft = () => {
   const draft = {};
-  TABS.forEach((tab) => {
-    draft[tab.value] = {
-      categoryIds: categoryMap[tab.value].map((category) => category.id),
-      amounts: { ...amountMap[tab.value] },
+  TAB_VALUES.forEach((value) => {
+    draft[value] = {
+      categoryIds: categoryMap[value].map((category) => category.id),
+      amounts: { ...amountMap[value] },
     };
   });
   sessionStorage.setItem(draftKey, JSON.stringify(draft));
@@ -353,8 +359,7 @@ const restoreDraft = () => {
   if (!saved) return;
 
   const draft = JSON.parse(saved);
-  TABS.forEach((tab) => {
-    const type = tab.value;
+  TAB_VALUES.forEach((type) => {
     const part = draft[type];
     if (!part) return;
     categoryMap[type] = sortCategories(
@@ -371,10 +376,11 @@ onMounted(async () => {
   try {
     await Promise.all([
       loadBudgetStatus(),
+      ensureCards(),
       loadCategories('WORK'),
       loadCategories('PERSONAL'),
     ]);
-    TABS.forEach((tab) => buildRows(tab.value));
+    TAB_VALUES.forEach((value) => buildRows(value));
     restoreDraft();
   } catch (error) {
     showError(error, '예산 정보를 불러오지 못했습니다.');
@@ -407,11 +413,11 @@ const shake = () => {
 const submit = async () => {
   if (submitting.value) return;
   if (!canSubmit.value) {
-    const wrongTab = TABS.find(
-      (tab) => sumOf(tab.value) !== budgetTotals[tab.value],
+    const wrongTab = TAB_VALUES.find(
+      (value) => sumOf(value) !== budgetTotals[value],
     );
-    if (wrongTab && wrongTab.value !== budgetType.value) {
-      budgetType.value = wrongTab.value;
+    if (wrongTab && wrongTab !== budgetType.value) {
+      budgetType.value = wrongTab;
     }
     shake();
     return;
@@ -420,9 +426,9 @@ const submit = async () => {
   submitting.value = true;
   try {
     // 예산 유형별로 따로 저장한다. 이미 배정된 유형은 수정으로 보낸다
-    for (const tab of TABS) {
-      const payload = buildPayload(tab.value);
-      if (alreadySet[tab.value]) {
+    for (const type of TAB_VALUES) {
+      const payload = buildPayload(type);
+      if (alreadySet[type]) {
         await budgetStore.updateBudget(workationId, payload);
       } else {
         await budgetStore.setupBudget(workationId, payload);
