@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { getCurrentUserId } from '@/utils/currentUser';
+import { useAuthStore } from '@/stores/authStore';
 import { isPinRegistered } from '@/utils/pinRegistry';
 import splashRouter from './splashRouter';
 import loginRouter from './loginRouter';
@@ -11,7 +11,6 @@ import walletRouter from './walletRouter';
 import transactionRouter from './transactionRouter';
 import workationRouter from './workationRouter';
 import surveyRouter from './surveyRouter';
-import devRouter from './devRouter';
 import merchantRouter from './merchantRouter';
 import reservationRouter from './reservationRouter';
 import recommendationRouter from './recommendationRouter';
@@ -31,7 +30,6 @@ const router = createRouter({
     ...transactionRouter,
     ...workationRouter,
     ...surveyRouter,
-    ...devRouter,
     ...merchantRouter,
     ...reservationRouter,
     ...recommendationRouter,
@@ -40,32 +38,45 @@ const router = createRouter({
   ],
 });
 
-// 결제성 API(충전/환불/결제)는 서버가 PIN(=user_device 등록)을 요구하므로,
-// 로그인된 사용자가 "이 기기에 자기 PIN 을 등록하지 않았으면" PIN 설정으로 강제 이동한다.
-// - PIN 등록은 (userId, deviceId)별 사실이라 유저 단위로 판단한다.
-//   현재 userId 는 accessToken(JWT sub)에서 얻고, 등록 여부는 pinRegistry 캐시로 본다.
-//   (캐시는 로그인 응답 pinSetupRequired 로 seed, 거래 응답으로 동기화 — 서버가 진실)
-// - userId 를 못 읽으면 판단 불가 → 통과(거래 시 NOT_REGISTERED 로 fail-safe).
-// - 공개/인증/설정 경로는 무한 리다이렉트 방지를 위해 예외로 둔다.
-const PIN_EXEMPT_PREFIXES = [
-  '/onboarding',
-  '/dev-login',
-  '/login',
-  '/signup',
-  '/pin',
-];
+// 로그인 없이는 진입할 수 없는 경로를 막고, 로그인했지만 이 기기에 PIN 이 없으면 PIN 설정으로 보낸다.
+//
+// 쿠키 기반 인증이라 새로고침하면 인메모리 상태가 사라지므로, 첫 네비게이션에서 GET /users/me 로
+// 로그인 상태를 1회 복원(restoreSession)한 뒤 판단한다. restorePromise 로 중복 호출을 막는다.
+//
+// - 회원가입 플로우(/signup*)는 중간에 auto-login 되므로 게이트에서 완전히 제외한다.
+// - 비로그인: 공개(스플래시/온보딩/로그인)만 허용, 그 외엔 /login.
+// - 로그인 상태에서 스플래시/온보딩/로그인 접근 → 서비스 홈(/workation).
+// - PIN 게이트: 이 기기 PIN 미등록이면 /pin/setup (설정 페이지 자체는 통과).
+let restorePromise = null;
 
-function isPinExempt(path) {
-  if (path === '/') return true;
-  return PIN_EXEMPT_PREFIXES.some((prefix) => path.startsWith(prefix));
-}
+router.beforeEach(async (to) => {
+  const authStore = useAuthStore();
+  // 세션 미확정일 때만 복원 시도. 비확정 실패(네트워크/5xx)면 sessionChecked 가 안 서므로
+  // restorePromise 를 비워 다음 네비게이션에서 재시도되게 한다.
+  if (!authStore.sessionChecked) {
+    if (!restorePromise) restorePromise = authStore.restoreSession();
+    await restorePromise;
+    restorePromise = null;
+  }
 
-router.beforeEach((to) => {
-  const isAuthed = !!localStorage.getItem('accessToken');
-  if (!isAuthed || isPinExempt(to.path)) return true;
-  const userId = getCurrentUserId();
-  if (userId == null || isPinRegistered(userId)) return true;
-  return { path: '/pin/setup', query: { redirect: to.fullPath } };
+  const path = to.path;
+
+  if (path.startsWith('/signup')) return true;
+
+  const isEntry =
+    path === '/' || path.startsWith('/onboarding') || path === '/login';
+
+  if (!authStore.isAuthenticated) {
+    return isEntry ? true : { path: '/login', query: { redirect: to.fullPath } };
+  }
+
+  if (isEntry) return { path: '/workation' };
+
+  if (!path.startsWith('/pin') && !isPinRegistered()) {
+    return { path: '/pin/setup', query: { redirect: to.fullPath } };
+  }
+
+  return true;
 });
 
 export default router;

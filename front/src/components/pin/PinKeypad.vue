@@ -19,7 +19,9 @@ const emit = defineEmits(['update:modelValue', 'complete']);
 const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'back'];
 
 const shaking = ref(false);
-// 에러가 새로 표시되면 흔들림 애니메이션 트리거
+// 에러가 표시되면 흔들림 애니메이션 트리거.
+// immediate: 재마운트되며 error 가 이미 세팅된 채로 뜨는 경우(지갑 PIN 스텝은 로딩 중 언마운트됨)와
+// 동일 문자열이 연속으로 오는 경우에도 확실히 재생되도록 한다.
 watch(
   () => props.error,
   (msg) => {
@@ -31,6 +33,7 @@ watch(
       setTimeout(() => (shaking.value = false), 400);
     });
   },
+  { immediate: true },
 );
 
 function press(key) {
