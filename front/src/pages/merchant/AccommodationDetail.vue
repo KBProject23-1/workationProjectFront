@@ -1,6 +1,7 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 import { ChevronLeft, MapPin, Phone } from '@lucide/vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationOccupancyModal from '@/components/reservation/ReservationOccupancyModal.vue';
@@ -8,7 +9,8 @@ import AccommodationProductCard from '@/components/merchant/AccommodationProduct
 import { useAccommodationStore } from '@/stores/merchant/accommodationStore';
 
 const accommodationStore = useAccommodationStore();
-const { accommodation, checkIn, checkOut, roomCount, guestCount, selectedProductName, totalPrice } = storeToRefs(accommodationStore);
+const route = useRoute();
+const { accommodation, checkIn, checkOut, roomCount, guestCount, selectedProductName, totalPrice, isLoading, error } = storeToRefs(accommodationStore);
 const dateModalMode = ref('');
 const isOccupancyModalOpen = ref(false);
 
@@ -18,10 +20,42 @@ function displayDate(value) {
   return `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')} (${days[date.getDay()]})`;
 }
 
-function selectDate(value) {
+async function fetchAccommodation() {
+  await accommodationStore.fetchAccommodation(Number(route.params.merchantId));
+}
+
+function applyRouteConditions() {
+  if (typeof route.query.startDate === 'string') {
+    accommodationStore.checkIn = route.query.startDate;
+  }
+  if (typeof route.query.endDate === 'string') {
+    accommodationStore.checkOut = route.query.endDate;
+  }
+  const routeRoomCount = Number(route.query.roomCount);
+  if (Number.isInteger(routeRoomCount) && routeRoomCount > 0) {
+    accommodationStore.roomCount = routeRoomCount;
+  }
+  const routeGuestCount = Number(route.query.guestCount);
+  if (Number.isInteger(routeGuestCount) && routeGuestCount > 0) {
+    accommodationStore.guestCount = routeGuestCount;
+  }
+}
+
+async function selectDate(value) {
   accommodationStore.setDate(dateModalMode.value, value);
   dateModalMode.value = '';
+  await fetchAccommodation();
 }
+
+async function closeOccupancyModal() {
+  isOccupancyModalOpen.value = false;
+  await fetchAccommodation();
+}
+
+onMounted(async () => {
+  applyRouteConditions();
+  await fetchAccommodation();
+});
 </script>
 
 <template>
@@ -31,6 +65,12 @@ function selectDate(value) {
       <h1>숙소 상세</h1>
       <span></span>
     </header>
+
+    <p v-if="isLoading" class="status-message">숙소 정보를 불러오고 있습니다.</p>
+    <div v-else-if="error" class="status-message error">
+      <p>{{ error }}</p>
+      <button type="button" @click="fetchAccommodation">다시 시도</button>
+    </div>
 
     <section class="hero-image" aria-label="객실 대표 이미지">
       <div class="hero-window"><span></span></div>
@@ -49,7 +89,7 @@ function selectDate(value) {
     <section class="accommodation-info">
       <p>{{ accommodation.description }}</p>
       <div><Phone :size="16" /><span>{{ accommodation.phoneNumber }}</span></div>
-      <div class="times"><span>체크인 {{ accommodation.checkInTime.slice(0, 5) }}</span><i></i><span>체크아웃 {{ accommodation.checkOutTime.slice(0, 5) }}</span></div>
+      <div class="times"><span>체크인 {{ accommodation.checkInTime?.slice(0, 5) ?? '-' }}</span><i></i><span>체크아웃 {{ accommodation.checkOutTime?.slice(0, 5) ?? '-' }}</span></div>
     </section>
 
     <section class="stay-condition" aria-label="예약 조건">
@@ -88,7 +128,7 @@ function selectDate(value) {
       v-if="isOccupancyModalOpen"
       v-model:room-count="roomCount"
       v-model:guest-count="guestCount"
-      @close="isOccupancyModalOpen = false"
+      @close="closeOccupancyModal"
     />
   </main>
 </template>
@@ -96,6 +136,7 @@ function selectDate(value) {
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
 .detail-page { width:min(402px,100%); min-height:min(871px,100vh); margin:0 auto; padding-bottom:16px; color:#111827; background:#fff; font-family:'SUIT Variable','SUIT',sans-serif; }
+.status-message { padding:24px 16px; margin:0; text-align:center; color:#8a96a5; font-size:14px; }.status-message.error { color:#e05252; }.status-message.error p { margin:0 0 12px; }.status-message.error button { height:40px; padding:0 20px; color:#3087ed; border:1.5px solid #3087ed; border-radius:12px; background:#fff; font-weight:800; }
 button { font:inherit; }
 .page-header { height:118px; display:grid; grid-template-columns:40px 1fr 40px; align-items:end; padding:0 16px 14px; }
 .page-header button { width:36px; height:36px; display:grid; place-items:center; padding:0; border:0; background:none; }

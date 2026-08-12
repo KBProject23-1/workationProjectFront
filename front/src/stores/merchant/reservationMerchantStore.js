@@ -1,58 +1,48 @@
 import { defineStore } from 'pinia';
+import { getMerchants } from '@/api/merchants';
 
-const initialResponse = {
-  status: 'SUCCESS',
-  message: '요청 성공',
-  data: {
-    content: [
-      { category: 'ACCOMMODATION', merchantId: 101, name: '제주 스테이', address: '제주특별자치도 제주시 중앙로 10', price: 120000, rating: 4.7, reviewCount: 128, thumbnailUrl: 'https://example.com/merchants/101.jpg', bookmarked: false },
-      { category: 'OFFICE', merchantId: 102, name: '제주 워크 라운지', address: '제주특별자치도 제주시 연동 24', price: 45000, rating: 4.9, reviewCount: 94, thumbnailUrl: 'https://example.com/merchants/102.jpg', bookmarked: true },
-      { category: 'ACCOMMODATION', merchantId: 103, name: '오션뷰 호텔 강릉', address: '강원특별자치도 강릉시 창해로 123', price: 89000, rating: 4.6, reviewCount: 100, thumbnailUrl: 'https://example.com/merchants/103.jpg', bookmarked: false },
-    ],
-    size: 20,
-    hasNext: true,
-    nextCursor: 'eyJyYXRpbmciOjQuNSwibWVyY2hhbnRJZCI6MTIwfQ',
-  },
+const formatDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
-
-const nextResponse = {
-  status: 'SUCCESS',
-  message: '요청 성공',
-  data: {
-    content: [
-      { category: 'OFFICE', merchantId: 201, name: '파도 공유오피스', address: '부산광역시 해운대구 해운대로 52', price: 38000, rating: 4.5, reviewCount: 76, thumbnailUrl: 'https://example.com/merchants/201.jpg', bookmarked: false },
-      { category: 'ACCOMMODATION', merchantId: 202, name: '경포 스테이', address: '강원특별자치도 강릉시 경포로 201', price: 135000, rating: 4.4, reviewCount: 72, thumbnailUrl: 'https://example.com/merchants/202.jpg', bookmarked: false },
-    ],
-    size: 20,
-    hasNext: false,
-    nextCursor: null,
-  },
-};
+const today = new Date();
+const tomorrow = new Date(today);
+tomorrow.setDate(today.getDate() + 1);
 
 export const useReservationMerchantStore = defineStore('reservationMerchant', {
   state: () => ({
-    merchants: [...initialResponse.data.content],
-    checkIn: '2026-06-01',
-    checkOut: '2026-06-05',
+    merchants: [],
+    checkIn: formatDate(today),
+    checkOut: formatDate(tomorrow),
     guestCount: 2,
     category: '',
     sort: 'RATING_DESC',
     minPrice: '',
     maxPrice: '',
-    size: initialResponse.data.size,
-    hasNext: initialResponse.data.hasNext,
-    nextCursor: initialResponse.data.nextCursor,
+    size: 20,
+    hasNext: false,
+    nextCursor: null,
+    regionId: null,
+    isLoading: false,
+    isLoadingMore: false,
+    error: null,
   }),
 
   getters: {
-    filteredResults(state) {
-      let results = state.category
-        ? state.merchants.filter((merchant) => merchant.category === state.category)
-        : [...state.merchants];
-      const minimum = Number(state.minPrice) || 0;
-      const maximum = Number(state.maxPrice) || Infinity;
-      results = results.filter((merchant) => merchant.price >= minimum && merchant.price <= maximum);
-      return results.sort((a, b) => state.sort === 'RATING_DESC' ? b.rating - a.rating : a.price - b.price);
+    queryParams(state) {
+      return {
+        category: state.category || undefined,
+        startDate: state.checkIn || undefined,
+        endDate: state.checkOut || undefined,
+        headcount: state.guestCount || undefined,
+        minPrice: state.minPrice === '' ? undefined : Number(state.minPrice),
+        maxPrice: state.maxPrice === '' ? undefined : Number(state.maxPrice),
+        sort: state.sort,
+        size: state.size,
+        regionId: state.regionId || undefined,
+      };
     },
   },
 
@@ -70,12 +60,44 @@ export const useReservationMerchantStore = defineStore('reservationMerchant', {
       if (field === 'min') this.minPrice = sanitizedValue;
       else this.maxPrice = sanitizedValue;
     },
-    loadNextPage() {
-      if (!this.hasNext || !this.nextCursor) return;
-      this.merchants.push(...nextResponse.data.content);
-      this.size = nextResponse.data.size;
-      this.hasNext = nextResponse.data.hasNext;
-      this.nextCursor = nextResponse.data.nextCursor;
+    applyResponse(data, append = false) {
+      const content = data?.content ?? [];
+      const pageInfo = data?.pageInfo ?? {};
+      this.merchants = append ? [...this.merchants, ...content] : content;
+      this.size = pageInfo.size ?? this.size;
+      this.hasNext = pageInfo.hasNext ?? false;
+      this.nextCursor = pageInfo.nextCursor ?? null;
+    },
+    async fetchMerchants() {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const { data } = await getMerchants(this.queryParams);
+        this.applyResponse(data);
+      } catch (error) {
+        this.merchants = [];
+        this.hasNext = false;
+        this.nextCursor = null;
+        this.error = error.message;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async loadNextPage() {
+      if (!this.hasNext || !this.nextCursor || this.isLoadingMore) return;
+      this.isLoadingMore = true;
+      this.error = null;
+      try {
+        const { data } = await getMerchants({
+          ...this.queryParams,
+          cursor: this.nextCursor,
+        });
+        this.applyResponse(data, true);
+      } catch (error) {
+        this.error = error.message;
+      } finally {
+        this.isLoadingMore = false;
+      }
     },
     toggleBookmark(merchantId) {
       const merchant = this.merchants.find((item) => item.merchantId === merchantId);
