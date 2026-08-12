@@ -4,8 +4,8 @@
 // - AuthStore 에 보관된 identityVerificationId(백엔드 발급)가 없으면 약관동의부터 시작하도록 리다이렉트한다.
 // - 이메일(중복 확인) / 비밀번호(정책) / 비밀번호 확인 을 프론트에서 1차 검증한다.
 // - API 호출 구조: SignupPage → authStore.signup() → api/auth.js → axiosInstance → Backend
-// - 회원가입 성공 시 Backend 가 ACCESS_TOKEN/REFRESH_TOKEN HttpOnly Cookie 를 발급한다 (자동 로그인).
-//   프론트는 토큰을 읽거나 저장하지 않으며, 별도 로그인 API 를 호출하지 않는다.
+// - 회원가입 성공 시 토큰을 발급하지 않는다 (자동 로그인 없음). 완료 화면(/signup/complete)에서
+//   '로그인하기' → 로그인 화면(/login)으로 이동해 이메일/비밀번호로 다시 로그인한다.
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ChevronLeft, Check, AlertCircle } from '@lucide/vue';
@@ -150,7 +150,7 @@ async function handleSubmit() {
       email: email.value.trim(),
       password: password.value,
     });
-    // 자동 로그인 완료 — 회원가입 완료 화면으로 이동 (거기서 '로그인하기' → 로그인 화면 이동)
+    // 회원가입 완료 — 완료 화면으로 이동 (거기서 '로그인하기' → 로그인 화면 이동)
     router.replace('/signup/complete');
   } catch (err) {
     // 서버 ErrorCode 기반 메시지 (DUPLICATE_EMAIL / INVALID_VERIFICATION_ID 등)

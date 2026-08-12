@@ -11,6 +11,8 @@ import { getIdentityVerificationProvider } from '@/identity';
 //   SUCCESS     본인인증 완료
 //   FAILURE     인증 실패 (원인 안내 + 재시도)
 //   CANCELLED   사용자 취소 (팝업 닫힘 → 안내 화면 복귀)
+//   DUPLICATE_USER  중복 회원 차단 — verify-identity(/auth/signup/verify-identity) 에서
+//                   동일 휴대폰(CI) 가입 회원이 감지되면 회원가입 진행 불가 + 로그인 안내
 //
 // 원칙:
 // - identityVerificationId 는 프론트가 생성하지 않는다 — 백엔드(POST /auth/pass)가 생성해 발급한다.
@@ -24,6 +26,7 @@ export const VERIFICATION_STATUS = Object.freeze({
   SUCCESS: 'SUCCESS',
   FAILURE: 'FAILURE',
   CANCELLED: 'CANCELLED',
+  DUPLICATE_USER: 'DUPLICATE_USER',
 });
 
 export function useIdentityVerification() {
@@ -109,6 +112,23 @@ export function useIdentityVerification() {
     setStatus(VERIFICATION_STATUS.CANCELLED);
   }
 
+  /**
+   * PASS 인증 후 중복 회원(DUPLICATE_USER) 감지 — 회원가입 진행을 차단하고 안내 화면으로 전환
+   * - verify-identity(/auth/signup/verify-identity) 에서 동일 휴대폰(CI) 가입 회원이
+   *   발견되면 계정정보 입력으로 진행하지 못하도록 SUCCESS 이후에 호출한다.
+   * @param message 서버가 반환한 안내 메시지 (없으면 기본 메시지 사용 — docs 와 동일 문구)
+   */
+  function setDuplicateUser(message) {
+    errorCode.value = 'DUPLICATE_USER';
+    errorMessage.value = message || '이미 가입된 회원입니다. 로그인을 진행해주세요.';
+    setStatus(VERIFICATION_STATUS.DUPLICATE_USER);
+  }
+
+  /** 화면 표시용 이름 갱신 — verify-identity 응답(백엔드 복원 값)으로 확정한다 */
+  function setVerifiedName(name) {
+    if (name) verifiedName.value = name;
+  }
+
   /** 전 상태 초기화 — IDLE 복귀 (계속하기 실패 등 흐름 재시작용) */
   function reset() {
     status.value = VERIFICATION_STATUS.IDLE;
@@ -149,6 +169,8 @@ export function useIdentityVerification() {
     submitVerification,
     retry,
     cancel,
+    setDuplicateUser,
+    setVerifiedName,
     reset,
   };
 }

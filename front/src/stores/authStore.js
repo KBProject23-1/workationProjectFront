@@ -4,6 +4,7 @@ import {
   signup as signupApi,
   findId as findIdApi,
   checkEmailAvailability as checkEmailAvailabilityApi,
+  verifyIdentity as verifyIdentityApi,
   setupPin as setupPinApi,
 } from '@/api/auth';
 import { getMe as getMeApi } from '@/api/user';
@@ -11,7 +12,7 @@ import { getMe as getMeApi } from '@/api/user';
 // 인증 도메인 스토어 (knowledgeFront.md: Auth Store)
 //
 // 관리 데이터:
-// - isAuthenticated / user: 로그인·회원가입(자동 로그인) 상태
+// - isAuthenticated / user: 로그인 상태 (회원가입은 자동 로그인 없음 — 완료 후 로그인 화면 이동)
 // - signupAgreedTermIds / signupIdentityVerificationId / signupName: 회원가입 플로우 상태 (인메모리 전용)
 //
 // 보안 규칙:
@@ -80,13 +81,33 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
-     * 최종 회원가입 완료 (자동 로그인)
+     * 회원가입 본인인증 검증 및 회원 중복 체크 (verify-identity)
+     * - PASS 인증 완료 후 계정정보 입력 전에 호출한다 — 동일 휴대폰(CI) 가입 회원이면
+     *   서버가 409 DUPLICATE_USER 를 반환해 가입 진행을 차단한다.
+     * - 성공: { name } (화면 표시용 — PASS 인증과 동일한 이름)
+     * - 실패: DUPLICATE_USER(409) / INVALID_VERIFICATION_ID(400) — err 를 그대로 throw
+     */
+    async verifyIdentityForSignup(identityVerificationId) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const { data } = await verifyIdentityApi(identityVerificationId);
+        return data;
+      } catch (err) {
+        this.error = err;
+        throw err;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    /**
+     * 최종 회원가입 완료 (토큰 미발급 — 자동 로그인 없음)
      * - 백엔드가 POST /auth/pass 에서 발급한 identityVerificationId 만 전달한다
      *   (name/phoneNumber/ci 는 프론트에서 보내지 않는다 — 백엔드가 Redis 세션에서 복원).
-     * - Backend 가 ACCESS_TOKEN / REFRESH_TOKEN HttpOnly Cookie 를 발급한다.
-     * - 프론트는 토큰을 읽거나 저장하지 않는다 (Cookie 기반 인증).
+     * - 백엔드는 토큰을 발급하지 않는다 — 완료 화면(/signup/complete)을 거쳐
+     *   로그인 화면(/login)으로 이동해 이메일/비밀번호로 다시 로그인한다.
      * - 닉네임은 백엔드가 기본값(워케이너{userId})으로 자동 생성한다 (닉네임 입력 기능 제거).
-     * - 성공 시 isAuthenticated 를 true 로 설정한다 (인메모리 — 새로고침 시 GET /users/me 로 복구).
      */
     async signup({ email, password }) {
       this.isLoading = true;
@@ -98,16 +119,11 @@ export const useAuthStore = defineStore('auth', {
           password,
           agreedTermsIds: this.signupAgreedTermIds,
         };
-        const { data } = await signupApi(payload);
-        this.isAuthenticated = true;
-        if (data) {
-          this.user = { userId: data.userId, name: data.name };
-        }
+        await signupApi(payload);
         // 1회성 플로우 데이터 정리 (재가입 시 깨끗한 상태로 시작)
         this.resetSignup();
         // 완료 화면(/signup/complete)에서 로그인 아이디를 표시하기 위해 보관한다
         this.signupEmail = email;
-        return data;
       } catch (err) {
         this.error = err;
         throw err;
@@ -156,7 +172,7 @@ export const useAuthStore = defineStore('auth', {
     /**
      * 통합 로그인 (PASSWORD / PIN)
      * - 로그인 화면(/login)에서 호출한다. PASSWORD: loginId(이메일/휴대폰) + password + deviceId
-     * - Backend 가 ACCESS_TOKEN/REFRESH_TOKEN HttpOnly Cookie 를 발급한다 (Cookie 기반 인증).
+     * - Backend 가 accessToken/refreshToken HttpOnly Cookie 를 발급한다 (Cookie 기반 인증).
      * - 응답 data.pinSetupRequired: 기기 최초 로그인 여부 → 로그인 화면에서 PIN 등록 유도 분기
      * - Access Token 은 localStorage 에 저장하지 않는다 (axiosInstance 가 Cookie 로만 인증).
      */
