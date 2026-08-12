@@ -86,13 +86,13 @@ watch(
           type="text"
           maxlength="100"
           placeholder="예: 여행경비 카드, 생활비 카드"
-          class="w-full bg-gray-50/80 border border-gray-200 focus:border-blue-500 focus:bg-white focus:outline-hidden rounded-2xl px-4 py-3.5 text-[14px] font-medium text-gray-900 placeholder:text-gray-400 transition-all"
+          class="w-full bg-gray-50/80 border border-gray-200 focus:border-blue-500 focus:bg-white focus:outline-hidden rounded-2xl px-4 py-3.5 text-[14px] font-medium text-gray-900 placeholder:text-gray-500 transition-all"
         />
-        <div class="absolute right-4 text-gray-400 pointer-events-none">
+        <div class="absolute right-4 text-gray-500 pointer-events-none">
           <Edit3 :size="16" />
         </div>
       </div>
-      <p class="text-[11px] text-gray-400 pl-1">
+      <p class="text-[11px] text-gray-500 pl-1">
         나만의 별칭을 정해두면 거래 내역에서 쉽게 알아볼 수 있어요.
       </p>
     </div>

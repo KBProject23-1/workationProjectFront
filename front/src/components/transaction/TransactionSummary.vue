@@ -15,7 +15,7 @@ defineProps({
         <div class="flex items-center gap-1.5 mb-1">
           <span class="w-1.5 h-1.5 rounded-full bg-gray-800"></span>
           <span class="text-[12px] font-semibold text-gray-500">총 지출</span>
-          <span class="text-[11px] font-medium text-gray-400"
+          <span class="text-[11px] font-medium text-gray-500"
             >({{ outflowCount }}건)</span
           >
         </div>

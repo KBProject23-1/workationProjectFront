@@ -46,13 +46,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div
+  <main
     class="flex flex-col items-center w-full min-h-screen px-5 py-5 bg-white"
   >
     <div class="w-full flex items-center gap-2 mb-6">
       <button
         type="button"
         class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+        aria-label="뒤로 가기"
         @click="router.back()"
       >
         <ChevronLeft :size="24" />
@@ -73,5 +74,5 @@ onMounted(() => {
         {{ isSaving ? '변경 중...' : '변경' }}
       </BaseButton>
     </div>
-  </div>
+  </main>
 </template>

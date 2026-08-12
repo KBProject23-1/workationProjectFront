@@ -94,7 +94,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="w-full mx-auto flex flex-col min-h-screen">
+  <main class="w-full mx-auto flex flex-col min-h-screen">
     <LoadingScreen
       v-if="step === 0"
       title="카드 정보를 불러오고 있어요"
@@ -126,5 +126,5 @@ onMounted(async () => {
       title="카드를 안전하게 연결하고 있어요"
       description="잠시만 기다려 주세요"
     />
-  </div>
+  </main>
 </template>

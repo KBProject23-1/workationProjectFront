@@ -100,6 +100,9 @@ function press(key) {
               : 'bg-white text-gray-900 shadow-sm active:bg-gray-100 active:scale-95'
         "
         :disabled="disabled"
+        :aria-label="key === 'back' ? '지우기' : undefined"
+        :aria-hidden="key === '' ? 'true' : undefined"
+        :tabindex="key === '' ? -1 : undefined"
         @click="press(key)"
       >
         <img

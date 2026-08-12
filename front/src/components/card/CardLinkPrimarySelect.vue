@@ -20,6 +20,7 @@ const selectedId = ref(null);
       <button
         type="button"
         class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+        aria-label="뒤로 가기"
         @click="$emit('back')"
       >
         <ChevronLeft :size="24" />
@@ -31,7 +32,7 @@ const selectedId = ref(null);
       <h2 class="text-[20px] font-bold text-gray-900 leading-snug">
         주로 사용하는 카드를<br />선택해 주세요
       </h2>
-      <p class="text-[13px] font-medium text-gray-400 mt-1">
+      <p class="text-[13px] font-medium text-gray-500 mt-1">
         주 카드는 기본 결제 수단으로 지정돼요
       </p>
     </div>
@@ -50,11 +51,11 @@ const selectedId = ref(null);
         class="flex flex-col items-center justify-center py-16 text-center"
       >
         <div
-          class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-3 text-gray-300"
+          class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-3 text-gray-500"
         >
           <CreditCard :size="24" />
         </div>
-        <p class="text-[14px] font-medium text-gray-400">
+        <p class="text-[14px] font-medium text-gray-500">
           연동 가능한 카드가 없습니다
         </p>
       </div>

@@ -58,11 +58,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col w-full min-h-screen px-5 py-5 bg-white text-left">
+  <main class="flex flex-col w-full min-h-screen px-5 py-5 bg-white text-left">
     <div class="flex items-center gap-2 mb-6">
       <button
         type="button"
         class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+        aria-label="뒤로 가기"
         @click="goToWallet"
       >
         <ChevronLeft :size="24" />
@@ -71,7 +72,7 @@ onMounted(() => {
     </div>
 
     <div class="flex items-center justify-between mb-3">
-      <p class="text-[12px] font-semibold text-gray-400">
+      <p class="text-[12px] font-semibold text-gray-500">
         연동된 계좌
         <span class="text-blue-600 font-bold ml-0.5">{{
           accountStore.accounts.length
@@ -93,14 +94,14 @@ onMounted(() => {
         class="flex flex-col items-center justify-center py-16 text-center"
       >
         <div
-          class="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center mb-3 text-gray-300"
+          class="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center mb-3 text-gray-500"
         >
           <Landmark :size="28" />
         </div>
-        <p class="text-[14px] font-medium text-gray-400">
+        <p class="text-[14px] font-medium text-gray-500">
           연동된 계좌가 없습니다.
         </p>
-        <p class="text-[12px] text-gray-300 mt-1">
+        <p class="text-[12px] text-gray-500 mt-1">
           새 계좌를 연동해 이용해보세요.
         </p>
       </div>
@@ -129,5 +130,5 @@ onMounted(() => {
       @confirm="handleConfirm"
       @cancel="closeConfirm"
     />
-  </div>
+  </main>
 </template>

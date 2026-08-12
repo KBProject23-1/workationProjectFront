@@ -19,6 +19,7 @@ const emit = defineEmits(['update:modelValue', 'complete', 'back']);
     <button
       type="button"
       class="self-start p-1 -ml-1 text-gray-700 active:bg-gray-100 rounded-full"
+      aria-label="뒤로 가기"
       @click="emit('back')"
     >
       <ChevronLeft :size="24" />

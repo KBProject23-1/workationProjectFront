@@ -102,13 +102,14 @@ onMounted(loadDetail);
 </script>
 
 <template>
-  <div
+  <main
     class="flex flex-col items-center w-full min-h-screen px-5 py-5 bg-white text-left"
   >
     <div class="w-full flex items-center justify-between mb-6">
       <button
         type="button"
         class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+        aria-label="뒤로 가기"
         @click="router.back()"
       >
         <ChevronLeft :size="24" />
@@ -133,7 +134,7 @@ onMounted(loadDetail);
       <p class="text-[15px] font-semibold text-gray-600">
         거래 정보를 불러오지 못했어요
       </p>
-      <p class="mt-2 text-[12px] text-gray-400">
+      <p class="mt-2 text-[12px] text-gray-500">
         {{ isValidId ? '잠시 후 다시 시도해주세요' : '올바르지 않은 거래예요' }}
       </p>
       <button
@@ -149,7 +150,7 @@ onMounted(loadDetail);
     <template v-else-if="detail">
       <div class="w-full text-left mb-6">
         <div class="flex items-center gap-2 mb-1">
-          <span class="text-[13px] font-semibold text-gray-400">
+          <span class="text-[13px] font-semibold text-gray-500">
             {{ detail.categoryAssigned || '기타' }}
           </span>
           <span
@@ -167,7 +168,7 @@ onMounted(loadDetail);
           class="text-[32px] font-extrabold tracking-tight"
           :class="
             isInactive
-              ? 'text-gray-300 line-through'
+              ? 'text-gray-500 line-through'
               : isDeposit
                 ? 'text-blue-600'
                 : 'text-gray-900'
@@ -181,21 +182,21 @@ onMounted(loadDetail);
         class="w-full rounded-2xl bg-gray-50/80 p-5 mb-4 border border-gray-100 space-y-3.5"
       >
         <div class="flex justify-between items-center text-[13px]">
-          <span class="text-gray-400 font-medium">거래 일시</span>
+          <span class="text-gray-500 font-medium">거래 일시</span>
           <span class="font-semibold text-gray-800">{{
             formatDateTime(detail.approvedAt)
           }}</span>
         </div>
 
         <div class="flex justify-between items-center text-[13px]">
-          <span class="text-gray-400 font-medium">결제 수단</span>
+          <span class="text-gray-500 font-medium">결제 수단</span>
           <span class="font-semibold text-gray-800">{{
             detail.paymentSourceType === 'CARD' ? '카드 결제' : '지갑 결제'
           }}</span>
         </div>
 
         <div class="flex justify-between items-center text-[13px]">
-          <span class="text-gray-400 font-medium">승인 번호</span>
+          <span class="text-gray-500 font-medium">승인 번호</span>
           <span class="font-semibold text-gray-800 font-mono">{{
             detail.approvedNumber
           }}</span>
@@ -204,7 +205,7 @@ onMounted(loadDetail);
         <div
           class="flex justify-between items-center text-[13px] pt-3 border-t border-gray-200/60"
         >
-          <span class="text-gray-400 font-medium">거래 상태</span>
+          <span class="text-gray-500 font-medium">거래 상태</span>
           <span class="font-bold text-[13px]" :class="statusMeta.textClass">
             {{ statusMeta.label }}
           </span>
@@ -219,7 +220,7 @@ onMounted(loadDetail);
         >
           <RotateCcw
             :size="14"
-            class="text-gray-400 group-hover:text-red-500"
+            class="text-gray-500 group-hover:text-red-500"
           />
           <span>결제 취소</span>
         </button>
@@ -255,5 +256,5 @@ onMounted(loadDetail);
       @confirm="handleCancel"
       @cancel="isCancelConfirmOpen = false"
     />
-  </div>
+  </main>
 </template>

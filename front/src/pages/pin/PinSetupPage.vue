@@ -110,7 +110,7 @@ function buildDeviceName() {
 </script>
 
 <template>
-  <div
+  <main
     class="flex flex-col items-center w-full min-h-screen px-5 pt-16 pb-8 bg-[#F5F8FC]"
   >
     <PinKeypad
@@ -121,5 +121,5 @@ function buildDeviceName() {
       :disabled="submitting"
       @complete="handleComplete"
     />
-  </div>
+  </main>
 </template>

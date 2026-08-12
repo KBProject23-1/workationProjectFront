@@ -40,6 +40,7 @@ function handleBack() {
       <button
         type="button"
         class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+        aria-label="뒤로 가기"
         @click="handleBack"
       >
         <ChevronLeft :size="24" />
@@ -52,7 +53,7 @@ function handleBack() {
         <h2 class="text-[20px] font-bold text-gray-900 leading-snug">
           연동할 계좌를<br />선택해 주세요
         </h2>
-        <p class="text-[13px] font-medium text-gray-400 mt-1">
+        <p class="text-[13px] font-medium text-gray-500 mt-1">
           여러 개의 계좌를 한 번에 선택할 수 있어요
         </p>
       </div>
@@ -79,11 +80,11 @@ function handleBack() {
         class="flex flex-col items-center justify-center py-16 text-center"
       >
         <div
-          class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-3 text-gray-300"
+          class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-3 text-gray-500"
         >
           <Landmark :size="24" />
         </div>
-        <p class="text-[14px] font-medium text-gray-400">
+        <p class="text-[14px] font-medium text-gray-500">
           연동 가능한 계좌가 없어요
         </p>
       </div>
