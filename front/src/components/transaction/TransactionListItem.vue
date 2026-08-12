@@ -29,7 +29,7 @@ const signedAmount = computed(() => {
 
 const amountColor = computed(() =>
   isInactive.value
-    ? 'text-gray-300 line-through'
+    ? 'text-gray-500 line-through'
     : isDeposit.value
       ? 'text-blue-600'
       : 'text-gray-900',
@@ -47,17 +47,17 @@ const amountColor = computed(() =>
         {{ transaction.merchantName }}
       </p>
       <div class="flex items-center gap-1.5 mt-0.5">
-        <span class="text-[12px] font-medium text-gray-400">
+        <span class="text-[12px] font-medium text-gray-500">
           {{ categoryLabel }}
         </span>
         <span
           v-if="transaction.transactionTime"
-          class="text-[10px] text-gray-300"
+          class="text-[10px] text-gray-500"
           >•</span
         >
         <span
           v-if="transaction.transactionTime"
-          class="text-[11px] text-gray-400"
+          class="text-[11px] text-gray-500"
         >
           {{ transaction.transactionTime }}
         </span>

@@ -67,7 +67,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div
+  <main
     class="flex flex-col items-center w-full min-h-screen px-5 pt-6 pb-8 bg-white"
   >
     <div class="relative w-full flex items-center justify-center h-9 mb-4">
@@ -111,5 +111,5 @@ onMounted(() => {
       @confirm="handleConfirm"
       @cancel="closeConfirm"
     />
-  </div>
+  </main>
 </template>

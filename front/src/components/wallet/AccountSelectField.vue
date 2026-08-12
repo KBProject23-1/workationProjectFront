@@ -40,7 +40,7 @@ function select(accountId) {
 
 <template>
   <div>
-    <p class="text-[12px] font-semibold text-gray-400 mb-2">{{ label }}</p>
+    <p class="text-[12px] font-semibold text-gray-500 mb-2">{{ label }}</p>
 
     <div v-if="selectedAccount" class="relative">
       <button
@@ -67,7 +67,7 @@ function select(accountId) {
                 주 계좌
               </span>
             </div>
-            <p class="text-[12px] font-medium text-gray-400 mt-0.5 truncate">
+            <p class="text-[12px] font-medium text-gray-500 mt-0.5 truncate">
               {{ selectedAccount.maskedAccountNumber }}
             </p>
           </div>
@@ -76,7 +76,7 @@ function select(accountId) {
         <ChevronDown
           v-if="isSelectable"
           :size="18"
-          class="shrink-0 text-gray-400 transition-transform"
+          class="shrink-0 text-gray-500 transition-transform"
           :class="{ 'rotate-180': isOpen }"
         />
       </button>
@@ -111,7 +111,7 @@ function select(accountId) {
                   >· 주 계좌</span
                 >
               </p>
-              <p class="text-[11px] font-medium text-gray-400 truncate">
+              <p class="text-[11px] font-medium text-gray-500 truncate">
                 {{ account.maskedAccountNumber }}
               </p>
             </div>
@@ -141,7 +141,7 @@ function select(accountId) {
       v-else
       class="rounded-2xl border border-dashed border-gray-200 p-4 text-center"
     >
-      <p class="text-[13px] font-medium text-gray-400">{{ emptyText }}</p>
+      <p class="text-[13px] font-medium text-gray-500">{{ emptyText }}</p>
     </div>
   </div>
 </template>

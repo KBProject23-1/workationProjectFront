@@ -29,6 +29,7 @@ function toggleSelect(id) {
       <button
         type="button"
         class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+        aria-label="뒤로 가기"
         @click="$emit('back')"
       >
         <ChevronLeft :size="24" />
@@ -41,7 +42,7 @@ function toggleSelect(id) {
         <h2 class="text-[20px] font-bold text-gray-900 leading-snug">
           함께 연동할 카드를<br />선택해 주세요
         </h2>
-        <p class="text-[13px] font-medium text-gray-400 mt-1">
+        <p class="text-[13px] font-medium text-gray-500 mt-1">
           다중 선택이 가능해요
         </p>
       </div>
@@ -68,11 +69,11 @@ function toggleSelect(id) {
         class="flex flex-col items-center justify-center py-16 text-center"
       >
         <div
-          class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-3 text-gray-300"
+          class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-3 text-gray-500"
         >
           <CreditCard :size="24" />
         </div>
-        <p class="text-[14px] font-medium text-gray-400">
+        <p class="text-[14px] font-medium text-gray-500">
           추가로 연동할 수 있는 카드가 없어요
         </p>
       </div>
@@ -93,7 +94,7 @@ function toggleSelect(id) {
 
       <button
         type="button"
-        class="w-full py-2.5 text-[13px] font-semibold text-gray-400 hover:text-gray-600 transition-colors text-center"
+        class="w-full py-2.5 text-[13px] font-semibold text-gray-500 hover:text-gray-600 transition-colors text-center"
         @click="$emit('skip')"
       >
         다음에 할게요

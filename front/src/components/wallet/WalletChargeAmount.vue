@@ -71,6 +71,7 @@ function handleNext() {
       <button
         type="button"
         class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+        aria-label="뒤로 가기"
         @click="$emit('back')"
       >
         <ChevronLeft :size="24" />
@@ -79,19 +80,19 @@ function handleNext() {
     </div>
 
     <div class="mb-6">
-      <p class="text-[12px] font-semibold text-gray-400 mb-1">
+      <p class="text-[12px] font-semibold text-gray-500 mb-1">
         얼마나 충전할까요?
       </p>
       <div class="flex items-baseline gap-1">
         <span
           class="text-[32px] font-extrabold tracking-tight transition-colors"
-          :class="amount > 0 ? 'text-gray-900' : 'text-gray-300'"
+          :class="amount > 0 ? 'text-gray-900' : 'text-gray-500'"
         >
           {{ amount.toLocaleString('ko-KR') }}
         </span>
         <span
           class="text-[20px] font-bold"
-          :class="amount > 0 ? 'text-gray-800' : 'text-gray-300'"
+          :class="amount > 0 ? 'text-gray-800' : 'text-gray-500'"
           >원</span
         >
       </div>
@@ -119,7 +120,8 @@ function handleNext() {
       <button
         v-if="amountInput"
         type="button"
-        class="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 p-0.5 rounded-full bg-gray-100"
+        class="absolute right-3 top-3.5 text-gray-500 hover:text-gray-600 p-0.5 rounded-full bg-gray-100"
+        aria-label="입력 지우기"
         @click="clearAmount"
       >
         <X :size="14" />

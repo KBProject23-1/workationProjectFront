@@ -40,7 +40,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="w-full mx-auto flex flex-col min-h-screen">
+  <main class="w-full mx-auto flex flex-col min-h-screen">
     <WalletRefundAmount
       v-if="step === 'amount'"
       :balance="walletStore.balance"
@@ -72,5 +72,5 @@ onMounted(async () => {
       :result="result"
       @confirm="handleConfirm"
     />
-  </div>
+  </main>
 </template>

@@ -33,6 +33,7 @@ function handleBack() {
     <button
       type="button"
       class="mb-4 self-start p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+        aria-label="뒤로 가기"
       @click="handleBack"
     >
       <ChevronLeft :size="24" />
@@ -42,7 +43,7 @@ function handleBack() {
     <p class="text-[14px] font-medium text-gray-600 leading-relaxed mb-1">
       안전하게 계좌를 연동하고<br />사용 내역을 한눈에 관리하세요.
     </p>
-    <p class="text-[13px] text-gray-400 mb-6">
+    <p class="text-[13px] text-gray-500 mb-6">
       금융정보원 표준 API를 통해<br />안전하게 연결됩니다.
     </p>
 

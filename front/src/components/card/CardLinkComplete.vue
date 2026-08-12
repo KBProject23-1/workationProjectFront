@@ -26,7 +26,7 @@ defineEmits(['confirm']);
       <h1 class="text-[22px] font-bold text-gray-900 mb-2">
         카드 연동이 완료되었어요
       </h1>
-      <p class="text-[14px] font-medium text-gray-400">
+      <p class="text-[14px] font-medium text-gray-500">
         선택하신 카드가 정상적으로 서비스에 연결되었습니다
       </p>
 
@@ -34,7 +34,7 @@ defineEmits(['confirm']);
         v-if="linkedCards.length > 0"
         class="w-full max-w-xs rounded-2xl bg-gray-50/80 p-4 border border-gray-100 text-left space-y-2.5 mt-8"
       >
-        <p class="text-[12px] font-semibold text-gray-400 mb-1">
+        <p class="text-[12px] font-semibold text-gray-500 mb-1">
           연동된 카드 ({{ linkedCards.length }})
         </p>
 
@@ -52,7 +52,7 @@ defineEmits(['confirm']);
             <span class="font-bold text-gray-900 truncate">
               {{ card.cardCompanyName }}
             </span>
-            <span class="text-gray-400 font-medium text-[12px] truncate">
+            <span class="text-gray-500 font-medium text-[12px] truncate">
               {{ formatCardNumber(card.maskedNumber) }}
             </span>
           </div>

@@ -54,7 +54,7 @@ defineEmits(['confirm']);
       class="rounded-2xl bg-gray-50/80 p-5 mb-6 w-full text-left space-y-3 border border-gray-100"
     >
       <div class="flex justify-between items-center text-[13px]">
-        <span class="text-gray-400 font-medium">충전 금액</span>
+        <span class="text-gray-500 font-medium">충전 금액</span>
         <span class="font-bold text-gray-900 text-[14px]">
           {{ result.chargedAmount?.toLocaleString('ko-KR') }}원
         </span>
@@ -63,7 +63,7 @@ defineEmits(['confirm']);
       <div
         class="flex justify-between items-center text-[13px] pt-3 border-t border-gray-200/60"
       >
-        <span class="text-gray-400 font-medium">충전 후 잔액</span>
+        <span class="text-gray-500 font-medium">충전 후 잔액</span>
         <span class="font-bold text-blue-600 text-[14px]">
           {{ result.currentBalance?.toLocaleString('ko-KR') }}원
         </span>

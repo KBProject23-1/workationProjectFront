@@ -41,7 +41,7 @@ defineEmits(['set-primary', 'delete']);
             주 계좌
           </span>
         </div>
-        <p class="text-[12px] font-medium text-gray-400 truncate mt-0.5">
+        <p class="text-[12px] font-medium text-gray-500 truncate mt-0.5">
           {{ account.maskedAccountNumber }}
         </p>
       </div>
@@ -59,14 +59,14 @@ defineEmits(['set-primary', 'delete']);
           :class="
             account.isPrimary
               ? 'text-yellow-400 fill-yellow-400 drop-shadow-xs'
-              : 'text-gray-300 hover:text-gray-400'
+              : 'text-gray-500 hover:text-gray-500'
           "
         />
       </button>
 
       <button
         type="button"
-        class="p-2 rounded-full transition-colors hover:bg-red-50 hover:text-red-500 text-gray-300 active:scale-90"
+        class="p-2 rounded-full transition-colors hover:bg-red-50 hover:text-red-500 text-gray-500 active:scale-90"
         aria-label="계좌 삭제"
         @click="$emit('delete', account.accountId)"
       >

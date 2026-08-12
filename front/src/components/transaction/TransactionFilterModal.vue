@@ -132,7 +132,7 @@ function handleOpenChange(open) {
 
       <div class="flex flex-col gap-5 py-1">
         <div>
-          <p class="text-[12px] font-semibold text-gray-400 mb-2">조회 기간</p>
+          <p class="text-[12px] font-semibold text-gray-500 mb-2">조회 기간</p>
           <div class="flex gap-1.5 mb-2.5">
             <button
               v-for="preset in periodPresets"
@@ -171,7 +171,7 @@ function handleOpenChange(open) {
               type="date"
               class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-[12px] font-medium text-gray-800 focus:outline-hidden focus:border-blue-500 bg-gray-50/50"
             />
-            <span class="text-gray-400 text-[12px] font-bold">~</span>
+            <span class="text-gray-500 text-[12px] font-bold">~</span>
             <input
               v-model="localFilters.endDate"
               type="date"
@@ -181,7 +181,7 @@ function handleOpenChange(open) {
         </div>
 
         <div>
-          <p class="text-[12px] font-semibold text-gray-400 mb-2">결제 수단</p>
+          <p class="text-[12px] font-semibold text-gray-500 mb-2">결제 수단</p>
           <div class="flex gap-1.5">
             <button
               type="button"
@@ -248,7 +248,7 @@ function handleOpenChange(open) {
                         </p>
                       </div>
                     </div>
-                    <ChevronRight :size="16" class="text-gray-400" />
+                    <ChevronRight :size="16" class="text-gray-500" />
                   </button>
                 </SelectTrigger>
                 <SelectContent
@@ -275,7 +275,7 @@ function handleOpenChange(open) {
         </div>
 
         <div>
-          <p class="text-[12px] font-semibold text-gray-400 mb-2">거래 유형</p>
+          <p class="text-[12px] font-semibold text-gray-500 mb-2">거래 유형</p>
           <div class="flex gap-1.5 flex-wrap">
             <button
               type="button"

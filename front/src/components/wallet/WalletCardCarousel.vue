@@ -173,6 +173,7 @@ onUnmounted(() => {
           <button
             type="button"
             class="-mt-1 -mr-1 p-1.5 rounded-full hover:bg-white/10 transition-colors"
+            :aria-label="card.isPrimary ? '주 카드' : '주 카드로 설정'"
             @click.stop="$emit('request-primary', card.cardId)"
           >
             <Star
@@ -189,7 +190,7 @@ onUnmounted(() => {
         <div class="flex items-end justify-between gap-1 relative z-10">
           <div class="flex flex-col min-w-0 flex-1">
             <span
-              class="text-[11px] font-medium text-white/75 tracking-wider uppercase truncate"
+              class="text-[11px] font-medium text-white/90 tracking-wider uppercase truncate"
             >
               {{ card.cardName || card.cardCompanyName }}
             </span>
@@ -213,12 +214,12 @@ onUnmounted(() => {
 
       <button
         type="button"
-        class="shrink-0 snap-center rounded-[20px] border-2 border-dashed border-gray-200 bg-gray-50/50 flex flex-col items-center justify-center gap-1.5 text-gray-400 transition-all hover:border-gray-300 hover:bg-gray-50 hover:text-gray-500 active:scale-95"
+        class="shrink-0 snap-center rounded-[20px] border-2 border-dashed border-gray-200 bg-gray-50/50 flex flex-col items-center justify-center gap-1.5 text-gray-500 transition-all hover:border-gray-300 hover:bg-gray-50 hover:text-gray-500 active:scale-95"
         style="width: 15rem; height: 9.2rem"
         @click="$emit('add')"
       >
         <div
-          class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-400"
+          class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-500"
         >
           <Plus :size="18" />
         </div>
@@ -255,7 +256,7 @@ onUnmounted(() => {
         <span class="w-px h-2.5 bg-gray-300/60"></span>
         <button
           type="button"
-          class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-red-500 transition-colors hover:bg-white hover:text-red-600 active:scale-95"
+          class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-red-700 transition-colors hover:bg-white hover:text-red-800 active:scale-95"
           @click="$emit('request-delete', activeCard.cardId)"
         >
           <Trash2 :size="11" />

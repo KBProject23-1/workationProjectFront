@@ -100,9 +100,9 @@ onUnmounted(() => {
         />
         <div
           v-else
-          class="w-60 h-60 flex flex-col items-center justify-center text-gray-400 gap-2"
+          class="w-60 h-60 flex flex-col items-center justify-center text-gray-500 gap-2"
         >
-          <QrIcon :size="32" class="animate-pulse text-gray-300" />
+          <QrIcon :size="32" class="animate-pulse text-gray-500" />
           <span class="text-[13px] font-medium">QR 코드를 생성하고 있어요</span>
         </div>
       </div>
@@ -112,7 +112,7 @@ onUnmounted(() => {
         class="flex items-center justify-between w-full px-2 pt-2 border-t border-gray-100/80"
       >
         <div class="flex items-center gap-1.5 text-[13px]">
-          <span class="font-semibold text-gray-400">유효시간</span>
+          <span class="font-semibold text-gray-500">유효시간</span>
           <span class="font-extrabold text-red-500 min-w-[28px] text-[14px]">
             {{ timeLeft }}초
           </span>
@@ -130,7 +130,7 @@ onUnmounted(() => {
     </div>
 
     <!-- 하단 안심 결제 안내 -->
-    <p class="text-[12px] text-gray-400 mt-8">
+    <p class="text-[12px] text-gray-500 mt-8">
       보안을 위해 유효시간이 지나면 QR코드가 자동으로 갱신됩니다
     </p>
   </div>

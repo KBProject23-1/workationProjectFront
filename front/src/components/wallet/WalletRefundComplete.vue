@@ -45,7 +45,7 @@ defineEmits(['confirm']);
         }}<span class="text-[20px] font-bold ml-1">원</span>
       </p>
 
-      <p class="text-[13px] font-medium text-gray-400 mt-1">
+      <p class="text-[13px] font-medium text-gray-500 mt-1">
         선택한 계좌로 안전하게 입금됐어요
       </p>
     </div>
@@ -55,14 +55,14 @@ defineEmits(['confirm']);
       class="rounded-2xl bg-gray-50/80 p-5 mb-6 w-full text-left space-y-3 border border-gray-100"
     >
       <div class="flex justify-between items-center text-[13px]">
-        <span class="text-gray-400 font-medium">환불 신청 포인트</span>
+        <span class="text-gray-500 font-medium">환불 신청 포인트</span>
         <span class="font-bold text-gray-900 text-[14px]">
           {{ result.refundedAmount?.toLocaleString('ko-KR') }} P
         </span>
       </div>
 
       <div class="flex justify-between items-center text-[13px]">
-        <span class="text-gray-400 font-medium">입금 계좌</span>
+        <span class="text-gray-500 font-medium">입금 계좌</span>
         <span class="font-semibold text-gray-700 text-[13px]">
           {{ result.targetAccount?.maskedAccountNumber || '주 계좌' }}
         </span>
@@ -71,7 +71,7 @@ defineEmits(['confirm']);
       <div
         class="flex justify-between items-center text-[13px] pt-3 border-t border-gray-200/60"
       >
-        <span class="text-gray-400 font-medium">환불 후 잔액</span>
+        <span class="text-gray-500 font-medium">환불 후 잔액</span>
         <span class="font-bold text-blue-600 text-[14px]">
           {{ result.remainingBalance?.toLocaleString('ko-KR') }}원
         </span>

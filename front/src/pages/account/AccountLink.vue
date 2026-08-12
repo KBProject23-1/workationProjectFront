@@ -58,7 +58,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="w-full mx-auto flex flex-col min-h-screen">
+  <main class="w-full mx-auto flex flex-col min-h-screen">
     <LoadingScreen
       v-if="step === 0"
       title="계좌 정보를 불러오고 있어요"
@@ -88,5 +88,5 @@ onMounted(async () => {
       :linked-accounts="linkedAccounts"
       @confirm="handleConfirm"
     />
-  </div>
+  </main>
 </template>

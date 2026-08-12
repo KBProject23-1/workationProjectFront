@@ -65,16 +65,16 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center w-full min-h-screen bg-white">
+  <main class="flex flex-col items-center w-full min-h-screen bg-white">
     <div class="sticky top-0 z-10 w-full bg-white px-5 pt-6 pb-3">
       <div class="w-full flex items-center justify-between mb-4">
         <div class="flex items-center">
-          <button type="button" @click="goToWallet">
+          <button type="button" aria-label="뒤로 가기" @click="goToWallet">
             <ChevronLeft :size="24" />
           </button>
           <h1 class="text-xl font-bold ml-2">거래내역</h1>
         </div>
-        <button type="button" @click="isFilterOpen = true">
+        <button type="button" aria-label="필터" @click="isFilterOpen = true">
           <SlidersHorizontal :size="20" class="text-gray-500" />
         </button>
       </div>
@@ -113,7 +113,7 @@ onUnmounted(() => {
         <p class="text-[14px] font-semibold text-gray-600">
           거래내역을 불러오지 못했어요
         </p>
-        <p class="mt-2 text-[12px] text-gray-400">잠시 후 다시 시도해주세요</p>
+        <p class="mt-2 text-[12px] text-gray-500">잠시 후 다시 시도해주세요</p>
         <button
           type="button"
           class="mt-5 rounded-lg border border-gray-300 px-4 py-2 text-[14px] font-semibold text-gray-700 active:scale-95 transition-transform"
@@ -133,7 +133,7 @@ onUnmounted(() => {
         />
         <p
           v-if="transactionStore.transactions.length === 0"
-          class="text-[14px] text-gray-400 text-center mt-8"
+          class="text-[14px] text-gray-500 text-center mt-8"
         >
           이번 달 거래내역이 없어요
         </p>
@@ -143,7 +143,7 @@ onUnmounted(() => {
       <div ref="sentinel" class="h-4"></div>
       <p
         v-if="transactionStore.isLoadingMore"
-        class="text-[13px] text-gray-400 text-center py-4"
+        class="text-[13px] text-gray-500 text-center py-4"
       >
         불러오는 중...
       </p>
@@ -156,5 +156,5 @@ onUnmounted(() => {
       @apply="handleApplyFilter"
       @close="isFilterOpen = false"
     />
-  </div>
+  </main>
 </template>
