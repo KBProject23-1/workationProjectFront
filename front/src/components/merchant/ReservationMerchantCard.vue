@@ -1,5 +1,8 @@
 <script setup>
+import { ref } from 'vue';
 import { Heart } from '@lucide/vue';
+
+const imageLoadFailed = ref(false);
 
 defineProps({
   merchant: { type: Object, required: true },
@@ -19,7 +22,13 @@ defineEmits(['select', 'toggle-bookmark']);
     @keydown.space.prevent="$emit('select', merchant)"
   >
     <div class="result-image" :class="merchant.category.toLowerCase()">
-      <span>{{ merchant.category === 'ACCOMMODATION' ? '🛏️' : '💻' }}</span>
+      <img
+        v-if="merchant.thumbnailUrl && !imageLoadFailed"
+        :src="merchant.thumbnailUrl"
+        :alt="`${merchant.name} 대표 이미지`"
+        @error="imageLoadFailed = true"
+      />
+      <span v-else class="image-placeholder">이미지 없음</span>
     </div>
     <div class="result-content">
       <button
@@ -43,9 +52,11 @@ defineEmits(['select', 'toggle-bookmark']);
 </template>
 
 <style scoped>
-.result-card { display:flex; gap:16px; min-height:156px; padding:12px; border:1.5px solid #dbe3ee; border-radius:20px; background:#fff; cursor:pointer; }
+.result-card { display:flex; gap:16px; box-sizing:border-box; height:156px; padding:12px; overflow:hidden; border:1.5px solid #dbe3ee; border-radius:20px; background:#fff; cursor:pointer; }
 .result-card:focus-visible { outline:2px solid #3087ed; outline-offset:2px; }
-.result-image { width:116px; flex:none; border-radius:16px; display:grid; place-items:center; font-size:40px; }
+.result-image { width:116px; height:100%; flex:none; border-radius:16px; display:grid; place-items:center; }
+.result-image { overflow:hidden; }.result-image img { width:100%; height:100%; object-fit:cover; }
+.image-placeholder { color:#7b8794; font-size:12px; font-weight:700; }
 .result-image.accommodation { background:#ddebff; }.result-image.office { background:#e7f5ef; }
 .result-content { position:relative; min-width:0; flex:1; padding:2px 2px 0 0; }
 .bookmark-button { position:absolute; top:0; right:0; padding:0; color:#88a0bf; border:0; background:transparent; cursor:pointer; transition:color .16s ease,transform .16s ease; }

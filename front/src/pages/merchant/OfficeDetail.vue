@@ -1,6 +1,7 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 import { ChevronLeft, MapPin, Phone } from '@lucide/vue';
 import OfficeProductCard from '@/components/merchant/OfficeProductCard.vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
@@ -9,20 +10,53 @@ import ReservationSpaceModal from '@/components/reservation/ReservationSpaceModa
 import { useOfficeStore } from '@/stores/merchant/officeStore';
 
 const officeStore = useOfficeStore();
-const { office, startDate, endDate, spaceCount, guestCount, selectedProductName, selectedProduct, totalPrice } = storeToRefs(officeStore);
+const route = useRoute();
+const { office, startDate, endDate, spaceCount, guestCount, selectedProductName, selectedProduct, totalPrice, isLoading, error } = storeToRefs(officeStore);
 const dateModalMode = ref('');
 const isSpaceModalOpen = ref(false);
 const isGuestModalOpen = ref(false);
+const selectedProductTypeLabel = computed(() => ({
+  OFFICE_SEAT: '좌석',
+  MEETING_ROOM: '회의실',
+}[selectedProduct.value?.productDetailType] ?? '-'));
 
 function displayDate(value) {
   const date = new Date(`${value}T00:00:00`);
   return `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
 }
 
-function selectDate(value) {
+async function fetchOffice() {
+  await officeStore.fetchOffice(Number(route.params.merchantId));
+}
+
+function applyRouteConditions() {
+  if (typeof route.query.startDate === 'string') {
+    officeStore.startDate = route.query.startDate;
+  }
+  if (typeof route.query.endDate === 'string') {
+    officeStore.endDate = route.query.endDate;
+  }
+  const routeGuestCount = Number(route.query.guestCount);
+  if (Number.isInteger(routeGuestCount) && routeGuestCount > 0) {
+    officeStore.guestCount = routeGuestCount;
+  }
+}
+
+async function selectDate(value) {
   officeStore.setDate(dateModalMode.value, value);
   dateModalMode.value = '';
+  await fetchOffice();
 }
+
+async function closeGuestModal() {
+  isGuestModalOpen.value = false;
+  await fetchOffice();
+}
+
+onMounted(async () => {
+  applyRouteConditions();
+  await fetchOffice();
+});
 </script>
 
 <template>
@@ -32,6 +66,12 @@ function selectDate(value) {
       <h1>공유오피스 상세</h1>
       <span></span>
     </header>
+
+    <p v-if="isLoading" class="status-message">공유오피스 정보를 불러오고 있습니다.</p>
+    <div v-else-if="error" class="status-message error">
+      <p>{{ error }}</p>
+      <button type="button" @click="fetchOffice">다시 시도</button>
+    </div>
 
     <section class="hero-image" aria-label="공유오피스 대표 이미지">
       <div class="office-wall"><i></i><i></i><i></i></div>
@@ -65,7 +105,7 @@ function selectDate(value) {
 
     <section class="usage-section">
       <h3>이용 정보</h3>
-      <div class="usage-info"><strong>{{ selectedProduct.productName }}</strong><i></i><strong>Wi-Fi</strong><i></i><strong>최대 {{ selectedProduct.maxHeadcount }}명</strong></div>
+      <div class="usage-info"><strong>{{ selectedProductTypeLabel }}</strong><i></i><strong>Wi-Fi</strong><i></i><strong>최대 {{ selectedProduct?.maxHeadcount ?? 0 }}명</strong></div>
     </section>
 
     <section class="product-section">
@@ -99,16 +139,17 @@ function selectDate(value) {
     <ReservationSpaceModal
       v-if="isSpaceModalOpen"
       v-model:count="spaceCount"
-      :product-detail-type="selectedProduct.productDetailType"
+      :product-detail-type="selectedProduct?.productDetailType"
       @close="isSpaceModalOpen = false"
     />
-    <ReservationGuestModal v-if="isGuestModalOpen" v-model:count="guestCount" @close="isGuestModalOpen = false" />
+    <ReservationGuestModal v-if="isGuestModalOpen" v-model:count="guestCount" @close="closeGuestModal" />
   </main>
 </template>
 
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
 .office-page { width:min(402px,100%); min-height:min(871px,100vh); margin:0 auto; padding-bottom:16px; color:#111827; background:#fff; font-family:'SUIT Variable','SUIT',sans-serif; } button { font:inherit; }
+.status-message { padding:24px 16px; margin:0; text-align:center; color:#8a96a5; font-size:14px; }.status-message.error { color:#e05252; }.status-message.error p { margin:0 0 12px; }.status-message.error button { height:40px; padding:0 20px; color:#3087ed; border:1.5px solid #3087ed; border-radius:12px; background:#fff; font-weight:800; }
 .page-header { height:118px; display:grid; grid-template-columns:40px 1fr 40px; align-items:end; padding:0 16px 14px; }.page-header button { width:36px; height:36px; display:grid; place-items:center; padding:0; border:0; background:none; }.page-header h1 { margin:0; text-align:center; font-size:22px; font-weight:800; }
 .hero-image { position:relative; height:175px; margin:0 16px; overflow:hidden; border-radius:22px; background:#b4d3fb; }.office-wall { position:absolute; top:27px; left:25px; right:25px; height:105px; display:flex; align-items:flex-start; justify-content:space-around; padding-top:12px; border-radius:12px; background:#eef5ff; }.office-wall i { width:78px; height:52px; border-radius:6px; background:#dfedff; }.office-wall i:nth-child(2)::after { content:''; display:block; width:25px; height:25px; margin:9px auto; border-radius:50%; background:#ffd057; }.office-desk { position:absolute; left:58px; right:58px; bottom:43px; height:17px; border-radius:10px; background:#987f72; }.office-desk::before,.office-desk::after { content:''; position:absolute; top:16px; width:14px; height:29px; border-radius:6px; background:#856d62; }.office-desk::before { left:15px; }.office-desk::after { right:15px; }.office-desk span { position:absolute; bottom:14px; width:49px; height:12px; border-radius:7px; background:#e9b964; }.office-desk span:first-child { left:31px; }.office-desk span:last-child { right:31px; }
 .merchant-section { padding:10px 17px 8px; }.merchant-section h2 { margin:0 0 8px; font-size:22px; }.merchant-section p { margin:0; }.address { display:flex; align-items:center; gap:4px; color:#8592a2; font-size:12px; }.rating-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; }.rating { font-size:16px; font-weight:800; }.rating span { color:#ff8a00; }.rating b { color:#7b8794; }.review-button { flex:none; padding:5px 10px; border:1px solid #3087ed; border-radius:999px; color:#3087ed; background:#fff; font-size:12px; font-weight:800; }

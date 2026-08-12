@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { CalendarDays, ChevronDown, ChevronLeft, Users } from '@lucide/vue';
@@ -10,7 +10,7 @@ import { useReservationMerchantStore } from '@/stores/merchant/reservationMercha
 
 const merchantStore = useReservationMerchantStore();
 const router = useRouter();
-const { checkIn, checkOut, guestCount, category, sort, minPrice, maxPrice, filteredResults, hasNext } = storeToRefs(merchantStore);
+const { merchants, checkIn, checkOut, guestCount, category, sort, minPrice, maxPrice, hasNext, isLoading, isLoadingMore, error } = storeToRefs(merchantStore);
 const dateModalMode = ref('');
 const isGuestModalOpen = ref(false);
 const isFiltersExpanded = ref(true);
@@ -41,8 +41,21 @@ function sanitizePrice(target, field) {
 
 function moveToMerchantDetails(merchant) {
   const routeName = merchant.category === 'ACCOMMODATION' ? 'AccommodationDetail' : 'OfficeDetail';
-  router.push({ name: routeName, params: { merchantId: merchant.merchantId } });
+  const query = {
+    startDate: checkIn.value,
+    endDate: checkOut.value,
+    guestCount: guestCount.value,
+    ...(merchant.category === 'ACCOMMODATION' ? { roomCount: 1 } : {}),
+  };
+  router.push({ name: routeName, params: { merchantId: merchant.merchantId }, query });
 }
+
+async function applyFilters() {
+  await merchantStore.fetchMerchants();
+  isFiltersExpanded.value = false;
+}
+
+onMounted(() => merchantStore.fetchMerchants());
 </script>
 
 <template>
@@ -109,22 +122,27 @@ function moveToMerchantDetails(merchant) {
           </div>
         </fieldset>
 
-        <button type="button" class="apply-button" @click="isFiltersExpanded = false">적용하기</button>
+        <button type="button" class="apply-button" :disabled="isLoading" @click="applyFilters">{{ isLoading ? '조회 중...' : '적용하기' }}</button>
       </div>
     </section>
 
     <section class="results">
-      <h2>검색 결과 {{ filteredResults.length }}개</h2>
+      <h2>검색 결과 {{ merchants.length }}개</h2>
       <div class="result-list">
+        <p v-if="isLoading" class="status-message">예약 상품을 불러오고 있습니다.</p>
+        <div v-else-if="error" class="status-message error">
+          <p>{{ error }}</p>
+          <button type="button" @click="merchantStore.fetchMerchants">다시 시도</button>
+        </div>
         <ReservationMerchantCard
-          v-for="item in filteredResults"
+          v-for="item in merchants"
           :key="item.merchantId"
           :merchant="item"
           @select="moveToMerchantDetails"
           @toggle-bookmark="merchantStore.toggleBookmark"
         />
-        <p v-if="filteredResults.length === 0" class="empty">조건에 맞는 검색 결과가 없습니다.</p>
-        <button v-if="hasNext" type="button" class="load-more-button" @click="merchantStore.loadNextPage">더보기</button>
+        <p v-if="!isLoading && !error && merchants.length === 0" class="empty">조건에 맞는 검색 결과가 없습니다.</p>
+        <button v-if="!isLoading && !error && hasNext" type="button" class="load-more-button" :disabled="isLoadingMore" @click="merchantStore.loadNextPage">{{ isLoadingMore ? '불러오는 중...' : '더보기' }}</button>
       </div>
     </section>
 
@@ -147,8 +165,9 @@ button,input { font:inherit; }
 fieldset { padding:0; margin:0 0 18px; border:0; } legend { margin-bottom:11px; font-size:16px; font-weight:800; } legend span { color:#8a96a5; }
 .chips { display:flex; gap:8px; }.chips label { min-width:75px; height:40px; display:grid; place-items:center; padding:0 20px; border:1.5px solid #d7e0eb; border-radius:999px; color:#4a5565; font-size:12px; font-weight:700; cursor:pointer; }.chips label.active { color:#fff; border-color:#3087ed; background:#3087ed; }.chips input { position:absolute; opacity:0; pointer-events:none; }
 .price-range { display:grid; grid-template-columns:1fr 28px 1fr; align-items:center; gap:10px; }.price-range > b { text-align:center; color:#94a0af; }.price-range label { height:57px; display:flex; flex-direction:column; justify-content:center; padding:7px 14px; border:1.5px solid #d7e0eb; border-radius:16px; }.price-range small { color:#8a96a5; font-size:12px; }.price-range label span { display:flex; align-items:center; font-size:16px; font-weight:750; }.price-range input { width:100%; min-width:0; padding:0; border:0; outline:0; font-weight:750; }
-.apply-button { width:100%; height:56px; border:0; border-radius:16px; color:#fff; background:#3087ed; font-size:16px; font-weight:800; }
+.apply-button { width:100%; height:56px; border:0; border-radius:16px; color:#fff; background:#3087ed; font-size:16px; font-weight:800; }.apply-button:disabled { opacity:.6; }
 .results { padding:16px 34px 20px; border-top:12px solid #f1f3f5; }.results h2 { margin-bottom:12px; color:#4a5565; font-size:16px; }.result-list { display:flex; flex-direction:column; gap:12px; }.empty { padding:50px 0; text-align:center; color:#8a96a5; font-size:16px; }
 .load-more-button { width:100%; height:48px; border:1.5px solid #3087ed; border-radius:14px; color:#3087ed; background:#fff; font-size:16px; font-weight:800; }
+.load-more-button:disabled { opacity:.6; }.status-message { padding:44px 0; text-align:center; color:#8a96a5; font-size:14px; }.status-message p { margin:0 0 14px; }.status-message button { height:40px; padding:0 20px; color:#3087ed; border:1.5px solid #3087ed; border-radius:12px; background:#fff; font-weight:800; }.status-message.error { color:#e05252; }
 @media (max-width:380px) { .date-controls,.filters,.results { padding-left:20px; padding-right:20px; }.date-controls { gap:6px; }.date-controls button { padding:8px 6px; }.date-controls strong { font-size:12px; }.chips label { padding:0 15px; } }
 </style>

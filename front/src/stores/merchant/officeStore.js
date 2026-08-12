@@ -1,36 +1,48 @@
 import { defineStore } from 'pinia';
+import { getOfficeDetail } from '@/api/merchants';
 
-const officeResponse = {
-  success: true,
-  data: {
-    merchantId: 201,
-    name: '제주 워크라운지',
-    address: '제주특별자치도 제주시 중앙로 10',
-    phoneNumber: '064-000-0000',
-    description: '업무와 휴식에 적합한 공유오피스입니다.',
-    rating: 4.7,
-    reviewCount: 128,
-    bookmarked: false,
-    thumbnailUrl: 'https://example.com/merchants/201.jpg',
-    products: [
-      { productName: '오픈좌석', description: '오픈좌석, Wi-Fi 이용가능', productDetailType: 'OFFICE_SEAT', maxHeadcount: 1, thumbnailURL: 'https://example.com/merchants/201-open-seat.jpg', price: 120000 },
-      { productName: '미팅룸', description: '독립 회의실, 모니터 이용가능', productDetailType: 'MEETING_ROOM', maxHeadcount: 4, thumbnailURL: 'https://example.com/merchants/201-meeting-room.jpg', price: 180000 },
-    ],
-  },
+const formatDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const today = new Date();
+const tomorrow = new Date(today);
+tomorrow.setDate(today.getDate() + 1);
+
+const emptyOffice = {
+  merchantId: null,
+  name: '',
+  address: '',
+  phoneNumber: '',
+  description: '',
+  rating: 0,
+  reviewCount: 0,
+  thumbnailUrl: null,
+  bookmarked: false,
+  products: [],
 };
 
 export const useOfficeStore = defineStore('office', {
   state: () => ({
-    office: officeResponse.data,
-    startDate: '2026-08-10',
-    endDate: '2026-08-12',
+    office: { ...emptyOffice, products: [] },
+    startDate: formatDate(today),
+    endDate: formatDate(tomorrow),
     spaceCount: 1,
     guestCount: 2,
-    selectedProductName: officeResponse.data.products[0].productName,
+    selectedProductName: '',
+    isLoading: false,
+    error: null,
   }),
   getters: {
-    selectedProduct: (state) => state.office.products.find((product) => product.productName === state.selectedProductName),
-    usageDayCount: (state) => Math.floor((new Date(state.endDate) - new Date(state.startDate)) / 86400000) + 1,
+    selectedProduct: (state) => state.office?.products?.find(
+      (product) => product.productName === state.selectedProductName,
+    ) ?? null,
+    usageDayCount: (state) => Math.floor(
+      (new Date(state.endDate) - new Date(state.startDate)) / 86400000,
+    ) + 1,
     totalPrice() {
       const multiplier = this.selectedProduct?.productDetailType === 'OFFICE_SEAT'
         ? this.guestCount
@@ -39,6 +51,33 @@ export const useOfficeStore = defineStore('office', {
     },
   },
   actions: {
+    async fetchOffice(merchantId) {
+      this.isLoading = true;
+      this.error = null;
+
+      try {
+        const { data } = await getOfficeDetail(merchantId, {
+          startDate: this.startDate,
+          endDate: this.endDate,
+          guestCount: this.guestCount,
+        });
+        this.office = {
+          ...data,
+          products: data?.products ?? [],
+        };
+
+        const selectedProductExists = this.office.products.some(
+          (product) => product.productName === this.selectedProductName,
+        );
+        if (!selectedProductExists) {
+          this.selectedProductName = this.office.products[0]?.productName ?? '';
+        }
+      } catch (error) {
+        this.error = error.message;
+      } finally {
+        this.isLoading = false;
+      }
+    },
     setDate(mode, value) {
       if (mode === 'checkIn') {
         this.startDate = value;
@@ -49,7 +88,7 @@ export const useOfficeStore = defineStore('office', {
     },
     selectProduct(productName) {
       this.selectedProductName = productName;
-      if (this.selectedProduct.productDetailType === 'OFFICE_SEAT') {
+      if (this.selectedProduct?.productDetailType === 'OFFICE_SEAT') {
         this.spaceCount = 1;
       }
     },

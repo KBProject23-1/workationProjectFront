@@ -1,44 +1,84 @@
 import { defineStore } from 'pinia';
+import { getAccommodationDetail } from '@/api/merchants';
 
-const accommodationResponse = {
-  status: 'SUCCESS',
-  message: '요청 성공',
-  data: {
-    merchantId: 101,
-    name: '제주 스테이',
-    address: '제주특별자치도 제주시 중앙로 10',
-    phoneNumber: '064-000-0000',
-    description: '업무와 휴식에 적합한 숙소입니다.',
-    checkInTime: '15:00:00',
-    checkOutTime: '11:00:00',
-    rating: 4.7,
-    reviewCount: 128,
-    bookmarked: false,
-    thumbnailUrl: 'https://example.com/merchants/101.jpg',
-    products: [
-      { productName: '스탠다드 A', description: '퀸사이즈 침대 2개 · 금연 객실 · 오션뷰', productDetailType: 'ROOM', maxHeadcount: 4, thumbnailURL: 'https://example.com/merchants/101-standard-a.jpg', price: 120000 },
-      { productName: '디럭스 오션', description: '킹사이즈 침대 1개 · 금연 객실 · 오션뷰', productDetailType: 'ROOM', maxHeadcount: 2, thumbnailURL: 'https://example.com/merchants/101-deluxe-ocean.jpg', price: 165000 },
-    ],
-  },
+const formatDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const today = new Date();
+const tomorrow = new Date(today);
+tomorrow.setDate(today.getDate() + 1);
+
+const emptyAccommodation = {
+  merchantId: null,
+  name: '',
+  address: '',
+  phoneNumber: '',
+  description: '',
+  checkInTime: null,
+  checkOutTime: null,
+  rating: 0,
+  reviewCount: 0,
+  thumbnailUrl: null,
+  bookmarked: false,
+  products: [],
 };
 
 export const useAccommodationStore = defineStore('accommodation', {
   state: () => ({
-    accommodation: accommodationResponse.data,
-    checkIn: '2026-08-10',
-    checkOut: '2026-08-12',
+    accommodation: { ...emptyAccommodation, products: [] },
+    checkIn: formatDate(today),
+    checkOut: formatDate(tomorrow),
     roomCount: 1,
     guestCount: 2,
-    selectedProductName: accommodationResponse.data.products[0].productName,
+    selectedProductName: '',
+    isLoading: false,
+    error: null,
   }),
   getters: {
-    selectedProduct: (state) => state.accommodation.products.find((product) => product.productName === state.selectedProductName),
-    nightCount: (state) => Math.max(1, Math.round((new Date(state.checkOut) - new Date(state.checkIn)) / 86400000)),
+    selectedProduct: (state) => state.accommodation.products.find(
+      (product) => product.productName === state.selectedProductName,
+    ) ?? null,
+    nightCount: (state) => Math.max(
+      1,
+      Math.round((new Date(state.checkOut) - new Date(state.checkIn)) / 86400000),
+    ),
     totalPrice() {
       return (this.selectedProduct?.price ?? 0) * this.nightCount * this.roomCount;
     },
   },
   actions: {
+    async fetchAccommodation(merchantId) {
+      this.isLoading = true;
+      this.error = null;
+
+      try {
+        const { data } = await getAccommodationDetail(merchantId, {
+          startDate: this.checkIn,
+          endDate: this.checkOut,
+          roomCount: this.roomCount,
+          guestCount: this.guestCount,
+        });
+        this.accommodation = {
+          ...data,
+          products: data?.products ?? [],
+        };
+
+        const selectedProductExists = this.accommodation.products.some(
+          (product) => product.productName === this.selectedProductName,
+        );
+        if (!selectedProductExists) {
+          this.selectedProductName = this.accommodation.products[0]?.productName ?? '';
+        }
+      } catch (error) {
+        this.error = error.message;
+      } finally {
+        this.isLoading = false;
+      }
+    },
     setDate(mode, value) {
       if (mode === 'checkIn') {
         this.checkIn = value;
