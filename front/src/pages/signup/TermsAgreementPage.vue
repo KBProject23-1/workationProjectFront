@@ -4,11 +4,11 @@
 // - 약관 제목과 본문은 서버 응답만 사용한다. (프론트엔드 하드코딩 약관 전문 없음)
 // - 조회 실패 시 하드코딩 대체 데이터를 쓰지 않고 오류 상태 + 다시 시도 버튼을 노출한다.
 // - 전체 동의 / 개별 동의 상태를 동기화하고, 필수 약관이 모두 동의된 경우에만 '다음' 버튼을 활성화한다.
-// - '다음' 클릭 시 본인인증 화면으로 이동하는 연결은 회원가입 프로세스 통합 작업에서 진행한다.
+// - '다음' 클릭 시 동의한 약관 ID 목록을 AuthStore 에 보관한 뒤 본인인증 화면(/signup/verify)으로 이동한다.
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { Check, ChevronLeft } from '@lucide/vue';
-import { toast } from 'vue-sonner';
+import { useAuthStore } from '@/stores/authStore';
 import { getTerms } from '@/api/auth';
 import {
   Dialog,
@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 
 const router = useRouter();
+const authStore = useAuthStore();
 
 const terms = ref([]);
 const loading = ref(true);
@@ -63,8 +64,10 @@ function goBack() {
 }
 
 function goNext() {
-  // TODO: 다음 단계(본인인증) 화면으로의 Router 연결은 회원가입 프로세스 통합 작업에서 진행한다.
-  toast.info('다음 단계(본인인증) 화면은 회원가입 통합 작업에서 연결될 예정이에요.');
+  // 동의한 약관 ID 목록을 보관한 뒤 본인인증 화면(/signup/verify)으로 이동한다.
+  // (최종 회원가입 요청 시 agreedTermsIds 로 백엔드에 전달된다)
+  authStore.setAgreedTerms([...agreedTermIds.value]);
+  router.push('/signup/verify');
 }
 
 // 백엔드 DB 약관 목록 조회 (GET /api/v1/auth/terms)
