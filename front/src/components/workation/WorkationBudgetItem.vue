@@ -1,16 +1,15 @@
 <template>
   <div class="flex items-start gap-3 py-3">
+    <!-- 지울 수 없는 계정과목은 버튼을 그리지 않는다. 비활성 버튼이 남으면 눌러도 되는 줄 안다 -->
     <button
+      v-if="deletable"
       type="button"
-      class="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-slate-400"
-      :class="
-        deletable ? 'border-slate-300' : 'border-slate-200 text-slate-200'
-      "
-      :disabled="!deletable"
+      class="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-300 text-slate-400"
       @click="$emit('remove', category.id)"
     >
       −
     </button>
+    <span v-else class="mt-1 h-5 w-5 shrink-0" />
 
     <div class="min-w-0 flex-1">
       <div class="flex items-center gap-1">

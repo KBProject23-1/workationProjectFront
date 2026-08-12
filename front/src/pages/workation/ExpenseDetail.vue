@@ -21,10 +21,11 @@
           dotDate(detail.spentDate)
         }}</span>
         <button
-          class="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-bold text-blue-600"
+          class="flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-[11px] font-bold text-blue-600"
           @click="budgetTypeSheetOpen = true"
         >
-          {{ detail.budgetType === 'WORK' ? '법인 경비' : '개인 소비' }}
+          {{ detail.budgetType === 'WORK' ? `${workLabel} 경비` : '개인 소비' }}
+          <ChevronDown class="h-3 w-3" />
         </button>
       </div>
 
@@ -62,14 +63,17 @@
         >
           <div class="min-w-0">
             <p class="truncate text-sm font-bold text-slate-900">
-              {{ detail.categoryName }}
+              {{ currentCategoryName }}
+              <span v-if="categoryChanged" class="text-xs text-blue-600">
+                변경됨
+              </span>
             </p>
             <p class="truncate text-xs text-slate-400">
               {{ currentCategoryDescription }}
             </p>
           </div>
           <button
-            class="shrink-0 text-xs text-blue-600"
+            class="shrink-0 rounded-lg border border-blue-600 px-3 py-1.5 text-xs font-bold text-blue-600"
             @click="categorySheetOpen = true"
           >
             변경
@@ -105,12 +109,29 @@
       </section>
 
       <!--
-        수기 등록 건은 고칠 수 있으니 수정·삭제를 둔다.
-        앱 결제 건은 금액·일시를 못 고치므로 "수정" 이 아니라 "확인" 이다.
-        확인 버튼이 없으면 카테고리를 바꾸지 않는 한 확정할 방법이 없어
+        확인이 필요한 건은 분류가 맞다고 알려주는 버튼이 먼저다.
+        이게 없으면 카테고리를 바꾸지 않는 한 확정할 방법이 없어
         뒤로 나가도 계속 "확인 필요" 로 남는다.
       -->
-      <div v-if="isManual" class="mt-8 flex gap-2">
+      <Button
+        v-if="showConfirm"
+        class="mt-8 h-12 w-full rounded-xl text-base"
+        :disabled="confirming"
+        @click="confirmAndClose"
+      >
+        {{ confirming ? '처리 중...' : '확인 완료' }}
+      </Button>
+
+      <p v-if="showConfirm" class="mt-2 text-center text-xs text-slate-400">
+        {{
+          categoryChanged
+            ? '확인 완료를 누르면 바뀐 카테고리로 저장돼요'
+            : '분류가 맞으면 확인 완료를, 아니면 위에서 카테고리를 바꿔 주세요'
+        }}
+      </p>
+
+      <!-- 수기 등록 건만 금액·일시를 고칠 수 있다 -->
+      <div v-if="isManual" class="mt-4 flex gap-2">
         <Button
           variant="outline"
           class="h-12 flex-1 rounded-xl text-base text-red-500 hover:text-red-600"
@@ -119,21 +140,19 @@
         >
           삭제하기
         </Button>
-        <Button class="h-12 flex-1 rounded-xl text-base" @click="goEdit">
+        <Button
+          variant="outline"
+          class="h-12 flex-1 rounded-xl text-base"
+          @click="goEdit"
+        >
           수정하기
         </Button>
       </div>
 
-      <Button
-        v-else
-        class="mt-8 h-12 w-full rounded-xl text-base"
-        :disabled="confirming"
-        @click="confirmAndClose"
+      <p
+        v-if="!isManual && !showConfirm"
+        class="mt-8 text-center text-xs text-slate-400"
       >
-        {{ confirming ? '처리 중...' : '확인 완료' }}
-      </Button>
-
-      <p v-if="!isManual" class="mt-2 text-center text-xs text-slate-400">
         앱 내 결제 건은 금액과 일시를 바꿀 수 없어요
       </p>
     </template>
@@ -141,8 +160,8 @@
     <ExpenseCategorySheet
       v-if="categorySheetOpen"
       :categories="detail.availableCategories"
-      :selected-id="detail.expenseCategoryId"
-      @select="changeCategory"
+      :selected-id="draftCategoryId"
+      @select="pickCategory"
       @close="categorySheetOpen = false"
     />
 
@@ -169,12 +188,13 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ChevronLeft } from '@lucide/vue';
+import { ChevronDown, ChevronLeft } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { storeToRefs } from 'pinia';
 import { useExpenseStore } from '@/stores/expenseStore';
 import { useCategoryStore } from '@/stores/categoryStore';
 import { useErrorToast } from '@/composables/useErrorToast';
+import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import { dotDate, won } from '@/components/workation/format';
 import ExpenseCategorySheet from '@/components/workation/ExpenseCategorySheet.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
@@ -184,6 +204,7 @@ const router = useRouter();
 const expenseStore = useExpenseStore();
 const categoryStore = useCategoryStore();
 const { showError } = useErrorToast();
+const { workLabel, hasCorporateCard, ensureCards } = useBudgetTypeLabel();
 
 const workationId = route.params.workationId;
 const expenseId = route.params.expenseId;
@@ -213,15 +234,23 @@ const confirmOpen = ref(false);
 // 앱 내 결제 건은 금액·날짜·가맹점명을 고칠 수 없다
 const isManual = computed(() => detail.value?.sourceType === 'MANUAL');
 
+// 지갑 결제는 카드가 없는 게 정상이고, 개인 지출에 카드가 없으면 현금이다.
+// 업무 지출에 카드가 없을 때만 증빙이 빈 상태다
+const paymentMeans = computed(() => {
+  const value = detail.value;
+  if (!value) return '';
+
+  if (value.card) {
+    return `${value.card.cardName} ${value.card.maskedNumber ?? ''}`.trim();
+  }
+  if (value.paymentSourceType === 'WALLET') return '지갑';
+  return value.budgetType === 'WORK' ? '카드 미지정' : '현금';
+});
+
 const paymentRows = computed(() => {
   if (!detail.value) return [];
   const rows = [
-    {
-      label: '결제수단',
-      value: detail.value.card
-        ? `${detail.value.card.cardName} ${detail.value.card.maskedNumber ?? ''}`.trim()
-        : '카드 미지정',
-    },
+    { label: '결제수단', value: paymentMeans.value },
     { label: '결제일자', value: dotDate(detail.value.spentDate) },
   ];
   if (detail.value.approvedNumber) {
@@ -241,7 +270,7 @@ const proof = computed(() => {
   if (value.transactionId) {
     return {
       title: '거래내역 자동 증빙',
-      description: '지갑 결제 건은 매출전표가 자동 생성돼요',
+      description: '앱에서 결제한 건은 매출전표가 자동 생성돼요',
       done: true,
     };
   }
@@ -253,11 +282,18 @@ const proof = computed(() => {
     };
   }
   if (value.card) {
-    return {
-      title: '법인카드 사용 기록',
-      description: '카드·가맹점·금액이 기재되어 증빙으로 인정돼요',
-      done: true,
-    };
+    // 개인카드 결제는 적격증빙이 아니라, 지출결의서에 첨부하는 근거가 된다
+    return hasCorporateCard.value
+      ? {
+          title: '법인카드 사용 기록',
+          description: '카드·가맹점·금액이 기재되어 증빙으로 인정돼요',
+          done: true,
+        }
+      : {
+          title: '개인카드 사용 기록',
+          description: '정산 문서에 첨부해 회사에 청구할 수 있어요',
+          done: true,
+        };
   }
   return {
     title: '사용 카드 미지정',
@@ -266,11 +302,35 @@ const proof = computed(() => {
   };
 });
 
+// 시트에서 고른 카테고리는 바로 저장하지 않고 여기에 담아 둔다.
+// 고를 때마다 저장하면 요청이 네 번 나가서 화면이 버벅이고,
+// 잘못 골랐을 때 되돌릴 방법도 없다
+const draftCategoryId = ref(null);
+
+const currentCategory = computed(() =>
+  detail.value?.availableCategories?.find(
+    (category) => category.id === draftCategoryId.value,
+  ),
+);
+
+const currentCategoryName = computed(
+  () => currentCategory.value?.name ?? detail.value?.categoryName ?? '',
+);
+
 const currentCategoryDescription = computed(
+  () => currentCategory.value?.description ?? '',
+);
+
+// 카테고리를 바꿨는지
+const categoryChanged = computed(
   () =>
-    detail.value?.availableCategories?.find(
-      (category) => category.id === detail.value.expenseCategoryId,
-    )?.description ?? '',
+    draftCategoryId.value !== null &&
+    draftCategoryId.value !== detail.value?.expenseCategoryId,
+);
+
+// 확인이 필요한 건이거나, 카테고리를 바꿨을 때만 버튼을 보여준다
+const showConfirm = computed(
+  () => Boolean(detail.value?.isAutoCategorized) || categoryChanged.value,
 );
 
 const targetBudgetType = computed(() =>
@@ -278,7 +338,7 @@ const targetBudgetType = computed(() =>
 );
 
 const targetBudgetTypeLabel = computed(() =>
-  targetBudgetType.value === 'WORK' ? '법인 경비' : '개인 소비',
+  targetBudgetType.value === 'WORK' ? `${workLabel.value} 경비` : '개인 소비',
 );
 
 const targetBudgetTypeCategories = computed(() =>
@@ -288,7 +348,8 @@ const targetBudgetTypeCategories = computed(() =>
 const loadDetail = async () => {
   loading.value = true;
   try {
-    await expenseStore.fetchDetail(expenseId);
+    const data = await expenseStore.fetchDetail(expenseId);
+    draftCategoryId.value = data?.expenseCategoryId ?? null;
   } catch (error) {
     showError(error, '지출 정보를 불러오지 못했습니다.');
   } finally {
@@ -299,18 +360,16 @@ const loadDetail = async () => {
 onMounted(async () => {
   await Promise.all([
     loadDetail(),
+    ensureCards(),
     categoryStore.fetchCategories('WORK'),
     categoryStore.fetchCategories('PERSONAL'),
   ]);
 });
 
-const changeCategory = async (categoryId) => {
-  try {
-    await expenseStore.changeCategory(workationId, expenseId, categoryId);
-    categorySheetOpen.value = false;
-  } catch (error) {
-    showError(error, '카테고리를 변경하지 못했습니다.');
-  }
+// 고른 값만 담고 시트를 닫는다. 저장은 아래 확인 완료에서 한 번에 한다
+const pickCategory = (categoryId) => {
+  draftCategoryId.value = categoryId;
+  categorySheetOpen.value = false;
 };
 
 const changeBudgetType = async (categoryId) => {
@@ -321,6 +380,8 @@ const changeBudgetType = async (categoryId) => {
       targetBudgetType.value,
       categoryId,
     );
+    // 예산 유형이 바뀌면 카테고리도 함께 바뀌므로 초안을 새 값으로 맞춘다
+    draftCategoryId.value = categoryId;
     budgetTypeSheetOpen.value = false;
   } catch (error) {
     showError(error, '경비 구분을 변경하지 못했습니다.');
@@ -340,22 +401,25 @@ const remove = async () => {
   }
 };
 
-// 자동분류 상태 그대로인 건은 확정하고 목록으로 돌아간다.
-// 이미 확인된 건이면 서버를 부르지 않고 그냥 나간다
+// 카테고리를 바꿨으면 저장하고, 그대로면 확정만 한다.
+// 카테고리 변경은 서버가 확정 처리까지 함께 하므로 두 번 부르지 않는다
 const confirmAndClose = async () => {
   if (confirming.value) return;
 
-  if (!detail.value?.isAutoCategorized) {
-    router.push(listLocation);
-    return;
-  }
-
   confirming.value = true;
   try {
-    await expenseStore.confirmExpenses(workationId, [Number(expenseId)]);
+    if (categoryChanged.value) {
+      await expenseStore.changeCategory(
+        workationId,
+        expenseId,
+        draftCategoryId.value,
+      );
+    } else if (detail.value?.isAutoCategorized) {
+      await expenseStore.confirmExpenses(workationId, [Number(expenseId)]);
+    }
     router.push(listLocation);
   } catch (error) {
-    showError(error, '확인 처리를 하지 못했습니다.');
+    showError(error, '저장하지 못했습니다.');
   } finally {
     confirming.value = false;
   }

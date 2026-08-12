@@ -50,7 +50,7 @@
         <h3 class="mb-2 text-sm font-bold text-slate-900">정산 요약</h3>
         <dl class="rounded-xl border border-slate-200 px-4 py-3 text-sm">
           <div class="flex justify-between py-1.5">
-            <dt class="text-slate-500">법인 청구</dt>
+            <dt class="text-slate-500">회사 청구</dt>
             <dd class="font-bold text-slate-900">{{ won(workAmount) }}</dd>
           </div>
           <div class="flex justify-between py-1.5">

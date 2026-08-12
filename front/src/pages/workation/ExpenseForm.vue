@@ -60,9 +60,7 @@
             {{ card.cardName }} {{ card.maskedNumber }}
           </option>
         </select>
-        <p class="mt-1.5 text-xs text-slate-400">
-          지갑에 등록된 법인카드만 선택할 수 있어요
-        </p>
+        <p class="mt-1.5 text-xs text-slate-400">{{ cardHint }}</p>
       </WorkationFormField>
 
       <WorkationFormField label="가맹점명" :error-message="errors.merchantName">
@@ -152,13 +150,16 @@ import { useBudgetStore } from '@/stores/budgetStore';
 import { useCardStore } from '@/stores/cardStore';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
+import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import WorkationFormField from '@/components/workation/WorkationFormField.vue';
 import WorkationDateInput from '@/components/workation/WorkationDateInput.vue';
 
-const BUDGET_TYPES = [
-  { value: 'WORK', label: '업무 경비' },
+const { workLabel, hasCorporateCard, ensureCards } = useBudgetTypeLabel();
+
+const BUDGET_TYPES = computed(() => [
+  { value: 'WORK', label: `${workLabel.value} 경비` },
   { value: 'PERSONAL', label: '개인 소비' },
-];
+]);
 
 const route = useRoute();
 const router = useRouter();
@@ -203,7 +204,19 @@ const errors = reactive({
   expenseCategoryId: '',
 });
 
-const workCards = computed(() => cardStore.workCards);
+// 법인카드가 있어도 개인카드로 업무 결제를 하는 일이 있다.
+// 법인카드를 안 받는 가맹점이나 한도 초과 같은 경우다.
+// 그래서 등록된 카드를 모두 고를 수 있게 하고, 법인카드를 위로 올린다
+const workCards = computed(() => [
+  ...cardStore.workCards,
+  ...cardStore.personalCards,
+]);
+
+const cardHint = computed(() =>
+  hasCorporateCard.value
+    ? '개인카드로 결제한 건도 회사에 청구할 수 있어요'
+    : '개인카드로 결제한 건을 회사에 청구할 수 있어요',
+);
 
 // 예산에 배정한 카테고리만 고를 수 있다. 배정하지 않은 카테고리는 집계할 곳이 없다
 const assignedCategories = reactive({ WORK: [], PERSONAL: [] });
@@ -244,7 +257,7 @@ const loadAssignedCategories = async () => {
 onMounted(async () => {
   try {
     await Promise.all([
-      cardStore.fetchMyCards(),
+      ensureCards(),
       loadAssignedCategories(),
       workationStore.fetchCurrent(),
     ]);
@@ -254,11 +267,11 @@ onMounted(async () => {
   }
 });
 
-// 예산 유형이 바뀌면 카테고리 마스터가 달라진다. 개인 소비는 카드를 고르지 않는다
+// 예산 유형이 바뀌면 카테고리 마스터가 달라지므로 카테고리만 비운다.
+// 카드는 그대로 둔다. 개인 소비도 어떤 카드로 냈는지 남겨 두는 편이 낫다
 const changeBudgetType = (value) => {
   form.budgetType = value;
   form.expenseCategoryId = null;
-  if (value === 'PERSONAL') form.cardId = null;
 };
 
 const validate = () => {
@@ -267,7 +280,7 @@ const validate = () => {
   });
 
   if (form.budgetType === 'WORK' && !form.cardId) {
-    errors.cardId = '법인 지출은 사용한 법인카드를 선택해야 합니다.';
+    errors.cardId = `${workLabel.value} 지출은 사용한 카드를 선택해야 합니다.`;
   }
 
   if (!form.merchantName.trim()) {

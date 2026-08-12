@@ -87,7 +87,7 @@
 
       <div class="grid grid-cols-2 gap-3">
         <WorkationFormField
-          label="법인 예산 총액"
+          :label="`${workLabel} 예산 총액`"
           :error-message="errors.businessBudgetTotal"
         >
           <div class="relative">
@@ -145,6 +145,20 @@
       @cancel="outOfPeriodOpen = false"
     />
 
+    <!--
+      법인카드가 없으면 회사 경비를 어떻게 관리할지 먼저 정해야 한다.
+      등록할 때만 띄운다. 수정 화면에서 매번 뜨면 방해가 된다.
+    -->
+    <BaseConfirmModal
+      :visible="cardNoticeOpen"
+      title="법인카드가 등록되어 있지 않네요"
+      message="회사 경비는 어떻게 관리하시겠어요?"
+      confirm-label="법인카드 등록하기"
+      cancel-label="개인카드로 쓰고 회사에 청구"
+      @confirm="goCardLink"
+      @cancel="cardNoticeOpen = false"
+    />
+
     <!-- 기간이 바뀌면 예약이 어긋난다. 무엇이 걸리는지에 따라 안내가 갈린다 -->
     <BaseConfirmModal
       :visible="reservationOpen"
@@ -168,6 +182,7 @@ import { Button } from '@/components/ui/button';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
+import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import WorkationFormField from '@/components/workation/WorkationFormField.vue';
 import WorkationDateInput from '@/components/workation/WorkationDateInput.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
@@ -177,6 +192,15 @@ const router = useRouter();
 const budgetStore = useBudgetStore();
 const workationStore = useWorkationStore();
 const { showError } = useErrorToast();
+const { hasCorporateCard, workLabel, ensureCards } = useBudgetTypeLabel();
+
+// 법인카드가 없을 때 등록 화면에서 한 번 안내한다
+const cardNoticeOpen = ref(false);
+
+const goCardLink = () => {
+  cardNoticeOpen.value = false;
+  router.push('/card/link');
+};
 
 // 라우트에 workationId 가 있으면 수정 화면으로 동작한다
 const workationId = route.params.workationId ?? null;
@@ -324,7 +348,16 @@ const guardCreate = async () => {
 };
 
 onMounted(async () => {
-  await Promise.all([loadRegions(), isEdit ? loadWorkation() : guardCreate()]);
+  await Promise.all([
+    loadRegions(),
+    ensureCards(),
+    isEdit ? loadWorkation() : guardCreate(),
+  ]);
+
+  // 예산 총액을 입력하기 전에 안내해야 의미가 있다
+  if (!isEdit && !hasCorporateCard.value) {
+    cardNoticeOpen.value = true;
+  }
 });
 
 // 숫자만 남기고 화면에는 천 단위 콤마를 붙여 보여준다
@@ -383,7 +416,7 @@ const validate = () => {
   }
 
   if (form.businessBudgetTotal === '') {
-    errors.businessBudgetTotal = '법인 예산을 입력해 주세요.';
+    errors.businessBudgetTotal = `${workLabel.value} 예산을 입력해 주세요.`;
   }
 
   if (form.personalBudgetTotal === '') {

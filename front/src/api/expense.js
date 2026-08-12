@@ -36,6 +36,14 @@ export const updateExpenseCategory = (
   });
 };
 
+// 예산 유형 일괄 변경. 계정과목은 서버가 코드를 맞춰 옮긴다
+export const changeExpensesBudgetType = (workationId, budgetType, expenseIds) => {
+  return axiosInstance.patch(`/workations/${workationId}/expenses/budget-type`, {
+    budgetType,
+    expenseIds,
+  });
+};
+
 // 경비/개인소비 구분 변경. 예산 유형이 바뀌면 카테고리도 함께 지정해야 한다
 export const updateExpenseBudgetType = (
   expenseId,

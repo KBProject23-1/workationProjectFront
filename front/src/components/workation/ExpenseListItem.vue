@@ -28,6 +28,7 @@
 <script setup>
 import { computed } from 'vue';
 import { won } from './format';
+import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 
 const props = defineProps({
   expense: { type: Object, required: true },
@@ -35,19 +36,33 @@ const props = defineProps({
 
 defineEmits(['click']);
 
+const { workLabel } = useBudgetTypeLabel();
+
+const isWallet = computed(
+  () => props.expense.paymentSourceType === 'WALLET',
+);
+
 // 07.03 · 법인 · 신한카드 1234
 const subText = computed(() => {
   const date = (props.expense.spentDate ?? '').slice(5).replace('-', '.');
-  const type = props.expense.budgetType === 'WORK' ? '법인' : '개인';
-  const card =
-    props.expense.cardName ??
-    (props.expense.budgetType === 'WORK' ? '카드 미지정' : '현금');
-  return `${date} · ${type} · ${card}`;
+  const type =
+    props.expense.budgetType === 'WORK' ? workLabel.value : '개인';
+
+  let means = props.expense.cardName;
+  if (!means) {
+    if (isWallet.value) means = '지갑';
+    else means = props.expense.budgetType === 'WORK' ? '카드 미지정' : '현금';
+  }
+  return `${date} · ${type} · ${means}`;
 });
 
-// 법인 지출인데 사용 카드가 없으면 정산 전에 보완해야 한다
+// 업무 지출인데 사용 카드가 없으면 정산 전에 보완해야 한다.
+// 지갑 결제는 카드가 없는 게 정상이고, 앱 내 결제라 수정도 안 되므로 제외한다
 const needsCard = computed(
-  () => props.expense.budgetType === 'WORK' && !props.expense.cardId,
+  () =>
+    props.expense.budgetType === 'WORK' &&
+    !props.expense.cardId &&
+    !isWallet.value,
 );
 
 const badgeText = computed(() => {
