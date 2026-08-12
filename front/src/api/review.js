@@ -26,8 +26,8 @@ export const addTransactionReview = (transactionId, formData) => {
 };
 
 // 로그인한 사용자가 작성한 리뷰 수정
-export const modifyReview = (reviewId, formData) => {
-  return axiosInstance.patch(`/reviews/${reviewId}`, formData);
+export const modifyReview = (reviewId, request) => {
+  return axiosInstance.patch(`/reviews/${reviewId}`, request);
 };
 
 // 로그인한 사용자가 작성한 리뷰 삭제

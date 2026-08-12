@@ -16,14 +16,14 @@ const sourceId = computed(() => Number(route.params.reservationId || route.param
 const reviewId = computed(() => Number(route.params.reviewId));
 const title = computed(() => (mode.value === 'edit' ? '리뷰 수정하기' : '리뷰 등록하기'));
 
-onMounted(() => reviewStore.prepareReviewForm({ mode: mode.value, reviewId: reviewId.value }));
+onMounted(() => reviewStore.prepareReviewForm({
+  mode: mode.value,
+  reviewId: reviewId.value,
+  sourceType: sourceType.value,
+  sourceId: sourceId.value,
+}));
 
 function goBack() {
-  if (mode.value === 'edit') {
-    router.push('/users/me/reviews');
-    return;
-  }
-
   router.back();
 }
 

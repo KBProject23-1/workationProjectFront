@@ -22,6 +22,9 @@ function movePage(nextPage) {
   reviewStore.setPage(nextPage);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+function moveToReviewDetail(reviewId) {
+  router.push(`/reviews/${reviewId}`);
+}
 </script>
 
 <template>
@@ -48,17 +51,20 @@ function movePage(nextPage) {
           v-for="review in reviews"
           :key="review.reviewId"
           :review="review"
+          @open="moveToReviewDetail"
         />
       </div>
     </section>
 
-    <ReviewPagination :page="page" :total-pages="totalPages" @change="movePage" />
+    <div class="pagination-slot">
+      <ReviewPagination :page="page" :total-pages="totalPages" @change="movePage" />
+    </div>
   </main>
 </template>
 
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
-.review-page { width:min(402px,100%); min-height:871px; margin:0 auto; padding:0 23px 28px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
+.review-page { width:min(402px,100%); min-height:871px; display:flex; flex-direction:column; margin:0 auto; padding:0 23px 28px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
 button { font:inherit; }
 .page-header { position:relative; height:50px; display:flex; align-items:center; justify-content:center; }
 .page-header button { position:absolute; left:4px; width:36px; height:32px; padding:0; color:#172033; border:0; background:transparent; font-size:40px; line-height:1; cursor:pointer; }
@@ -67,5 +73,6 @@ button { font:inherit; }
 .review-summary { margin:0 5px 14px; color:#8997aa; font-size:12px; }
 .review-list { display:flex; flex-direction:column; align-items:center; gap:10px; }
 .status-message { padding:70px 0; color:#8997aa; text-align:center; font-size:12px; }
+.pagination-slot { margin-top:auto; }
 @media (max-width: 360px) { .review-thumbnail { width:78px; } }
 </style>
