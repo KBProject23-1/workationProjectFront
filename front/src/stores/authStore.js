@@ -80,13 +80,11 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
-     * 최종 회원가입 완료 (자동 로그인)
+     * 최종 회원가입 완료
      * - 백엔드가 POST /auth/pass 에서 발급한 identityVerificationId 만 전달한다
      *   (name/phoneNumber/ci 는 프론트에서 보내지 않는다 — 백엔드가 Redis 세션에서 복원).
-     * - Backend 가 ACCESS_TOKEN / REFRESH_TOKEN HttpOnly Cookie 를 발급한다.
-     * - 프론트는 토큰을 읽거나 저장하지 않는다 (Cookie 기반 인증).
-     * - 닉네임은 백엔드가 기본값(워케이너{userId})으로 자동 생성한다 (닉네임 입력 기능 제거).
-     * - 성공 시 isAuthenticated 를 true 로 설정한다 (인메모리 — 새로고침 시 GET /users/me 로 복구).
+     * - ⚠️ 자동 로그인 아님: 회원가입은 토큰/쿠키를 발급하지 않는다(쿠키 발급은 login 만 담당).
+     *   따라서 isAuthenticated 를 세우지 않으며, 완료 화면 이후 사용자는 /login 에서 다시 로그인한다.
      */
     async signup({ email, password }) {
       this.isLoading = true;
@@ -99,10 +97,6 @@ export const useAuthStore = defineStore('auth', {
           agreedTermsIds: this.signupAgreedTermIds,
         };
         const { data } = await signupApi(payload);
-        this.isAuthenticated = true;
-        if (data) {
-          this.user = { userId: data.userId, name: data.name };
-        }
         // 1회성 플로우 데이터 정리 (재가입 시 깨끗한 상태로 시작)
         this.resetSignup();
         // 완료 화면(/signup/complete)에서 로그인 아이디를 표시하기 위해 보관한다

@@ -3,19 +3,20 @@ import axios from 'axios';
 const axiosInstance = axios.create({
   baseURL: `${import.meta.env.VITE_API_BASE_URL}/api/v1`,
   timeout: 10000,
-  // refreshToken 은 HttpOnly 쿠키로만 오간다.
+  // refreshToken/accessToken 은 HttpOnly 쿠키로만 오간다.
   // 프론트(5173)와 백엔드(8080)는 포트가 달라 cross-origin 이므로
   // 이 옵션이 없으면 브라우저가 Set-Cookie 를 저장하지 않고 폐기한다.
   withCredentials: true,
+  // CSRF (더블 서브밋 쿠키): BE 가 XSRF-TOKEN 쿠키(HttpOnly=false)를 발급하면
+  // 상태변경 요청에 그 값을 X-XSRF-TOKEN 헤더로 돌려줘야 한다.
+  // cross-origin 이라 withXSRFToken 을 켜야 axios 가 헤더를 붙인다.
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
+  withXSRFToken: true,
 });
 
-axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// 인증은 HttpOnly accessToken 쿠키로만 이뤄진다(withCredentials 로 자동 전송).
+// 로그인/재발급이 토큰을 응답 바디로 주지 않으므로 Authorization 헤더는 붙이지 않는다.
 
 // blob 으로 받은 에러 응답은 Blob 객체라 message 를 바로 읽을 수 없다.
 // (정산 Excel/PDF 다운로드가 responseType: 'blob' 을 쓴다)
@@ -89,11 +90,11 @@ axiosInstance.interceptors.response.use(
 
     original._retried = true;
 
-    // 이미 다른 요청이 재발급 중이면 끝날 때까지 기다린다
+    // 이미 다른 요청이 재발급 중이면 끝날 때까지 기다렸다가, 성공하면 그대로 재시도한다
+    // (재발급으로 새 accessToken 쿠키가 이미 설정돼 있으므로 헤더를 손댈 필요 없다)
     if (refreshing) {
-      const token = await new Promise((resolve) => waitingQueue.push(resolve));
-      if (!token) return Promise.reject(error);
-      original.headers.Authorization = `Bearer ${token}`;
+      const ok = await new Promise((resolve) => waitingQueue.push(resolve));
+      if (!ok) return Promise.reject(error);
       return axiosInstance(original);
     }
 
@@ -101,17 +102,10 @@ axiosInstance.interceptors.response.use(
     try {
       // 순환 참조를 피하려고 여기서 불러온다 (auth.js 가 이 파일을 import 한다)
       const { refresh } = await import('./auth');
-      const { data } = await refresh();
-
-      // 이 요청은 인터셉터를 타지 않아 공통 응답 봉투가 그대로 남아 있다.
-      // 인증 응답의 token_info 만 JSON 이 snake_case 다 (LoginResponseDTO 의 @JsonProperty)
-      const accessToken = data?.data?.token_info?.access_token;
-      if (!accessToken) throw new Error('재발급 응답에 토큰이 없습니다.');
-
-      localStorage.setItem('accessToken', accessToken);
-      resolveQueue(accessToken);
-
-      original.headers.Authorization = `Bearer ${accessToken}`;
+      // 재발급 성공 시 BE 가 새 accessToken/refreshToken 을 HttpOnly 쿠키로 설정한다(응답 바디에 토큰 없음).
+      await refresh();
+      resolveQueue(true);
+      // 새 accessToken 쿠키가 자동 첨부되어 원래 요청을 그대로 재시도한다.
       return axiosInstance(original);
     } catch (refreshError) {
       // 리프레시 토큰까지 만료됐으면 다시 로그인해야 한다.
