@@ -15,7 +15,7 @@ const emit = defineEmits(['update:modelValue', 'complete', 'back']);
 </script>
 
 <template>
-  <div class="flex flex-col min-h-screen px-5 pt-6 pb-8">
+  <div class="flex flex-col min-h-screen px-5 pt-6 pb-8 bg-[#F5F8FC]">
     <button
       type="button"
       class="self-start p-1 -ml-1 text-gray-700 active:bg-gray-100 rounded-full"
@@ -26,7 +26,7 @@ const emit = defineEmits(['update:modelValue', 'complete', 'back']);
     <div class="flex-1 flex flex-col justify-center">
       <PinKeypad
         :model-value="modelValue"
-        title="결제 PIN을 입력해주세요"
+        title="PIN 번호를 입력해주세요"
         :description="`${Number(amount).toLocaleString('ko-KR')}원 ${actionLabel}`"
         :error="error"
         :disabled="disabled"
