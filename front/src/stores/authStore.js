@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import {
   login as loginApi,
+  logout as logoutApi,
   signup as signupApi,
   findId as findIdApi,
   checkEmailAvailability as checkEmailAvailabilityApi,
@@ -157,6 +158,7 @@ export const useAuthStore = defineStore('auth', {
           email: data.email,
           name: data.name,
           nickname: data.nickname,
+          phoneNumber: data.phoneNumber,
         };
         this.sessionChecked = true;
       } catch (err) {
@@ -210,14 +212,49 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
-     * 로그아웃 — 인메모리 상태 초기화 (스캐폴딩)
-     * - 실제 사용 시 POST /api/v1/auth/logout 호출 + AuthStore 초기화를 함께 처리해야 한다
-     *   (knowledgeFront: 로그아웃 API → 프론트 AuthStore 초기화).
+     * 내 정보 조회 — GET /users/me 로 최신 프로필을 불러와 user 를 갱신한다 (내 정보 화면 진입 시 호출).
+     * - data: { email, name, phoneNumber, nickname, companyName } (인터셉터가 unwrap)
+     * - 실패 시 err 를 그대로 throw → 화면에서 useErrorToast 로 안내한다.
      */
-    logout() {
-      this.isAuthenticated = false;
-      this.user = null;
+    async fetchMyInfo() {
+      this.isLoading = true;
       this.error = null;
+      try {
+        const { data } = await getMeApi();
+        this.user = {
+          email: data.email,
+          name: data.name,
+          phoneNumber: data.phoneNumber,
+          nickname: data.nickname,
+          companyName: data.companyName,
+        };
+        return data;
+      } catch (err) {
+        this.error = err;
+        throw err;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    /**
+     * 로그아웃 — POST /auth/logout 호출 후 인메모리 인증 상태를 초기화한다.
+     * - 서버가 refreshToken 쿠키를 즉시 만료시키고, 성공 시 프론트의 isAuthenticated/user 를 비운다.
+     * - 실패 시 상태를 유지한 채 err 를 throw 한다 (화면에서 실패 토스트 + 재시도 안내).
+     */
+    async logout() {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        await logoutApi();
+        this.isAuthenticated = false;
+        this.user = null;
+      } catch (err) {
+        this.error = err;
+        throw err;
+      } finally {
+        this.isLoading = false;
+      }
     },
   },
 });

@@ -318,13 +318,14 @@ const goPay = () => {
   router.push('/wallet');
 };
 
-// 알림·프로필 화면은 아직 준비 전이라 안내 토스트만 노출
+// 알림 화면은 아직 준비 전이라 안내 토스트만 노출
 const goNotifications = () => {
   toast('알림 기능은 준비 중이에요');
 };
 
+// 프로필 → 내 정보 조회 화면
 const goProfile = () => {
-  toast('프로필 화면은 준비 중이에요');
+  router.push('/account/me');
 };
 
 const goCreate = () => {
