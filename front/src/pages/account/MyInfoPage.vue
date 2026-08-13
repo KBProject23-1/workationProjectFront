@@ -123,7 +123,7 @@ onMounted(async () => {
             <button
               type="button"
               class="flex w-full items-center px-5 py-4 text-left transition-colors active:bg-slate-50"
-              @click="showComingSoon('프로필 수정')"
+              @click="router.push('/account/me/edit')"
             >
               <span class="text-[15px] font-semibold text-blue-600">
                 프로필 수정
