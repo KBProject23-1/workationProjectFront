@@ -1,19 +1,6 @@
-<script setup>
-import { ref } from 'vue';
-import { Heart } from '@lucide/vue';
-
-const imageLoadFailed = ref(false);
-
-defineProps({
-  merchant: { type: Object, required: true },
-});
-
-defineEmits(['select', 'toggle-bookmark']);
-</script>
-
 <template>
   <article
-    class="result-card"
+    class="flex gap-4 rounded-xl border border-slate-200 p-3"
     role="link"
     tabindex="0"
     :aria-label="`${merchant.name} 상세보기`"
@@ -21,20 +8,25 @@ defineEmits(['select', 'toggle-bookmark']);
     @keydown.enter="$emit('select', merchant)"
     @keydown.space.prevent="$emit('select', merchant)"
   >
-    <div class="result-image" :class="merchant.category.toLowerCase()">
+    <div
+      class="flex h-[116px] w-[116px] shrink-0 items-center justify-center overflow-hidden rounded-lg"
+      :class="thumbnailClass"
+    >
       <img
         v-if="merchant.thumbnailUrl && !imageLoadFailed"
         :src="merchant.thumbnailUrl"
         :alt="`${merchant.name} 대표 이미지`"
+        class="h-full w-full object-cover"
         @error="imageLoadFailed = true"
       />
-      <span v-else class="image-placeholder">이미지 없음</span>
+      <component :is="categoryIcon" v-else class="h-8 w-8" :class="iconClass" />
     </div>
-    <div class="result-content">
+
+    <div class="relative min-w-0 flex-1">
       <button
         type="button"
-        class="bookmark-button"
-        :class="{ bookmarked: merchant.bookmarked }"
+        class="absolute top-0 right-0 p-0"
+        :class="merchant.bookmarked ? 'text-blue-600' : 'text-slate-300'"
         :aria-label="merchant.bookmarked ? '북마크 해제' : '북마크 추가'"
         :aria-pressed="merchant.bookmarked"
         @click.stop="$emit('toggle-bookmark', merchant.merchantId)"
@@ -42,33 +34,92 @@ defineEmits(['select', 'toggle-bookmark']);
       >
         <Heart :size="18" :fill="merchant.bookmarked ? 'currentColor' : 'none'" />
       </button>
-      <h3>{{ merchant.name }}</h3>
-      <p class="address">{{ merchant.address }}</p>
-      <p class="rating"><span>★</span> {{ merchant.rating }} <b>({{ merchant.reviewCount }})</b> · 리뷰 {{ merchant.reviewCount }}개</p>
-      <p class="benefit">예약 하루 전까지 무료 취소</p>
-      <p class="price"><strong>{{ merchant.price.toLocaleString() }}원</strong> / {{ merchant.category === 'ACCOMMODATION' ? '1박' : '1일' }}</p>
+
+      <h3 class="mr-9 truncate text-[15px] font-extrabold text-slate-900">
+        {{ merchant.name }}
+      </h3>
+      <p class="mt-1 truncate text-[12px] text-slate-400">{{ merchant.address }}</p>
+
+      <p class="mt-2 text-[12px] font-bold text-slate-700">
+        <span class="text-amber-500">★</span>
+        {{ merchant.rating }}
+        <span class="font-medium text-slate-400">
+          · 리뷰 {{ merchant.reviewCount }}개
+        </span>
+      </p>
+
+      <p v-if="reservable" class="mt-1.5 text-[12px] font-semibold text-teal-600">
+        예약 하루 전까지 무료 취소
+      </p>
+
+      <p class="mt-1.5 text-right text-[12px] text-slate-500">
+        <strong class="text-[20px] font-extrabold text-slate-900">
+          {{ Number(merchant.price ?? 0).toLocaleString() }}원
+        </strong>
+        {{ priceUnit }}
+      </p>
     </div>
   </article>
 </template>
 
-<style scoped>
-.result-card { display:flex; gap:16px; box-sizing:border-box; height:156px; padding:12px; overflow:hidden; border:1.5px solid #dbe3ee; border-radius:20px; background:#fff; cursor:pointer; }
-.result-card:focus-visible { outline:2px solid #3087ed; outline-offset:2px; }
-.result-image { width:116px; height:100%; flex:none; border-radius:16px; display:grid; place-items:center; }
-.result-image { overflow:hidden; }.result-image img { width:100%; height:100%; object-fit:cover; }
-.image-placeholder { color:#7b8794; font-size:12px; font-weight:700; }
-.result-image.accommodation { background:#ddebff; }.result-image.office { background:#e7f5ef; }
-.result-content { position:relative; min-width:0; flex:1; padding:2px 2px 0 0; }
-.bookmark-button { position:absolute; top:0; right:0; padding:0; color:#88a0bf; border:0; background:transparent; cursor:pointer; transition:color .16s ease,transform .16s ease; }
-.bookmark-button:hover { color:#3087ed; transform:scale(1.1); }
-.bookmark-button.bookmarked { color:#3087ed; }
-h3 { margin:0 38px 7px 0; font-size:16px; line-height:1.25; color:#111827; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-p { margin:0; }
-.address { color:#8a96a5; font-size:12px; margin-bottom:8px; }
-.rating { color:#273445; font-size:12px; font-weight:700; }
-.rating span { color:#ff8a00; }
-.rating b { color:#7b8794; }
-.benefit { margin-top:7px; color:#08a7a0; font-size:12px; font-weight:650; }
-.price { margin-top:7px; text-align:right; color:#687587; font-size:12px; }
-.price strong { color:#111827; font-size:22px; }
-</style>
+<script setup>
+import { computed, ref } from 'vue';
+import { Bed, Building2, Heart, Ticket, UtensilsCrossed } from '@lucide/vue';
+
+const CATEGORY_ICONS = {
+  ACCOMMODATION: Bed,
+  OFFICE: Building2,
+  RESTAURANT: UtensilsCrossed,
+  ACTIVITY: Ticket,
+};
+
+const THUMBNAIL_CLASSES = {
+  ACCOMMODATION: 'bg-blue-50',
+  OFFICE: 'bg-emerald-50',
+  RESTAURANT: 'bg-amber-50',
+  ACTIVITY: 'bg-violet-50',
+};
+
+const ICON_CLASSES = {
+  ACCOMMODATION: 'text-blue-400',
+  OFFICE: 'text-emerald-400',
+  RESTAURANT: 'text-amber-400',
+  ACTIVITY: 'text-violet-400',
+};
+
+// 1박·1일 단가는 예약 상품이 있는 숙소와 공유오피스에만 해당한다
+const PRICE_UNITS = {
+  ACCOMMODATION: '/ 1박',
+  OFFICE: '/ 1일',
+  RESTAURANT: '기준',
+  ACTIVITY: '기준',
+};
+
+const props = defineProps({
+  merchant: { type: Object, required: true },
+});
+
+defineEmits(['select', 'toggle-bookmark']);
+
+const imageLoadFailed = ref(false);
+
+const reservable = computed(
+  () =>
+    props.merchant.category === 'ACCOMMODATION' ||
+    props.merchant.category === 'OFFICE',
+);
+
+const categoryIcon = computed(
+  () => CATEGORY_ICONS[props.merchant.category] ?? Ticket,
+);
+
+const thumbnailClass = computed(
+  () => THUMBNAIL_CLASSES[props.merchant.category] ?? 'bg-slate-100',
+);
+
+const iconClass = computed(
+  () => ICON_CLASSES[props.merchant.category] ?? 'text-slate-400',
+);
+
+const priceUnit = computed(() => PRICE_UNITS[props.merchant.category] ?? '');
+</script>
