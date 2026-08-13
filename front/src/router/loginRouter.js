@@ -13,6 +13,15 @@ export default [
     name: 'FindIdPage',
     component: () => import('@/pages/login/FindIdPage.vue'),
   },
+  // 비밀번호 재설정 — 로그인 화면의 '비밀번호 찾기'로 진입 (비로그인 공개 화면)
+  // 흐름: 아이디 확인(DB 존재 확인) → PASS 본인인증 → 계정 확인(토큰 발급) → 새 비밀번호 입력 → 완료 → /login
+  // - 비밀번호 변경 화면에는 5분 유효시간(expiresAt) 카운트다운을 표시한다
+  // - 비밀번호 재설정 과정에서 JWT 를 발급/저장하지 않는다 (자동 로그인 없음 — 완료 후 로그인 화면)
+  {
+    path: '/password-reset',
+    name: 'PasswordResetPage',
+    component: () => import('@/pages/login/PasswordResetPage.vue'),
+  },
   {
     path: '/signup',
     name: 'SignupPage',

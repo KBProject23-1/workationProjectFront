@@ -100,3 +100,36 @@ export const signup = (payload) => {
 export const setupPin = (payload) => {
   return axiosInstance.post('/auth/me/pin', payload);
 };
+
+// 비밀번호 재설정 사전 단계 - 아이디 존재 확인
+// POST /api/v1/auth/password/check-id
+// body: { loginId }
+// - 비로그인 공개 API: 비밀번호 찾기 첫 화면에서 입력한 아이디가 DB 에 있는지 확인
+// - 존재하면 200 SUCCESS → PASS 본인인증 단계로 진행
+// - 회원 없음: USER_NOT_FOUND(404), 값 누락: INVALID_PASSWORD_RESET_REQUEST(400)
+export const checkPasswordResetId = (loginId) => {
+  return axiosInstance.post('/auth/password/check-id', { loginId });
+};
+
+// 비밀번호 재설정 1단계 - 본인 확인 및 인증 토큰 발급
+// POST /api/v1/auth/password/verify
+// body: { loginId, identityVerificationId }
+// - 비로그인 공개 API: PASS 본인인증(POST /auth/pass) 완료 후 호출
+// - loginId 는 이메일 또는 하이픈 없는 휴대폰 번호 (백엔드가 판별·정규화)
+// - 회원 없음: USER_NOT_FOUND(404), CI 불일치: VERIFICATION_FAILED(400),
+//   PASS 세션 만료/무효: INVALID_VERIFICATION_ID(400)
+// - data: { passwordResetToken, expiresAt } (Redis 5분 TTL 1회성 UUID — 인메모리로만 보관)
+//   expiresAt: 토큰 만료 시각(epoch millis) — 비밀번호 변경 화면의 남은 시간 카운트다운 기준
+export const verifyPasswordReset = (loginId, identityVerificationId) => {
+  return axiosInstance.post('/auth/password/verify', { loginId, identityVerificationId });
+};
+
+// 비밀번호 재설정 2단계 - 비밀번호 변경
+// PATCH /api/v1/auth/password/reset
+// body: { passwordResetToken, newPassword }
+// - 비로그인 공개 API: 1단계에서 발급받은 passwordResetToken(5분 유효)으로 비밀번호를 변경한다
+// - 토큰 만료·무효: RESET_TIMEOUT_OR_INVALID_TOKEN(400), 약한 비밀번호: WEAK_PASSWORD(422)
+// - 토큰 미발급 구조 — 응답에 JWT 가 없으며 완료 후 로그인 화면에서 새 비밀번호로 다시 로그인한다
+export const resetPassword = (passwordResetToken, newPassword) => {
+  return axiosInstance.patch('/auth/password/reset', { passwordResetToken, newPassword });
+};
