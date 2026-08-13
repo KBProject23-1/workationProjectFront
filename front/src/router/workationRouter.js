@@ -30,6 +30,11 @@ export default [
     component: () => import('@/pages/workation/SettlementComplete.vue'),
   },
   {
+    path: '/workation/:workationId/schedules/:scheduleId',
+    name: 'ScheduleDetail',
+    component: () => import('@/pages/workation/ScheduleDetail.vue'),
+  },
+  {
     path: '/workation/:workationId/expenses',
     name: 'ExpenseList',
     component: () => import('@/pages/workation/ExpenseList.vue'),
