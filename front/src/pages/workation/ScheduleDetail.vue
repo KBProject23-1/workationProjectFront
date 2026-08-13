@@ -1,62 +1,165 @@
 <template>
-  <div class="min-h-screen bg-white px-5 pt-4 pb-8">
-    <header class="relative mb-4 flex items-center justify-center">
+  <div class="flex min-h-screen w-full flex-col bg-white">
+    <header class="relative flex h-14 shrink-0 items-center justify-center px-4">
       <button
-        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
+        type="button"
+        class="absolute left-3 rounded-full p-1 text-slate-700 active:bg-slate-100"
         aria-label="뒤로 가기"
         @click="goBack"
       >
-        <ChevronLeft class="h-7 w-7" />
+        <ChevronLeft :size="24" :stroke-width="1.8" />
       </button>
-      <h1 class="text-base font-bold text-slate-900">일정 상세</h1>
+      <h1 class="text-[19px] font-extrabold text-slate-900">일정 상세</h1>
     </header>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
-      불러오는 중...
-    </p>
+    <main v-if="loading" class="flex-1 px-4 pb-8">
+      <div class="h-[202px] animate-pulse rounded-xl bg-slate-100"></div>
+      <div class="mt-4 h-12 animate-pulse rounded-lg bg-slate-100"></div>
+      <div class="mt-3 h-[180px] animate-pulse rounded-xl bg-slate-100"></div>
+    </main>
+
+    <main
+      v-else-if="errorMessage"
+      class="flex flex-1 flex-col items-center justify-center px-6 pb-24 text-center"
+    >
+      <p class="text-[15px] font-semibold text-slate-600">
+        일정 정보를 불러오지 못했어요
+      </p>
+      <p class="mt-2 text-[12px] text-slate-400">{{ errorMessage }}</p>
+      <button
+        type="button"
+        class="mt-5 rounded-lg border border-slate-300 px-4 py-2 text-[14px] font-semibold text-slate-700"
+        @click="load"
+      >
+        다시 시도
+      </button>
+    </main>
 
     <template v-else-if="detail">
-      <div class="flex items-start justify-between">
-        <span class="text-xs text-slate-400">{{ dotDate(visitDate) }}</span>
-        <span
-          class="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-bold text-blue-600"
-        >
-          {{ categoryLabel }}
-        </span>
-      </div>
+      <main class="flex-1 px-4 pb-8">
+        <!-- 이미지와 이름이 장소 상세로 가는 진입점이다 -->
+        <button type="button" class="block w-full text-left" @click="goMerchant">
+          <img
+            v-if="detail.thumbnailUrl"
+            :src="detail.thumbnailUrl"
+            :alt="detail.merchantName"
+            class="h-[202px] w-full rounded-xl bg-slate-100 object-cover"
+          />
+          <div
+            v-else
+            class="flex h-[202px] w-full items-center justify-center rounded-xl"
+            :class="categoryStyle.background"
+          >
+            <component :is="categoryIcon" class="h-12 w-12" :class="categoryStyle.icon" />
+          </div>
 
-      <p class="mt-1 text-2xl font-bold text-slate-900">{{ visitTime }}</p>
-      <p class="text-sm text-slate-500">{{ detail.merchantName }}</p>
-
-      <p class="mt-4 rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-500">
-        예약이 아니라 직접 정해 둔 일정이에요. 결제나 취소 수수료는 없어요
-      </p>
-
-      <section class="mt-6">
-        <h2 class="mb-2 text-sm font-bold text-slate-900">장소</h2>
-        <div class="rounded-xl border border-slate-200 px-4 py-3">
-          <p class="text-sm font-bold text-slate-900">
-            {{ detail.merchantName }}
-          </p>
-          <p class="mt-0.5 text-xs text-slate-400">{{ detail.address }}</p>
-        </div>
-        <button
-          class="mt-2 text-xs font-bold text-blue-600"
-          @click="goMerchant"
-        >
-          장소 상세 보기 ›
+          <div class="flex items-end justify-between gap-3 px-2 py-3">
+            <h2 class="flex min-w-0 flex-1 items-center gap-1 text-[17px] font-extrabold text-slate-800">
+              <span class="truncate">{{ detail.merchantName }}</span>
+              <ChevronRight class="h-4 w-4 shrink-0 text-slate-300" />
+            </h2>
+            <span
+              class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold"
+              :class="statusStyle"
+            >
+              {{ statusLabel }}
+            </span>
+          </div>
         </button>
-      </section>
 
-      <Button
-        variant="outline"
-        class="mt-8 h-12 w-full rounded-xl text-base text-red-500 hover:text-red-600"
-        :disabled="removing"
-        @click="confirmOpen = true"
-      >
-        일정 삭제하기
-      </Button>
+        <section class="rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-4">
+          <dl class="space-y-4">
+            <div class="flex items-start justify-between gap-4">
+              <dt class="text-[12px] font-medium text-slate-400">방문 예정일</dt>
+              <dd class="text-right text-[13px] font-bold text-slate-700">
+                {{ formattedDate }}
+              </dd>
+            </div>
+            <div class="flex items-start justify-between gap-4">
+              <dt class="text-[12px] font-medium text-slate-400">방문 시간</dt>
+              <dd class="text-right text-[13px] font-bold text-slate-700">
+                {{ visitTime }}
+              </dd>
+            </div>
+            <div class="flex items-start justify-between gap-4">
+              <dt class="text-[12px] font-medium text-slate-400">분류</dt>
+              <dd class="text-right text-[13px] font-bold text-slate-700">
+                {{ categoryLabel }}
+              </dd>
+            </div>
+            <div class="flex items-start justify-between gap-4">
+              <dt class="text-[12px] font-medium text-slate-400">주소</dt>
+              <dd class="text-right text-[13px] font-bold text-slate-700">
+                {{ detail.address || '-' }}
+              </dd>
+            </div>
+            <div class="flex items-start justify-between gap-4">
+              <dt class="text-[12px] font-medium text-slate-400">구분</dt>
+              <dd class="text-right text-[13px] font-bold text-slate-700">
+                직접 등록한 일정
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <button
+          type="button"
+          class="mt-3 w-full rounded-lg border border-slate-200 py-3 text-[14px] font-bold text-slate-700 active:bg-slate-50"
+          :disabled="saving || removing"
+          @click="timePickerOpen = true"
+        >
+          시간 변경
+        </button>
+
+        <p class="mt-3 px-1 text-[11px] font-medium text-slate-400">
+          예약이 아니라 직접 정해 둔 일정이에요. 결제나 취소 수수료가 없어요.
+        </p>
+
+        <section v-if="sameDayItems.length > 0" class="mt-6">
+          <h3 class="mb-2 px-1 text-[13px] font-bold text-slate-900">
+            같은 날 일정
+          </h3>
+          <div class="divide-y divide-slate-100 rounded-xl border border-slate-200">
+            <button
+              v-for="item in sameDayItems"
+              :key="`${item.itemType}-${item.reservationId ?? item.scheduleId}`"
+              type="button"
+              class="flex w-full items-center justify-between px-4 py-3 text-left"
+              @click="goItem(item)"
+            >
+              <span class="min-w-0 flex-1">
+                <span class="block truncate text-[13px] font-bold text-slate-800">
+                  {{ item.merchantName }}
+                </span>
+                <span class="block text-[11px] text-slate-400">
+                  {{ itemSubText(item) }}
+                </span>
+              </span>
+              <ChevronRight class="h-4 w-4 shrink-0 text-slate-300" />
+            </button>
+          </div>
+        </section>
+      </main>
+
+      <footer class="sticky bottom-0 bg-white px-4 pb-6 pt-3">
+        <BaseButton
+          class="max-w-none rounded-lg bg-rose-500 py-3.5 text-[16px] font-bold hover:bg-rose-500"
+          :disabled="saving || removing"
+          @click="confirmOpen = true"
+        >
+          일정 삭제
+        </BaseButton>
+      </footer>
     </template>
+
+    <ScheduleTimePicker
+      :visible="timePickerOpen"
+      :date="visitDate"
+      :current="visitTime"
+      :loading="saving"
+      @confirm="changeTime"
+      @cancel="timePickerOpen = false"
+    />
 
     <BaseConfirmModal
       :visible="confirmOpen"
@@ -70,14 +173,23 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ChevronLeft } from '@lucide/vue';
-import { Button } from '@/components/ui/button';
+import {
+  Bed,
+  Building2,
+  ChevronLeft,
+  ChevronRight,
+  Ticket,
+  UtensilsCrossed,
+} from '@lucide/vue';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { useScheduleStore } from '@/stores/scheduleStore';
 import { useErrorToast } from '@/composables/useErrorToast';
-import { dotDate, hourMinute } from '@/components/workation/format';
+import { getSchedules } from '@/api/schedule';
+import { hourMinute, shortRange, weekday } from '@/components/workation/format';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
+import ScheduleTimePicker from '@/components/workation/ScheduleTimePicker.vue';
 
 const CATEGORY_LABELS = {
   RESTAURANT: '음식점',
@@ -90,48 +202,155 @@ const MERCHANT_ROUTES = {
   ACTIVITY: 'activities',
 };
 
+const CATEGORY_ICONS = {
+  ACCOMMODATION: Bed,
+  OFFICE: Building2,
+  RESTAURANT: UtensilsCrossed,
+  ACTIVITY: Ticket,
+};
+
+const CATEGORY_STYLES = {
+  RESTAURANT: { background: 'bg-amber-50', icon: 'text-amber-500' },
+  ACTIVITY: { background: 'bg-emerald-50', icon: 'text-emerald-500' },
+};
+
 const route = useRoute();
 const router = useRouter();
 const scheduleStore = useScheduleStore();
 const { showError } = useErrorToast();
 
 const workationId = route.params.workationId;
-const scheduleId = route.params.scheduleId;
+
+// 같은 날 일정에서 다른 일정으로 넘어가면 경로만 바뀌고 컴포넌트는 유지된다.
+// ref 로 두고 감시해야 화면이 새 일정으로 갱신된다
+const scheduleId = computed(() => route.params.scheduleId);
 
 const loading = ref(true);
 const removing = ref(false);
+const saving = ref(false);
 const confirmOpen = ref(false);
+const timePickerOpen = ref(false);
+const errorMessage = ref('');
+const sameDayItems = ref([]);
 
 const detail = computed(() => scheduleStore.detail);
 
 // scheduledAt 은 2026-08-15T18:00:00 형태로 온다
-const visitDate = computed(
-  () => detail.value?.scheduledAt?.slice(0, 10) ?? '',
-);
+const visitDate = computed(() => detail.value?.scheduledAt?.slice(0, 10) ?? '');
 
 const visitTime = computed(() =>
   hourMinute(detail.value?.scheduledAt?.slice(11) ?? ''),
+);
+
+const formattedDate = computed(() =>
+  visitDate.value
+    ? `${visitDate.value.replaceAll('-', '.')} (${weekday(visitDate.value)})`
+    : '-',
 );
 
 const categoryLabel = computed(
   () => CATEGORY_LABELS[detail.value?.merchantCategory] ?? '일정',
 );
 
-onMounted(async () => {
+const categoryIcon = computed(
+  () => CATEGORY_ICONS[detail.value?.merchantCategory] ?? Ticket,
+);
+
+const categoryStyle = computed(
+  () =>
+    CATEGORY_STYLES[detail.value?.merchantCategory] ?? {
+      background: 'bg-slate-100',
+      icon: 'text-slate-400',
+    },
+);
+
+// 지난 일정인지 오늘인지 남았는지를 배지로 보여준다
+const dayGap = computed(() => {
+  if (!visitDate.value) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(`${visitDate.value}T00:00:00`);
+  return Math.round((target - today) / 86400000);
+});
+
+const statusLabel = computed(() => {
+  const gap = dayGap.value;
+  if (gap === null) return '일정';
+  if (gap < 0) return '지난 일정';
+  if (gap === 0) return '오늘';
+  return `D-${gap}`;
+});
+
+const statusStyle = computed(() => {
+  const gap = dayGap.value;
+  if (gap === null || gap < 0) return 'bg-slate-100 text-slate-400';
+  if (gap === 0) return 'bg-rose-50 text-rose-500';
+  return 'bg-blue-50 text-blue-600';
+});
+
+const itemSubText = (item) => {
+  if (item.scheduledTime) return hourMinute(item.scheduledTime);
+  return shortRange(item.startDate, item.endDate);
+};
+
+// 같은 날 무엇이 더 있는지 보여야 시간을 옮길지 판단할 수 있다
+const loadSameDay = async () => {
+  if (!visitDate.value) return;
   try {
-    await scheduleStore.fetchDetail(workationId, scheduleId);
+    const { data } = await getSchedules(workationId, {
+      startDate: visitDate.value,
+      days: 1,
+    });
+    const items = data.schedules?.[0]?.items ?? [];
+    sameDayItems.value = items.filter(
+      (item) => String(item.scheduleId ?? '') !== String(scheduleId.value),
+    );
+  } catch {
+    sameDayItems.value = [];
+  }
+};
+
+const load = async () => {
+  loading.value = true;
+  errorMessage.value = '';
+  try {
+    await scheduleStore.fetchDetail(workationId, scheduleId.value);
+    await loadSameDay();
   } catch (error) {
-    showError(error, '일정을 불러오지 못했습니다.');
+    errorMessage.value = error.message || '일정을 불러오지 못했습니다.';
   } finally {
     loading.value = false;
   }
-});
+};
+
+onMounted(load);
+
+watch(scheduleId, load);
+
+// 날짜는 그대로 두고 시각만 바꾼다. 다른 날로 옮기는 것은 새 일정으로 본다
+const changeTime = async (time) => {
+  if (saving.value) return;
+  saving.value = true;
+  try {
+    await scheduleStore.updateSchedule(
+      workationId,
+      scheduleId.value,
+      `${visitDate.value}T${time}`,
+    );
+    timePickerOpen.value = false;
+    await loadSameDay();
+  } catch (error) {
+    showError(error, '시간을 변경하지 못했습니다.');
+  } finally {
+    saving.value = false;
+  }
+};
 
 const remove = async () => {
   if (removing.value) return;
   removing.value = true;
   try {
-    await scheduleStore.deleteSchedule(workationId, scheduleId);
+    await scheduleStore.deleteSchedule(workationId, scheduleId.value);
     router.push('/workation');
   } catch (error) {
     showError(error, '일정을 삭제하지 못했습니다.');
@@ -147,7 +366,19 @@ const goMerchant = () => {
   router.push(`/merchants/${path}/${detail.value.merchantId}`);
 };
 
+const goItem = (item) => {
+  if (item.itemType === 'RESERVATION') {
+    router.push(`/reservations/${item.reservationId}`);
+    return;
+  }
+  router.push(`/workation/${workationId}/schedules/${item.scheduleId}`);
+};
+
 const goBack = () => {
+  if (window.history.length > 1) {
+    router.back();
+    return;
+  }
   router.push('/workation');
 };
 </script>

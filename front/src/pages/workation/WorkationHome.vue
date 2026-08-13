@@ -75,33 +75,6 @@
         </span>
       </button>
 
-      <!--
-        3/3 직후 팝업은 놓치면 다시 볼 수 없어 홈에도 상시로 둔다.
-        예약이 하나라도 생기면 자연히 사라지므로 별도 플래그를 두지 않았다.
-      -->
-      <button
-        v-if="showRecommendCard"
-        class="mt-5 flex w-full items-center gap-3 rounded-xl bg-blue-600 px-4 py-4 text-left text-white"
-        @click="goRecommendationFlow"
-      >
-        <span class="flex-1">
-          <span class="block text-sm font-bold">
-            아직 머물 곳을 안 정하셨네요
-          </span>
-          <span class="mt-0.5 block text-xs text-blue-100">
-            답해주신 취향으로 숙소와 공유오피스를 찾아드려요
-          </span>
-        </span>
-        <span class="shrink-0 text-xs font-bold">추천받기 ›</span>
-      </button>
-
-      <div v-if="current.uncheckedExpenseCount > 0" class="mt-5">
-        <UncheckedExpenseAlert
-          :count="current.uncheckedExpenseCount"
-          @click="goUncheckedExpenses"
-        />
-      </div>
-
       <WorkationScheduler
         :schedules="schedules"
         :expanded="scheduleStore.expanded"
@@ -111,6 +84,14 @@
         @reserve="goReservations"
         @recommend="goRecommendation"
       />
+
+      <!-- 지출로 가는 버튼 바로 위에 둬야 무엇을 눌러야 하는지 이어진다 -->
+      <div v-if="current.uncheckedExpenseCount > 0" class="mt-5">
+        <UncheckedExpenseAlert
+          :count="current.uncheckedExpenseCount"
+          @click="goUncheckedExpenses"
+        />
+      </div>
 
       <div class="mt-4 grid grid-cols-2 gap-3">
         <button
@@ -182,7 +163,6 @@ import {
   DEFAULT_DAYS,
   EXPANDED_DAYS,
 } from '@/stores/scheduleStore';
-import { getReservationList } from '@/api/reservations';
 import WorkationProgressCard from '@/components/workation/WorkationProgressCard.vue';
 import WorkationScheduler from '@/components/workation/WorkationScheduler.vue';
 import UncheckedExpenseAlert from '@/components/workation/UncheckedExpenseAlert.vue';
@@ -203,9 +183,6 @@ const loading = ref(true);
 const confirmOpen = ref(false);
 const deleting = ref(false);
 
-// 예약이 있으면 추천 카드를 감춘다. 목록 전체가 필요하지 않아 건수만 본다
-const reservationCount = ref(0);
-
 // 삭제는 세 단계다. 확인 → (예약 상태에 따라) 안내 → 실행
 const upcomingOpen = ref(false);
 const reservationCheck = ref(null);
@@ -219,11 +196,6 @@ const loadSetupState = async () => {
     budgetStore.fetchBudgets(workationId).catch(() => {}),
     surveyStore.fetchMySurvey().catch(() => {}),
     scheduleStore.fetchSchedules(workationId, DEFAULT_DAYS).catch(() => {}),
-    getReservationList({ workationId })
-      .then(({ data }) => {
-        reservationCount.value = data?.content?.length ?? 0;
-      })
-      .catch(() => {}),
   ]);
 };
 
@@ -293,20 +265,9 @@ const goIncompleteStep = () => {
   );
 };
 
-// 설정을 다 마쳤는데 예약이 없으면 추천을 권한다
-const showRecommendCard = computed(
-  () => !setupIncomplete.value && reservationCount.value === 0,
-);
-
-// 추천 탭은 한 항목만 골라 그 추천으로 바로 들어간다
+// 추천은 한 항목만 골라 그 추천으로 바로 들어간다
 const goRecommendation = () => {
   router.push('/recommendation?mode=single');
-};
-
-// 아직 아무것도 안 정한 사용자에게는 숙소부터 순서대로 훑게 한다.
-// 등록 직후 팝업을 놓친 경우라 그때와 같은 화면이어야 한다
-const goRecommendationFlow = () => {
-  router.push('/recommendation');
 };
 
 // 시안 기준으로 진행 중 워케이션이 있을 때와 없을 때 목록 제목이 다르다
@@ -365,7 +326,6 @@ const checkBeforeDelete = async () => {
       .catch(() => null);
 
     await workationStore.deleteWorkation(workationStore.workationId);
-    reservationCount.value = 0;
     confirmOpen.value = false;
 
     // 아직 이용하지 않은 예약이 남아 있으면 예약 내역으로 안내한다
