@@ -6,7 +6,7 @@ import { useErrorToast } from '@/composables/useErrorToast';
 import { useScheduleStore } from '@/stores/scheduleStore';
 import { useWorkationStore } from '@/stores/workationStore';
 
-export function useScheduleRegistration(merchant, fetchMerchant) {
+export function useScheduleRegistration(merchant) {
   const scheduleStore = useScheduleStore();
   const workationStore = useWorkationStore();
   const router = useRouter();
@@ -72,10 +72,7 @@ export function useScheduleRegistration(merchant, fetchMerchant) {
   }
 
   onMounted(async () => {
-    await Promise.all([
-      fetchMerchant(),
-      workation.value ? Promise.resolve() : workationStore.fetchCurrent(),
-    ]);
+    if (!workation.value) await workationStore.fetchCurrent();
     initializeSelectedDate();
   });
 

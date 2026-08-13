@@ -32,13 +32,13 @@ export const useOfficeStore = defineStore('office', {
     endDate: formatDate(tomorrow),
     spaceCount: 1,
     guestCount: 2,
-    selectedProductName: '',
+    selectedProductId: null,
     isLoading: false,
     error: null,
   }),
   getters: {
     selectedProduct: (state) => state.office?.products?.find(
-      (product) => product.productName === state.selectedProductName,
+      (product) => product.productId === state.selectedProductId,
     ) ?? null,
     usageDayCount: (state) => Math.floor(
       (new Date(state.endDate) - new Date(state.startDate)) / 86400000,
@@ -67,10 +67,10 @@ export const useOfficeStore = defineStore('office', {
         };
 
         const selectedProductExists = this.office.products.some(
-          (product) => product.productName === this.selectedProductName,
+          (product) => product.productId === this.selectedProductId,
         );
         if (!selectedProductExists) {
-          this.selectedProductName = this.office.products[0]?.productName ?? '';
+          this.selectedProductId = this.office.products[0]?.productId ?? null;
         }
       } catch (error) {
         this.error = error.message;
@@ -86,8 +86,8 @@ export const useOfficeStore = defineStore('office', {
       }
       if (value >= this.startDate) this.endDate = value;
     },
-    selectProduct(productName) {
-      this.selectedProductName = productName;
+    selectProduct(productId) {
+      this.selectedProductId = productId;
       if (this.selectedProduct?.productDetailType === 'OFFICE_SEAT') {
         this.spaceCount = 1;
       }

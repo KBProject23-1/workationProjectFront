@@ -11,7 +11,7 @@ import { useOfficeStore } from '@/stores/merchant/officeStore';
 
 const officeStore = useOfficeStore();
 const route = useRoute();
-const { office, startDate, endDate, spaceCount, guestCount, selectedProductName, selectedProduct, totalPrice, isLoading, error } = storeToRefs(officeStore);
+const { office, startDate, endDate, spaceCount, guestCount, selectedProductId, selectedProduct, totalPrice, isLoading, error } = storeToRefs(officeStore);
 const dateModalMode = ref('');
 const isSpaceModalOpen = ref(false);
 const isGuestModalOpen = ref(false);
@@ -113,9 +113,9 @@ onMounted(async () => {
       <div class="product-list">
         <OfficeProductCard
           v-for="product in office.products"
-          :key="product.productName"
+          :key="product.productId"
           :product="product"
-          :selected="selectedProductName === product.productName"
+          :selected="selectedProductId === product.productId"
           @select="officeStore.selectProduct"
         />
       </div>

@@ -13,7 +13,6 @@
 // - 아이디 찾기 → /find-id 화면 이동 (PASS 본인인증 기반) / 비밀번호 찾기 → 아직 미구현 안내 토스트
 import { ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { toast } from 'vue-sonner';
 import { ChevronLeft, Mail, Phone, Eye, EyeOff } from '@lucide/vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useErrorToast } from '@/composables/useErrorToast';
@@ -184,11 +183,6 @@ async function handleLogin() {
   }
 }
 
-// 아이디 찾기 → /find-id 이동 / 비밀번호 찾기 — 아직 미구현 안내
-function showNotImplemented(feature) {
-  toast.info(`${feature} 기능은 아직 준비 중이에요.`);
-}
-
 function goBack() {
   if (window.history.length > 1) router.back();
   else router.replace('/');
@@ -310,7 +304,7 @@ function goBack() {
         <button
           type="button"
           class="px-2 py-1 text-[13px] font-semibold text-[#2878F0] transition-colors hover:text-[#1E68D6] active:scale-95"
-          @click="showNotImplemented('비밀번호 찾기')"
+          @click="router.push('/password-reset')"
         >
           비밀번호 찾기
         </button>

@@ -4,6 +4,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { ChevronLeft } from '@lucide/vue';
 import { useRecommendationStore } from '@/stores/recommendationStore';
 import { useSurveyStore } from '@/stores/surveyStore';
+import { useWorkationStore } from '@/stores/workationStore';
+import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import { RECOMMENDATION_CATEGORIES } from '@/config/recommendation';
 import RecommendationCategoryCard from '@/components/recommendation/RecommendationCategoryCard.vue';
 import { Button } from '@/components/ui/button';
@@ -12,8 +14,10 @@ const route = useRoute();
 const router = useRouter();
 const recommendationStore = useRecommendationStore();
 const surveyStore = useSurveyStore();
+const workationStore = useWorkationStore();
 const loading = ref(true);
 const hasSurvey = ref(false);
+const surveyPromptOpen = ref(false);
 
 const isSingleMode = computed(() => recommendationStore.mode === 'single');
 const hasSelection = computed(
@@ -23,8 +27,11 @@ const hasSelection = computed(
 onMounted(async () => {
   try {
     const surveyResult = await surveyStore.fetchMySurvey();
+
+    // 설문이 없으면 추천할 근거가 없다.
+    // 곧바로 설문 화면으로 넘기면 추천을 누른 사람이 이유를 모르니 안내를 띄운다
     if (!surveyResult) {
-      router.replace({ name: 'SurveyIntro' });
+      surveyPromptOpen.value = true;
       return;
     }
 
@@ -37,6 +44,26 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+
+// 설문은 워케이션 하위 경로에 있어 워케이션 ID 가 필요하다.
+// 주소를 직접 입력해 들어온 경우 current 가 비어 있어 먼저 불러온다
+const goSurvey = async () => {
+  if (!workationStore.workationId) {
+    try {
+      await workationStore.fetchCurrent();
+    } catch {
+      router.push('/workation');
+      return;
+    }
+  }
+
+  const workationId = workationStore.workationId;
+  if (!workationId) {
+    router.push('/workation');
+    return;
+  }
+  router.push(`/workation/${workationId}/survey`);
+};
 
 // 어디서 들어왔는지 모르니 이전 화면으로 돌린다.
 // 히스토리가 없으면(주소 직접 입력) 워케이션 메인으로 보낸다
@@ -113,6 +140,16 @@ function startRecommendation() {
       </Button>
     </div>
   </main>
+
+  <BaseConfirmModal
+    :visible="surveyPromptOpen"
+    title="아직 설문을 마치지 않았어요"
+    message="취향 설문을 완료하면 숙소·공유오피스·음식점·여가를 추천해 드릴 수 있어요."
+    cancel-label="나중에"
+    confirm-label="설문 하러 가기"
+    @confirm="goSurvey"
+    @cancel="goBack"
+  />
 </template>
 
 <style scoped>

@@ -63,11 +63,14 @@ router.beforeEach(async (to) => {
 
   if (path.startsWith('/signup')) return true;
 
+  // 비로그인 공개 경로 — 비밀번호 재설정(/password-reset)은 로그인 상태가 아니어도
+  // 전체 플로우(아이디 확인 → PASS 인증 → 새 비밀번호 설정 → 완료)를 진행할 수 있어야 한다.
   const isEntry =
     path === '/' ||
     path.startsWith('/onboarding') ||
     path === '/login' ||
-    path === '/find-id';
+    path === '/find-id' ||
+    path === '/password-reset';
 
   if (!authStore.isAuthenticated) {
     return isEntry ? true : { path: '/login', query: { redirect: to.fullPath } };

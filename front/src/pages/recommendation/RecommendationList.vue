@@ -5,7 +5,6 @@ import { ChevronLeft } from '@lucide/vue';
 import { useRecommendationStore } from '@/stores/recommendationStore';
 import {
   MEAL_TYPES,
-  MOCK_RECOMMENDATIONS,
   RECOMMENDATION_CATEGORY_MAP,
 } from '@/config/recommendation';
 import RecommendationListItem from '@/components/recommendation/RecommendationListItem.vue';
@@ -25,6 +24,9 @@ const category = computed(
   () => RECOMMENDATION_CATEGORY_MAP[route.params.category],
 );
 const isRestaurant = computed(() => category.value?.key === 'restaurants');
+const recommendationItems = computed(() =>
+  recommendationStore.getRecommendationItems(category.value?.key),
+);
 const currentReferencePlace = computed(() =>
   recommendationStore.getReferencePlace(category.value?.key, mealType.value),
 );
@@ -36,14 +38,30 @@ const isLastCategory = computed(() => {
   return categories.at(-1) === category.value?.key;
 });
 
+async function loadCategory(categoryKey) {
+  try {
+    await Promise.all([
+      recommendationStore.fetchReferencePlace(categoryKey, mealType.value),
+      recommendationStore.fetchReferenceCandidates(categoryKey),
+      recommendationStore.fetchRecommendations(categoryKey, {
+        mealType: mealType.value,
+      }),
+      recommendationStore.fetchBookmarkIds(categoryKey).catch(() => {}),
+    ]);
+  } catch (error) {
+    showError(error, `${category.value.title} 추천 목록을 불러오지 못했습니다.`);
+  }
+}
+
 watch(
-  category,
-  (value) => {
-    if (!value) {
+  [() => category.value?.key, mealType],
+  async ([categoryKey]) => {
+    if (!categoryKey) {
       router.replace({ name: 'RecommendationHome' });
       return;
     }
-    recommendationStore.setCurrentCategory(value.key);
+    recommendationStore.setCurrentCategory(categoryKey);
+    await loadCategory(categoryKey);
   },
   { immediate: true },
 );
@@ -56,14 +74,51 @@ function showReferencePlace() {
   isReferenceModalOpen.value = true;
 }
 
-function selectReferencePlace(place) {
-  recommendationStore.selectReferencePlace(category.value.key, place);
+async function selectReferencePlace(place) {
+  recommendationStore.selectReferencePlace(
+    category.value.key,
+    place,
+    mealType.value,
+  );
   isReferenceModalOpen.value = false;
+
+  try {
+    await recommendationStore.fetchRecommendations(category.value.key, {
+      referenceMerchantId: place.merchantId,
+      mealType: mealType.value,
+    });
+  } catch (error) {
+    showError(error, '선택한 기준 장소의 추천 목록을 불러오지 못했습니다.');
+  }
 }
 
-function selectAutomaticReferencePlace() {
-  recommendationStore.resetReferencePlace(category.value.key);
+async function selectAutomaticReferencePlace() {
+  recommendationStore.resetReferencePlace(category.value.key, mealType.value);
   isReferenceModalOpen.value = false;
+
+  try {
+    await recommendationStore.fetchRecommendations(category.value.key, {
+      mealType: mealType.value,
+    });
+  } catch (error) {
+    showError(error, '자동 기준의 추천 목록을 불러오지 못했습니다.');
+  }
+}
+
+async function loadMore() {
+  const referenceKey = isRestaurant.value
+    ? `restaurants:${mealType.value}`
+    : category.value.key;
+  try {
+    await recommendationStore.fetchRecommendations(category.value.key, {
+      referenceMerchantId:
+        recommendationStore.selectedReferencePlaces[referenceKey]?.merchantId,
+      mealType: mealType.value,
+      append: true,
+    });
+  } catch (error) {
+    showError(error, '추천 목록을 추가로 불러오지 못했습니다.');
+  }
 }
 
 function goDetail(item) {
@@ -75,7 +130,12 @@ function goDetail(item) {
 
 async function toggleBookmark(item) {
   try {
-    await recommendationStore.toggleBookmark(item.merchantId);
+    item.bookmarked = await recommendationStore.toggleBookmark(
+      item.merchantId,
+      category.value.key,
+      item.bookmarked ||
+        Boolean(recommendationStore.bookmarkIdsByMerchant[item.merchantId]),
+    );
   } catch (error) {
     showError(error, '북마크 처리 중 오류가 발생했습니다.');
   }
@@ -123,12 +183,25 @@ function moveNext() {
     </section>
 
     <section class="result-list" aria-label="추천 결과">
+      <p
+        v-if="recommendationStore.loadingByCategory[category.key]"
+        class="result-status"
+      >
+        {{ category.title }} 추천을 불러오고 있습니다.
+      </p>
+      <p
+        v-else-if="!recommendationItems.length"
+        class="result-status"
+      >
+        추천할 수 있는 {{ category.title }}이(가) 없습니다.
+      </p>
       <RecommendationListItem
-        v-for="(item, index) in MOCK_RECOMMENDATIONS"
+        v-for="(item, index) in recommendationItems"
         :key="item.merchantId"
         :item="item"
-        :ranking="index + 1"
+        :ranking="item.ranking ?? index + 1"
         :bookmarked="
+          item.bookmarked ||
           Boolean(recommendationStore.bookmarkIdsByMerchant[item.merchantId])
         "
         :bookmark-loading="
@@ -139,6 +212,19 @@ function moveNext() {
         @detail="goDetail"
         @bookmark="toggleBookmark"
       />
+      <button
+        v-if="recommendationStore.pageInfoByCategory[category.key].hasNext"
+        type="button"
+        class="load-more-button"
+        :disabled="recommendationStore.loadingMoreByCategory[category.key]"
+        @click="loadMore"
+      >
+        {{
+          recommendationStore.loadingMoreByCategory[category.key]
+            ? '불러오는 중...'
+            : `추천 ${category.title} 더 보기`
+        }}
+      </button>
     </section>
 
     <Button
@@ -253,6 +339,29 @@ function moveNext() {
   flex-direction: column;
   gap: 7px;
   margin-top: 7px;
+}
+
+.result-status {
+  margin: 32px 0;
+  color: #778397;
+  font-size: 14px;
+  text-align: center;
+}
+
+.load-more-button {
+  height: 42px;
+  margin-top: 6px;
+  border: 1.5px solid #8bbaff;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #237df0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.load-more-button:disabled {
+  cursor: wait;
+  opacity: 0.55;
 }
 
 @media (max-height: 820px) {

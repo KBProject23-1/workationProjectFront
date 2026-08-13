@@ -13,7 +13,7 @@ defineEmits(['select']);
     class="room-card"
     :class="{ selected }"
     :aria-pressed="selected"
-    @click="$emit('select', product.productName)"
+    @click="$emit('select', product.productId)"
   >
     <div class="room-image" aria-hidden="true">
       <div class="room-window"></div>
