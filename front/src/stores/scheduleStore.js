@@ -20,7 +20,9 @@ export const useScheduleStore = defineStore('schedule', {
     days: DEFAULT_DAYS,
     detail: null,
     isLoading: false,
+    isCreating: false,
     error: null,
+    createError: null,
   }),
 
   getters: {
@@ -67,13 +69,18 @@ export const useScheduleStore = defineStore('schedule', {
     },
 
     async createSchedule(workationId, payload) {
+      if (this.isCreating) return null;
+
+      this.isCreating = true;
+      this.createError = null;
       try {
         const { data } = await createScheduleApi(workationId, payload);
-        await this.fetchSchedules(workationId, this.days);
         return data;
       } catch (err) {
-        this.error = err.message;
+        this.createError = err.message;
         throw err;
+      } finally {
+        this.isCreating = false;
       }
     },
 
@@ -91,6 +98,7 @@ export const useScheduleStore = defineStore('schedule', {
       this.schedules = [];
       this.detail = null;
       this.error = null;
+      this.createError = null;
       this.days = DEFAULT_DAYS;
     },
   },

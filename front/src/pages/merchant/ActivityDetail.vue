@@ -1,9 +1,11 @@
 <script setup>
-import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { ChevronLeft, Heart, MapPin } from '@lucide/vue';
+import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import MerchantReviewCard from '@/components/merchant/MerchantReviewCard.vue';
+import ScheduleRegistrationPanel from '@/components/schedule/ScheduleRegistrationPanel.vue';
+import { useScheduleRegistration } from '@/composables/useScheduleRegistration';
 import { useActivityStore } from '@/stores/merchant/activityStore';
 
 const activityStore = useActivityStore();
@@ -14,7 +16,18 @@ async function fetchActivity() {
   await activityStore.fetchActivity(Number(route.params.merchantId));
 }
 
-onMounted(fetchActivity);
+const {
+  workation,
+  isCreating,
+  selectedDate,
+  selectedTime,
+  confirmVisible,
+  registrationDisabled,
+  registrationMessage,
+  confirmMessage,
+  requestRegistration,
+  registerSchedule,
+} = useScheduleRegistration(activity, fetchActivity);
 </script>
 
 <template>
@@ -53,6 +66,17 @@ onMounted(fetchActivity);
       <p class="address"><MapPin :size="24" /> {{ activity.address }}</p>
       <div class="divider"></div>
       <p class="rating"><span>★</span> {{ activity.rating }}</p>
+      <ScheduleRegistrationPanel
+        v-if="!isLoading && !error"
+        v-model:selected-date="selectedDate"
+        v-model:selected-time="selectedTime"
+        :min-date="workation?.startDate ?? ''"
+        :max-date="workation?.endDate ?? ''"
+        :loading="isCreating"
+        :disabled="registrationDisabled"
+        :error-message="registrationMessage"
+        @register="requestRegistration"
+      />
     </section>
 
     <section class="review-section">
@@ -64,6 +88,17 @@ onMounted(fetchActivity);
         <MerchantReviewCard v-for="review in activity.reviews" :key="`${review.nickname}-${review.created_at}`" :review="review" />
       </div>
     </section>
+
+    <BaseConfirmModal
+      :visible="confirmVisible"
+      title="일정을 등록하시겠습니까?"
+      :message="confirmMessage"
+      :loading="isCreating"
+      cancel-label="아니요"
+      confirm-label="예"
+      @cancel="confirmVisible = false"
+      @confirm="registerSchedule"
+    />
   </main>
 </template>
 
