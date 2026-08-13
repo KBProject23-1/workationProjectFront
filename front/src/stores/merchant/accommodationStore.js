@@ -34,13 +34,13 @@ export const useAccommodationStore = defineStore('accommodation', {
     checkOut: formatDate(tomorrow),
     roomCount: 1,
     guestCount: 2,
-    selectedProductName: '',
+    selectedProductId: null,
     isLoading: false,
     error: null,
   }),
   getters: {
     selectedProduct: (state) => state.accommodation.products.find(
-      (product) => product.productName === state.selectedProductName,
+      (product) => product.productId === state.selectedProductId,
     ) ?? null,
     nightCount: (state) => Math.max(
       1,
@@ -68,10 +68,10 @@ export const useAccommodationStore = defineStore('accommodation', {
         };
 
         const selectedProductExists = this.accommodation.products.some(
-          (product) => product.productName === this.selectedProductName,
+          (product) => product.productId === this.selectedProductId,
         );
         if (!selectedProductExists) {
-          this.selectedProductName = this.accommodation.products[0]?.productName ?? '';
+          this.selectedProductId = this.accommodation.products[0]?.productId ?? null;
         }
       } catch (error) {
         this.error = error.message;
@@ -87,8 +87,8 @@ export const useAccommodationStore = defineStore('accommodation', {
       }
       if (value >= this.checkIn) this.checkOut = value;
     },
-    selectProduct(productName) {
-      this.selectedProductName = productName;
+    selectProduct(productId) {
+      this.selectedProductId = productId;
     },
   },
 });

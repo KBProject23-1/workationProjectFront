@@ -26,7 +26,12 @@ defineEmits(['detail', 'bookmark']);
 <template>
   <article class="result-card">
     <div class="ranking">{{ ranking }}</div>
-    <img :src="item.imageUrl" :alt="`${item.name} 대표 이미지`" />
+    <img
+      v-if="item.thumbnailUrl || item.imageUrl"
+      :src="item.thumbnailUrl || item.imageUrl"
+      :alt="`${item.name} 대표 이미지`"
+    />
+    <div v-else class="image-placeholder" aria-hidden="true"></div>
 
     <div class="result-content">
       <div class="result-title-row">
@@ -45,9 +50,10 @@ defineEmits(['detail', 'bookmark']);
         </button>
       </div>
       <p class="rating">
-        <span>★</span> {{ item.rating }} ({{ item.reviewCount }})
+        <span>★</span> {{ item.rating ?? '-' }}
+        <template v-if="item.reviewCount != null"> ({{ item.reviewCount }})</template>
       </p>
-      <strong>₩ {{ item.price.toLocaleString() }} / 1박</strong>
+      <strong>₩ {{ Number(item.price ?? 0).toLocaleString() }} / 1박</strong>
       <div class="result-bottom-row">
         <p><MapPin :size="12" /> {{ item.address }}</p>
         <button
@@ -82,12 +88,17 @@ defineEmits(['detail', 'bookmark']);
   box-shadow: 0 6px 18px rgb(48 135 237 / 10%);
 }
 
-.result-card > img {
+.result-card > img,
+.image-placeholder {
   width: 90px;
   min-width: 90px;
   height: 112px;
   border-radius: 8px;
   object-fit: cover;
+}
+
+.image-placeholder {
+  background: #edf3fa;
 }
 
 .ranking {
