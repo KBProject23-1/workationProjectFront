@@ -16,6 +16,8 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
   cancelLabel: { type: String, default: '취소' },
   confirmLabel: { type: String, default: '확인' },
+  // 취소 없이 확인만 받는 안내용 모달에서 쓴다
+  hideCancel: { type: Boolean, default: false },
   contentClass: { type: String, default: 'max-w-sm' },
   headerClass: { type: String, default: '' },
 });
@@ -39,6 +41,7 @@ function handleOpenChange(open) {
       </DialogHeader>
       <DialogFooter class="flex-row gap-2 sm:justify-center">
         <Button
+          v-if="!hideCancel"
           type="button"
           variant="outline"
           class="flex-1"
