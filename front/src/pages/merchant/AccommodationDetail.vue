@@ -10,7 +10,7 @@ import { useAccommodationStore } from '@/stores/merchant/accommodationStore';
 
 const accommodationStore = useAccommodationStore();
 const route = useRoute();
-const { accommodation, checkIn, checkOut, roomCount, guestCount, selectedProductName, totalPrice, isLoading, error } = storeToRefs(accommodationStore);
+const { accommodation, checkIn, checkOut, roomCount, guestCount, selectedProductId, totalPrice, isLoading, error } = storeToRefs(accommodationStore);
 const dateModalMode = ref('');
 const isOccupancyModalOpen = ref(false);
 
@@ -103,9 +103,9 @@ onMounted(async () => {
       <div class="room-list">
         <AccommodationProductCard
           v-for="product in accommodation.products"
-          :key="product.productName"
+          :key="product.productId"
           :product="product"
-          :selected="selectedProductName === product.productName"
+          :selected="selectedProductId === product.productId"
           @select="accommodationStore.selectProduct"
         />
       </div>
