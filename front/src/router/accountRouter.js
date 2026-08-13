@@ -10,4 +10,10 @@ export default [
     name: 'MyInfoPage',
     component: () => import('@/pages/account/MyInfoPage.vue'),
   },
+  // 프로필 수정 — 닉네임/소속 회사명 수정 (PATCH /users/me) (Figma: 내 프로필 편집)
+  {
+    path: '/account/me/edit',
+    name: 'ProfileEditPage',
+    component: () => import('@/pages/account/ProfileEditPage.vue'),
+  },
 ];

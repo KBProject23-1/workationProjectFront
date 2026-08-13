@@ -8,7 +8,10 @@ import {
   verifyIdentity as verifyIdentityApi,
   setupPin as setupPinApi,
 } from '@/api/auth';
-import { getMe as getMeApi } from '@/api/user';
+import {
+  getMe as getMeApi,
+  updateProfile as updateProfileApi,
+} from '@/api/user';
 
 // 인증 도메인 스토어 (knowledgeFront.md: Auth Store)
 //
@@ -229,6 +232,29 @@ export const useAuthStore = defineStore('auth', {
           companyName: data.companyName,
         };
         return data;
+      } catch (err) {
+        this.error = err;
+        throw err;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    /**
+     * 프로필 수정 — PATCH /users/me 로 닉네임/회사명을 저장하고 최신 사용자 정보를 user 에 반영한다.
+     * - payload: 변경된 필드만 담는다 ({ nickname?, companyName? } — PATCH 부분 수정)
+     * - 응답에 data 가 없으므로 전송한 값(trim 된)을 그대로 상태에 반영한다.
+     * - 실패 시 err 를 그대로 throw → 화면에서 useErrorToast 로 안내한다.
+     */
+    async updateProfile(payload) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        await updateProfileApi(payload);
+        this.user = {
+          ...this.user,
+          ...payload,
+        };
       } catch (err) {
         this.error = err;
         throw err;
