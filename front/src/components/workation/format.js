@@ -9,3 +9,33 @@ export const dotDate = (value) => {
   if (!value) return '';
   return value.replaceAll('-', '.');
 };
+
+// 2026-08-12 -> 8월 12일 (수)
+export const dayLabel = (value) => {
+  if (!value) return '';
+  const date = new Date(`${value}T00:00:00`);
+  const week = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
+  return `${date.getMonth() + 1}월 ${date.getDate()}일 (${week})`;
+};
+
+// 12:30:00 -> 12:30
+export const hourMinute = (value) => {
+  if (!value) return '';
+  return value.slice(0, 5);
+};
+
+const WEEK = ['일', '월', '화', '수', '목', '금', '토'];
+
+// 2026-08-01 -> (토)
+export const weekday = (value) => {
+  if (!value) return '';
+  return WEEK[new Date(`${value}T00:00:00`).getDay()];
+};
+
+// 2026-08-01 ~ 2026-08-20 -> 08.01(토)~08.20(목)
+export const shortRange = (from, to) => {
+  if (!from || !to) return '';
+  const trim = (value) =>
+    `${value.slice(5).replaceAll('-', '.')}(${weekday(value)})`;
+  return `${trim(from)}~${trim(to)}`;
+};

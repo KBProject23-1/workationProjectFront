@@ -102,34 +102,30 @@
         />
       </div>
 
-      <div class="mt-4 grid grid-cols-4 gap-2">
+      <WorkationScheduler
+        :schedules="schedules"
+        :expanded="scheduleStore.expanded"
+        :is-loading="scheduleLoading"
+        @select="goScheduleItem"
+        @toggle="toggleScheduleRange"
+        @reserve="goReservations"
+        @recommend="goRecommendation"
+      />
+
+      <div class="mt-4 grid grid-cols-2 gap-3">
         <button
-          class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 py-5 text-xs text-slate-500"
-          @click="goReservations"
-        >
-          <CalendarCheck class="h-5 w-5" />
-          예약
-        </button>
-        <button
-          class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 py-5 text-xs text-slate-500"
-          @click="goRecommendation"
-        >
-          <Sparkles class="h-5 w-5" />
-          추천
-        </button>
-        <button
-          class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 py-5 text-xs text-slate-500"
+          class="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 py-3 text-sm font-bold text-slate-600"
           @click="goExpenses"
         >
           <ReceiptText class="h-5 w-5" />
-          지출
+          지출 내역 보기
         </button>
         <button
-          class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 py-5 text-xs text-slate-500"
+          class="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 py-3 text-sm font-bold text-slate-600"
           @click="goSettlement"
         >
           <FileSpreadsheet class="h-5 w-5" />
-          정산
+          정산 하러 가기
         </button>
       </div>
     </template>
@@ -177,19 +173,18 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { toast } from 'vue-sonner';
-import {
-  Bell,
-  CalendarCheck,
-  FileSpreadsheet,
-  ReceiptText,
-  Sparkles,
-  UserRound,
-} from '@lucide/vue';
+import { Bell, FileSpreadsheet, ReceiptText, UserRound } from '@lucide/vue';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useSurveyStore } from '@/stores/surveyStore';
+import {
+  useScheduleStore,
+  DEFAULT_DAYS,
+  EXPANDED_DAYS,
+} from '@/stores/scheduleStore';
 import { getReservationList } from '@/api/reservations';
 import WorkationProgressCard from '@/components/workation/WorkationProgressCard.vue';
+import WorkationScheduler from '@/components/workation/WorkationScheduler.vue';
 import UncheckedExpenseAlert from '@/components/workation/UncheckedExpenseAlert.vue';
 import SettlementRecordItem from '@/components/workation/SettlementRecordItem.vue';
 import WorkationEmptyState from '@/components/workation/WorkationEmptyState.vue';
@@ -200,6 +195,7 @@ const router = useRouter();
 const workationStore = useWorkationStore();
 const budgetStore = useBudgetStore();
 const surveyStore = useSurveyStore();
+const scheduleStore = useScheduleStore();
 const { showError } = useErrorToast();
 const { current, records, error: errorMessage } = storeToRefs(workationStore);
 
@@ -222,12 +218,37 @@ const loadSetupState = async () => {
   await Promise.all([
     budgetStore.fetchBudgets(workationId).catch(() => {}),
     surveyStore.fetchMySurvey().catch(() => {}),
+    scheduleStore.fetchSchedules(workationId, DEFAULT_DAYS).catch(() => {}),
     getReservationList({ workationId })
       .then(({ data }) => {
         reservationCount.value = data?.content?.length ?? 0;
       })
       .catch(() => {}),
   ]);
+};
+
+const { schedules, isLoading: scheduleLoading } = storeToRefs(scheduleStore);
+
+// 2일치와 7일치를 번갈아 본다
+const toggleScheduleRange = async () => {
+  const days = scheduleStore.expanded ? DEFAULT_DAYS : EXPANDED_DAYS;
+  try {
+    await scheduleStore.fetchSchedules(workationStore.workationId, days);
+  } catch (error) {
+    showError(error, '일정을 불러오지 못했습니다.');
+  }
+};
+
+// 예약과 일정은 상세 화면이 다르다.
+// 삭제는 스케줄러가 아니라 각 상세에서 한다
+const goScheduleItem = (item) => {
+  if (item.itemType === 'RESERVATION') {
+    router.push(`/reservations/${item.reservationId}`);
+    return;
+  }
+  router.push(
+    `/workation/${workationStore.workationId}/schedules/${item.scheduleId}`,
+  );
 };
 
 onMounted(async () => {
@@ -258,13 +279,17 @@ const incompleteMessage = computed(() => {
 });
 
 // 미완인 단계로 바로 데려간다.
-// 설문을 안 했으면 설문부터 시작하니 전체 3단계, 했으면 예산만 남아 2단계다
+//
+// step=create 를 붙이지 않는다. 그 값이 있으면 각 화면이 등록 도중으로 보고
+// 뒤로가기에 "등록을 취소할까요?" 를 띄우며 워케이션을 삭제한다.
+// 여기서 들어오는 것은 이미 만들어진 워케이션을 채우러 오는 보완이라
+// 취소를 제안할 자리가 아니고, 저장하면 홈으로 돌아와야 한다
 const goIncompleteStep = () => {
   const workationId = workationStore.workationId;
   router.push(
     !surveyDone.value
-      ? `/workation/${workationId}/survey?step=create`
-      : `/workation/${workationId}/budgets?step=create&steps=2`,
+      ? `/workation/${workationId}/survey`
+      : `/workation/${workationId}/budgets`,
   );
 };
 
