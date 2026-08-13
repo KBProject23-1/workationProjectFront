@@ -3,6 +3,7 @@ import {
   getSchedules,
   getScheduleDetail,
   createSchedule as createScheduleApi,
+  updateSchedule as updateScheduleApi,
   deleteSchedule as deleteScheduleApi,
 } from '@/api/schedule';
 
@@ -70,6 +71,20 @@ export const useScheduleStore = defineStore('schedule', {
       try {
         const { data } = await createScheduleApi(workationId, payload);
         await this.fetchSchedules(workationId, this.days);
+        return data;
+      } catch (err) {
+        this.error = err.message;
+        throw err;
+      }
+    },
+
+    // 시각만 바꾼다. 상세 화면이 바로 갱신되도록 응답을 detail 에 넣는다
+    async updateSchedule(workationId, scheduleId, scheduledAt) {
+      try {
+        const { data } = await updateScheduleApi(workationId, scheduleId, {
+          scheduledAt,
+        });
+        this.detail = data;
         return data;
       } catch (err) {
         this.error = err.message;

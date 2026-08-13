@@ -146,12 +146,12 @@
     -->
     <BaseConfirmModal
       :visible="recommendOpen"
-      title="이제 머물 곳을 정해볼까요?"
+      title="워케이션 등록이 끝났어요"
       :message="recommendMessage"
-      confirm-label="추천받기"
-      cancel-label="나중에 할게요"
+      confirm-label="확인"
+      hide-cancel
       @confirm="goRecommendation"
-      @cancel="goHome"
+      @cancel="goRecommendation"
     />
   </div>
 </template>
@@ -224,8 +224,8 @@ const recommendOpen = ref(false);
 
 const recommendMessage = computed(() =>
   totalSteps === 2
-    ? '이전에 답해주신 취향으로 숙소와 공유오피스를 찾아드려요. 취향이 바뀌었다면 추천 화면에서 설문을 다시 할 수 있어요.'
-    : '답해주신 취향으로 숙소와 공유오피스를 찾아드려요.',
+    ? '기존 설문을 바탕으로 워케이션 일정을 추천해 드립니다.'
+    : '설문을 바탕으로 워케이션 일정을 추천해 드립니다.',
 );
 
 // 등록 도중 이탈 확인
@@ -492,14 +492,10 @@ const submit = async () => {
   }
 };
 
+// 추천은 한 항목씩 고른다. 여러 개를 모아 고르는 흐름은 쓰지 않는다
 const goRecommendation = () => {
   recommendOpen.value = false;
-  router.replace('/recommendation');
-};
-
-const goHome = () => {
-  recommendOpen.value = false;
-  router.replace('/workation');
+  router.replace('/recommendation?mode=single');
 };
 
 // 등록 도중 나가면 예산 없는 워케이션이 남으므로 확인을 받는다

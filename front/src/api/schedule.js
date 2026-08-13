@@ -16,6 +16,14 @@ export const getScheduleDetail = (workationId, scheduleId) => {
   return axiosInstance.get(`/workations/${workationId}/schedules/${scheduleId}`);
 };
 
+// 일정 시각 수정. 가맹점은 바꿀 수 없다
+export const updateSchedule = (workationId, scheduleId, payload) => {
+  return axiosInstance.patch(
+    `/workations/${workationId}/schedules/${scheduleId}`,
+    payload,
+  );
+};
+
 // 일정 삭제. 예약과 달리 결제가 없어 상태 전이 없이 지워진다
 export const deleteSchedule = (workationId, scheduleId) => {
   return axiosInstance.delete(
