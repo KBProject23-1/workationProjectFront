@@ -2,16 +2,18 @@
 import { onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { ChevronLeft, MapPin, Phone } from '@lucide/vue';
+import { ChevronLeft, Heart, MapPin, Phone } from '@lucide/vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationOccupancyModal from '@/components/reservation/ReservationOccupancyModal.vue';
 import AccommodationProductCard from '@/components/merchant/AccommodationProductCard.vue';
 import { useAccommodationStore } from '@/stores/merchant/accommodationStore';
+import { useErrorToast } from '@/composables/useErrorToast';
 
 const accommodationStore = useAccommodationStore();
 const route = useRoute();
 const router = useRouter();
-const { accommodation, checkIn, checkOut, roomCount, guestCount, selectedProductId, totalPrice, isLoading, error } = storeToRefs(accommodationStore);
+const { accommodation, checkIn, checkOut, roomCount, guestCount, selectedProductId, totalPrice, isLoading, isBookmarkLoading, error } = storeToRefs(accommodationStore);
+const { showError } = useErrorToast();
 const dateModalMode = ref('');
 const isOccupancyModalOpen = ref(false);
 
@@ -51,6 +53,14 @@ async function selectDate(value) {
 async function closeOccupancyModal() {
   isOccupancyModalOpen.value = false;
   await fetchAccommodation();
+}
+
+async function toggleBookmark() {
+  try {
+    await accommodationStore.toggleBookmark();
+  } catch (bookmarkError) {
+    showError(bookmarkError, '북마크 처리 중 오류가 발생했습니다.');
+  }
 }
 
 function goToReservationCreate() {
@@ -96,6 +106,17 @@ onMounted(async () => {
     </section>
 
     <section class="merchant-section">
+      <button
+        type="button"
+        class="bookmark-button"
+        :class="{ bookmarked: accommodation.bookmarked }"
+        :aria-label="accommodation.bookmarked ? '북마크 해제' : '북마크 추가'"
+        :aria-pressed="accommodation.bookmarked"
+        :disabled="isBookmarkLoading"
+        @click="toggleBookmark"
+      >
+        <Heart :size="18" :fill="accommodation.bookmarked ? 'currentColor' : 'none'" />
+      </button>
       <h2>{{ accommodation.name }}</h2>
       <p class="address"><MapPin :size="22" /> {{ accommodation.address }}</p>
       <div class="rating-row">
@@ -163,7 +184,7 @@ button { font:inherit; }
 .hero-window { position:absolute; top:27px; left:26px; right:26px; height:104px; overflow:hidden; border-radius:11px; background:#edf4fd; }
 .hero-window::after { content:''; position:absolute; left:-15px; right:-15px; bottom:-14px; height:55px; border-radius:50% 50% 0 0; background:#b6d3f5; }.hero-window span { position:absolute; top:0; bottom:0; left:50%; width:4px; background:#c5dcf8; }.hero-window span::after { content:''; position:absolute; top:12px; left:98px; width:24px; height:24px; border-radius:50%; background:#ffd057; }
 .hero-bed { position:absolute; left:72px; bottom:30px; width:113px; height:38px; border-radius:6px; background:#9b8980; }.hero-bed span { position:absolute; top:-11px; left:11px; right:11px; height:16px; border-radius:6px; background:#f2dfcf; }
-.merchant-section { padding:10px 17px 8px; }.merchant-section h2 { margin:0 0 8px; font-size:22px; }.merchant-section p { margin:0; }.address { display:flex; align-items:center; gap:4px; color:#8592a2; font-size:12px; }.rating-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; }.rating { font-size:16px; font-weight:800; }.rating span { color:#ff8a00; }.rating b { color:#7b8794; }.review-button { flex:none; padding:5px 10px; border:1px solid #3087ed; border-radius:999px; color:#3087ed; background:#fff; font-size:12px; font-weight:800; }
+.merchant-section { position:relative; padding:10px 17px 8px; }.merchant-section h2 { margin:0 42px 8px 0; font-size:22px; }.merchant-section p { margin:0; }.bookmark-button { position:absolute; top:17px; right:18px; padding:0; color:#88a0bf; border:0; background:transparent; cursor:pointer; transition:color .16s ease,transform .16s ease; }.bookmark-button:hover { color:#3087ed; transform:scale(1.1); }.bookmark-button.bookmarked { color:#3087ed; }.bookmark-button:disabled { cursor:wait; opacity:.55; }.address { display:flex; align-items:center; gap:4px; color:#8592a2; font-size:12px; }.rating-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; }.rating { font-size:16px; font-weight:800; }.rating span { color:#ff8a00; }.rating b { color:#7b8794; }.review-button { flex:none; padding:5px 10px; border:1px solid #3087ed; border-radius:999px; color:#3087ed; background:#fff; font-size:12px; font-weight:800; }
 .accommodation-info { margin:4px 16px 0; padding:14px; border:1.5px solid #dbe3ee; border-radius:16px; background:#f8fbff; }.accommodation-info p { margin:0 0 10px; font-size:16px; }.accommodation-info > div { display:flex; align-items:center; gap:6px; color:#687587; font-size:12px; }.accommodation-info .times { margin-top:8px; }.times i { width:4px; height:4px; border-radius:50%; background:#c6d0dc; }
 h3 { margin:0 0 10px; font-size:16px; }.room-section { padding:0 16px; }
 .stay-condition { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; padding:11px 16px 15px; }.stay-condition button { height:66px; display:flex; flex-direction:column; justify-content:center; padding:9px 13px; text-align:left; border:1.5px solid #dbe3ee; border-radius:16px; color:#111827; background:#fff; cursor:pointer; }.stay-condition button:active { border-color:#3087ed; }.stay-condition small { margin-bottom:8px; color:#8a96a5; font-size:12px; }.stay-condition strong { font-size:16px; white-space:nowrap; }

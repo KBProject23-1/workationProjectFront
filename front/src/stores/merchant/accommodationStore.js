@@ -1,5 +1,6 @@
-import { defineStore } from 'pinia';
+import { acceptHMRUpdate, defineStore } from 'pinia';
 import { getAccommodationDetail } from '@/api/merchants';
+import { createBookmark, deleteBookmark, getBookmarks } from '@/api/bookmark';
 
 const formatDate = (date) => {
   const year = date.getFullYear();
@@ -24,6 +25,7 @@ const emptyAccommodation = {
   reviewCount: 0,
   thumbnailUrl: null,
   bookmarked: false,
+  bookmarkId: null,
   products: [],
 };
 
@@ -36,6 +38,7 @@ export const useAccommodationStore = defineStore('accommodation', {
     guestCount: 2,
     selectedProductId: null,
     isLoading: false,
+    isBookmarkLoading: false,
     error: null,
   }),
   getters: {
@@ -62,8 +65,24 @@ export const useAccommodationStore = defineStore('accommodation', {
           roomCount: this.roomCount,
           guestCount: this.guestCount,
         });
+        let bookmarkId = null;
+        if (data?.bookmarked) {
+          try {
+            const { data: bookmarks } = await getBookmarks({
+              category: 'ACCOMMODATION',
+              size: '100',
+            });
+            bookmarkId = (bookmarks.content ?? []).find(
+              (bookmark) => bookmark.merchantId === merchantId,
+            )?.bookmarkId;
+          } catch {
+            bookmarkId = null;
+          }
+        }
         this.accommodation = {
           ...data,
+          bookmarked: data?.bookmarked ?? false,
+          bookmarkId,
           products: data?.products ?? [],
         };
 
@@ -90,5 +109,37 @@ export const useAccommodationStore = defineStore('accommodation', {
     selectProduct(productId) {
       this.selectedProductId = productId;
     },
+    async toggleBookmark() {
+      if (this.isBookmarkLoading) return;
+      this.isBookmarkLoading = true;
+      try {
+        if (this.accommodation.bookmarked) {
+          if (!this.accommodation.bookmarkId) {
+            const { data: bookmarks } = await getBookmarks({
+              category: 'ACCOMMODATION',
+              size: '100',
+            });
+            this.accommodation.bookmarkId = (bookmarks.content ?? []).find(
+              (bookmark) => bookmark.merchantId === this.accommodation.merchantId,
+            )?.bookmarkId;
+          }
+          if (!this.accommodation.bookmarkId) return;
+          await deleteBookmark(this.accommodation.bookmarkId);
+          this.accommodation.bookmarked = false;
+          this.accommodation.bookmarkId = null;
+          return;
+        }
+
+        const { data } = await createBookmark(this.accommodation.merchantId);
+        this.accommodation.bookmarked = true;
+        this.accommodation.bookmarkId = data.bookmarkId;
+      } finally {
+        this.isBookmarkLoading = false;
+      }
+    },
   },
 });
+
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useAccommodationStore, import.meta.hot));
+}

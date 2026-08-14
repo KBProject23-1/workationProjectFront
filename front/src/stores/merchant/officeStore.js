@@ -1,5 +1,6 @@
-import { defineStore } from 'pinia';
+import { acceptHMRUpdate, defineStore } from 'pinia';
 import { getOfficeDetail } from '@/api/merchants';
+import { createBookmark, deleteBookmark, getBookmarks } from '@/api/bookmark';
 
 const formatDate = (date) => {
   const year = date.getFullYear();
@@ -22,6 +23,7 @@ const emptyOffice = {
   reviewCount: 0,
   thumbnailUrl: null,
   bookmarked: false,
+  bookmarkId: null,
   products: [],
 };
 
@@ -34,6 +36,7 @@ export const useOfficeStore = defineStore('office', {
     guestCount: 2,
     selectedProductId: null,
     isLoading: false,
+    isBookmarkLoading: false,
     error: null,
   }),
   getters: {
@@ -61,8 +64,24 @@ export const useOfficeStore = defineStore('office', {
           endDate: this.endDate,
           guestCount: this.guestCount,
         });
+        let bookmarkId = null;
+        if (data?.bookmarked) {
+          try {
+            const { data: bookmarks } = await getBookmarks({
+              category: 'OFFICE',
+              size: '100',
+            });
+            bookmarkId = (bookmarks.content ?? []).find(
+              (bookmark) => bookmark.merchantId === merchantId,
+            )?.bookmarkId;
+          } catch {
+            bookmarkId = null;
+          }
+        }
         this.office = {
           ...data,
+          bookmarked: data?.bookmarked ?? false,
+          bookmarkId,
           products: data?.products ?? [],
         };
 
@@ -92,5 +111,37 @@ export const useOfficeStore = defineStore('office', {
         this.spaceCount = 1;
       }
     },
+    async toggleBookmark() {
+      if (this.isBookmarkLoading) return;
+      this.isBookmarkLoading = true;
+      try {
+        if (this.office.bookmarked) {
+          if (!this.office.bookmarkId) {
+            const { data: bookmarks } = await getBookmarks({
+              category: 'OFFICE',
+              size: '100',
+            });
+            this.office.bookmarkId = (bookmarks.content ?? []).find(
+              (bookmark) => bookmark.merchantId === this.office.merchantId,
+            )?.bookmarkId;
+          }
+          if (!this.office.bookmarkId) return;
+          await deleteBookmark(this.office.bookmarkId);
+          this.office.bookmarked = false;
+          this.office.bookmarkId = null;
+          return;
+        }
+
+        const { data } = await createBookmark(this.office.merchantId);
+        this.office.bookmarked = true;
+        this.office.bookmarkId = data.bookmarkId;
+      } finally {
+        this.isBookmarkLoading = false;
+      }
+    },
   },
 });
+
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useOfficeStore, import.meta.hot));
+}
