@@ -29,6 +29,8 @@
         :class="merchant.bookmarked ? 'text-blue-600' : 'text-slate-300'"
         :aria-label="merchant.bookmarked ? '북마크 해제' : '북마크 추가'"
         :aria-pressed="merchant.bookmarked"
+        :disabled="merchant.bookmarkLoading"
+        :aria-busy="merchant.bookmarkLoading"
         @click.stop="$emit('toggle-bookmark', merchant.merchantId)"
         @keydown.stop
       >

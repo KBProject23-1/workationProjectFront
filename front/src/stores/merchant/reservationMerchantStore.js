@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { getMerchants } from '@/api/merchants';
+import { createBookmark, deleteBookmark, getBookmarks } from '@/api/bookmark';
 import {
   getAccommodationRecommendations,
   getAccommodationReferenceCandidates,
@@ -17,8 +18,9 @@ import {
 
 // 추천 응답은 유형마다 이름 필드가 name / merchantName 으로 갈린다.
 // 목록 카드가 쓰는 모양으로 맞춰 준다
-const toMerchantItem = (item) => ({
+const toMerchantItem = (item, category) => ({
   merchantId: item.merchantId,
+  category: item.category ?? category,
   name: item.name ?? item.merchantName,
   address: item.address,
   thumbnailUrl: item.thumbnailUrl,
@@ -26,6 +28,8 @@ const toMerchantItem = (item) => ({
   rating: item.rating,
   reviewCount: item.reviewCount ?? 0,
   bookmarked: Boolean(item.bookmarked),
+  bookmarkId: item.bookmarkId ?? null,
+  bookmarkLoading: false,
   recommendationReason: item.recommendationReason ?? null,
 });
 
@@ -96,6 +100,7 @@ export const useReservationMerchantStore = defineStore('reservationMerchant', {
     isLoading: false,
     isLoadingMore: false,
     error: null,
+    bookmarkIdsByMerchant: {},
   }),
 
   getters: {
@@ -212,7 +217,9 @@ export const useReservationMerchantStore = defineStore('reservationMerchant', {
       else this.maxPrice = sanitizedValue;
     },
     applyResponse(data, append = false) {
-      const content = data?.content ?? [];
+      const content = (data?.content ?? []).map((item) =>
+        toMerchantItem(item, this.category),
+      );
       const pageInfo = data?.pageInfo ?? {};
       this.merchants = append ? [...this.merchants, ...content] : content;
       this.size = pageInfo.size ?? this.size;
@@ -225,10 +232,11 @@ export const useReservationMerchantStore = defineStore('reservationMerchant', {
       try {
         if (this.mode === 'RECOMMEND') {
           await this.fetchRecommendations();
-          return;
+        } else {
+          const { data } = await getMerchants(this.queryParams);
+          this.applyResponse(data);
         }
-        const { data } = await getMerchants(this.queryParams);
-        this.applyResponse(data);
+        await this.fetchBookmarkIds().catch(() => {});
       } catch (error) {
         this.merchants = [];
         this.hasNext = false;
@@ -255,7 +263,9 @@ export const useReservationMerchantStore = defineStore('reservationMerchant', {
       }
 
       const { data } = await fetcher(params);
-      this.merchants = (data?.content ?? []).map(toMerchantItem);
+      this.merchants = (data?.content ?? []).map((item) =>
+        toMerchantItem(item, this.category),
+      );
       this.hasNext = false;
       this.nextCursor = null;
     },
@@ -270,15 +280,71 @@ export const useReservationMerchantStore = defineStore('reservationMerchant', {
           cursor: this.nextCursor,
         });
         this.applyResponse(data, true);
+        await this.fetchBookmarkIds().catch(() => {});
       } catch (error) {
         this.error = error.message;
       } finally {
         this.isLoadingMore = false;
       }
     },
-    toggleBookmark(merchantId) {
+    async fetchBookmarkIds() {
+      const bookmarkIds = {};
+      let cursor = null;
+
+      do {
+        const { data } = await getBookmarks({
+          category: this.category,
+          cursor,
+          size: '100',
+        });
+        (data.content ?? []).forEach((bookmark) => {
+          bookmarkIds[bookmark.merchantId] = bookmark.bookmarkId;
+        });
+        cursor = data.hasNext ? data.nextCursor : null;
+      } while (cursor);
+
+      const merchantIds = new Set(this.merchants.map((merchant) => merchant.merchantId));
+      const bookmarkIdsByMerchant = Object.fromEntries(
+        Object.entries(this.bookmarkIdsByMerchant).filter(
+          ([merchantId]) => !merchantIds.has(Number(merchantId)),
+        ),
+      );
+      this.bookmarkIdsByMerchant = {
+        ...bookmarkIdsByMerchant,
+        ...bookmarkIds,
+      };
+      this.merchants.forEach((merchant) => {
+        merchant.bookmarkId = bookmarkIds[merchant.merchantId] ?? null;
+        merchant.bookmarked = Boolean(merchant.bookmarkId);
+      });
+    },
+    async toggleBookmark(merchantId) {
       const merchant = this.merchants.find((item) => item.merchantId === merchantId);
-      if (merchant) merchant.bookmarked = !merchant.bookmarked;
+      if (!merchant || merchant.bookmarkLoading) return;
+
+      merchant.bookmarkLoading = true;
+      try {
+        let bookmarkId = merchant.bookmarkId ?? this.bookmarkIdsByMerchant[merchantId];
+        if (merchant.bookmarked && !bookmarkId) {
+          await this.fetchBookmarkIds();
+          bookmarkId = this.bookmarkIdsByMerchant[merchantId];
+        }
+
+        if (bookmarkId) {
+          await deleteBookmark(bookmarkId);
+          delete this.bookmarkIdsByMerchant[merchantId];
+          merchant.bookmarkId = null;
+          merchant.bookmarked = false;
+          return;
+        }
+
+        const { data } = await createBookmark(merchantId);
+        this.bookmarkIdsByMerchant[merchantId] = data.bookmarkId;
+        merchant.bookmarkId = data.bookmarkId;
+        merchant.bookmarked = true;
+      } finally {
+        merchant.bookmarkLoading = false;
+      }
     },
   },
 });

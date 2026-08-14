@@ -10,7 +10,7 @@ const categories = [
   { value: 'ALL', label: '전체' },
   { value: 'ACCOMMODATION', label: '숙소' },
   { value: 'OFFICE', label: '공유 오피스' },
-  { value: 'RESTAURANT', label: '식당' },
+  { value: 'RESTAURANT', label: '음식점' },
   { value: 'ACTIVITY', label: '여가' },
 ];
 
