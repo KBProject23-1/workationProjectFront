@@ -1,5 +1,16 @@
 export default [
   {
+    path: '/reservations/create',
+    name: 'ReservationCreate',
+    component: () => import('@/pages/reservation/ReservationCreateView.vue'),
+  },
+  {
+    path: '/reservations/:reservationId/complete',
+    name: 'ReservationCreateComplete',
+    component: () =>
+      import('@/pages/reservation/ReservationCreateCompleteView.vue'),
+  },
+  {
     path: '/reservations',
     name: 'ReservationList',
     component: () => import('@/pages/reservation/ReservationListView.vue'),

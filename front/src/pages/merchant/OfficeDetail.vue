@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ChevronLeft, MapPin, Phone } from '@lucide/vue';
 import OfficeProductCard from '@/components/merchant/OfficeProductCard.vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
@@ -11,6 +11,7 @@ import { useOfficeStore } from '@/stores/merchant/officeStore';
 
 const officeStore = useOfficeStore();
 const route = useRoute();
+const router = useRouter();
 const { office, startDate, endDate, spaceCount, guestCount, selectedProductId, selectedProduct, totalPrice, isLoading, error } = storeToRefs(officeStore);
 const dateModalMode = ref('');
 const isSpaceModalOpen = ref(false);
@@ -51,6 +52,23 @@ async function selectDate(value) {
 async function closeGuestModal() {
   isGuestModalOpen.value = false;
   await fetchOffice();
+}
+
+function goToReservationCreate() {
+  if (!selectedProductId.value) return;
+
+  router.push({
+    name: 'ReservationCreate',
+    query: {
+      category: 'OFFICE',
+      merchantId: office.value.merchantId,
+      productId: selectedProductId.value,
+      startDate: startDate.value,
+      endDate: endDate.value,
+      headcount: guestCount.value,
+      quantity: spaceCount.value,
+    },
+  });
 }
 
 onMounted(async () => {
@@ -123,7 +141,7 @@ onMounted(async () => {
 
     <section class="booking-summary">
       <div><small>총 결제 금액</small><strong>{{ totalPrice.toLocaleString() }}원</strong></div>
-      <button type="button">예약하기</button>
+      <button type="button" :disabled="!selectedProductId" @click="goToReservationCreate">예약하기</button>
     </section>
 
     <ReservationDateModal
@@ -157,5 +175,6 @@ onMounted(async () => {
 h3 { margin:0 0 10px; font-size:16px; }.condition-section,.usage-section,.product-section { padding:0 16px; }.conditions { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }.conditions button,.conditions > div { height:75px; display:flex; flex-direction:column; justify-content:center; padding:9px 12px; text-align:left; color:#111827; border:1.5px solid #dbe3ee; border-radius:16px; background:#fff; }.conditions small { margin-bottom:9px; color:#8a96a5; font-size:12px; white-space:nowrap; }.conditions strong { font-size:16px; white-space:nowrap; }
 .usage-section { margin-top:17px; }.usage-info { height:48px; display:flex; align-items:center; justify-content:space-around; padding:0 18px; border:1.5px solid #dbe3ee; border-radius:15px; background:#f8fbff; font-size:12px; }.usage-info i { width:4px; height:4px; border-radius:50%; background:#c6d0dc; }.product-section { margin-top:3px; }.product-list { display:flex; flex-direction:column; gap:12px; }
 .booking-summary { display:flex; align-items:center; justify-content:space-between; gap:20px; margin-top:12px; padding:10px 16px 0; border-top:2px solid #edf0f4; }.booking-summary div { display:flex; flex-direction:column; }.booking-summary small { margin-bottom:3px; color:#8a96a5; font-size:12px; }.booking-summary strong { font-size:22px; }.booking-summary button { width:158px; height:52px; border:0; border-radius:15px; color:#fff; background:#3087ed; font-size:16px; font-weight:800; }
+.booking-summary button:disabled { cursor:not-allowed; background:#cbd5e1; }
 @media (max-width:360px) { .conditions { gap:4px; }.conditions button,.conditions > div { padding:7px; }.booking-summary { gap:10px; }.booking-summary button { width:140px; } }
 </style>
