@@ -57,3 +57,45 @@ export const getRestaurantReferenceCandidates = () => {
 export const getActivityReferenceCandidates = () => {
   return axiosInstance.get('/recommendations/activities/reference-place-candidates');
 };
+
+// 카테고리 키(accommodations/offices/restaurants/activities)로 위 유형별 함수를 분기하는 파사드.
+// recommendationStore 는 카테고리 문자열 하나로 호출하므로, 여기서 유형별 API 로 위임한다.
+const RECOMMENDATION_LIST_APIS = {
+  accommodations: getAccommodationRecommendations,
+  offices: getOfficeRecommendations,
+  restaurants: getRestaurantRecommendations,
+  activities: getActivityRecommendations,
+};
+
+const RECOMMENDATION_REFERENCE_PLACE_APIS = {
+  accommodations: getAccommodationReferencePlace,
+  offices: getOfficeReferencePlace,
+  restaurants: getRestaurantReferencePlace,
+  activities: getActivityReferencePlace,
+};
+
+const RECOMMENDATION_REFERENCE_CANDIDATE_APIS = {
+  accommodations: getAccommodationReferenceCandidates,
+  offices: getOfficeReferenceCandidates,
+  restaurants: getRestaurantReferenceCandidates,
+  activities: getActivityReferenceCandidates,
+};
+
+export const getRecommendations = (category, params) => {
+  const api = RECOMMENDATION_LIST_APIS[category];
+  if (!api) throw new Error(`알 수 없는 추천 카테고리: ${category}`);
+  return api(params);
+};
+
+export const getRecommendationReferencePlace = (category, params) => {
+  const api = RECOMMENDATION_REFERENCE_PLACE_APIS[category];
+  if (!api) throw new Error(`알 수 없는 추천 카테고리: ${category}`);
+  // 숙소/오피스/액티비티 기준 장소 API 는 인자를 받지 않는다(무해하게 무시됨).
+  return api(params);
+};
+
+export const getRecommendationReferencePlaceCandidates = (category) => {
+  const api = RECOMMENDATION_REFERENCE_CANDIDATE_APIS[category];
+  if (!api) throw new Error(`알 수 없는 추천 카테고리: ${category}`);
+  return api();
+};

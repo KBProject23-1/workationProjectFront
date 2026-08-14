@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAccountStore } from '@/stores/accountStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import AccountLinkIntro from '@/components/account/AccountLinkIntro.vue';
@@ -9,6 +9,7 @@ import AccountLinkComplete from '@/components/account/AccountLinkComplete.vue';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
 
 const router = useRouter();
+const route = useRoute();
 const accountStore = useAccountStore();
 const { showError } = useErrorToast();
 
@@ -39,7 +40,16 @@ async function handleLink(selectedIds) {
 }
 
 function handleConfirm() {
-  router.push('/wallet');
+  // 로그인 직후 온보딩 흐름이면 카드 연결로 이어간다 (flow/redirect 를 그대로 전달).
+  // 그 외(지갑에서 계좌 추가)엔 지갑으로 복귀.
+  if (route.query.flow === 'onboarding') {
+    router.push({
+      path: '/card/link',
+      query: { flow: 'onboarding', redirect: route.query.redirect },
+    });
+  } else {
+    router.push('/wallet');
+  }
 }
 
 onMounted(async () => {
