@@ -49,13 +49,16 @@ export const PRICE_LEVELS = [
 // activities.activity_type
 export const ACTIVITY_TYPES = [
   { label: '전체', value: '' },
-  { label: '해양', value: 'MARINE' },
-  { label: '스포츠', value: 'SPORTS' },
-  { label: '힐링', value: 'HEALING' },
-  { label: '문화', value: 'CULTURE' },
-  { label: '축제', value: 'FESTIVAL' },
-  { label: '쇼핑', value: 'SHOPPING' },
-  { label: '기타', value: 'ETC' },
+  { label: '수상 레포츠', value: 'WATER_SPORTS' },
+  { label: '육상 레포츠', value: 'LAND_SPORTS' },
+  { label: '농어촌 체험', value: 'RURAL_EXPERIENCE' },
+  { label: '웰니스 관광', value: 'WELLNESS_TOURISM' },
+  { label: '카페/찻집', value: 'CAFE_TEA_HOUSE' },
+  { label: '자연공원', value: 'NATURAL_PARK' },
+  { label: '자연경관(산)', value: 'MOUNTAIN_SCENERY' },
+  { label: '자연경관(하천/해양)', value: 'WATER_SENERY' },
+  { label: '자연생태', value: 'NATURAL_ECOLOGY' },
+  { label: '특별히 없음', value: 'NONE' },
 ];
 
 // 음식점 추천은 mealType 이 필수다
