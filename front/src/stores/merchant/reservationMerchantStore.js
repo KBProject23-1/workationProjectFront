@@ -83,9 +83,9 @@ export const useReservationMerchantStore = defineStore('reservationMerchant', {
     priceLevel: '',
     activityType: '',
     // 음식점 추천은 식사 시간이 있어야 기준 장소와 예산 배분을 정할 수 있다
-    mealType: 'LUNCH',
+    mealType: 'BREAKFAST',
     // SEARCH: 내가 조건을 건다 / RECOMMEND: 서버가 워케이션 조건으로 고른다
-    mode: 'SEARCH',
+    mode: 'RECOMMEND',
     // 추천에서 유일하게 고를 수 있는 값
     referenceMerchantId: '',
     referenceCandidates: [],
@@ -144,6 +144,23 @@ export const useReservationMerchantStore = defineStore('reservationMerchant', {
   },
 
   actions: {
+    resetEntrySelection() {
+      this.category = 'ACCOMMODATION';
+      this.mode = 'RECOMMEND';
+      this.merchants = [];
+      this.searched = false;
+      this.error = null;
+      this.hasNext = false;
+      this.nextCursor = null;
+      this.referenceMerchantId = '';
+      this.mealType = 'BREAKFAST';
+      this.accommodationType = '';
+      this.noiseLevel = '';
+      this.foodType = '';
+      this.priceLevel = '';
+      this.activityType = '';
+      this.loadReference();
+    },
     setDate(mode, value) {
       if (mode === 'checkIn') {
         this.checkIn = value;
@@ -158,6 +175,9 @@ export const useReservationMerchantStore = defineStore('reservationMerchant', {
       this.mode = mode;
       this.merchants = [];
       this.searched = false;
+      if (mode === 'RECOMMEND' && this.category === 'RESTAURANT') {
+        this.mealType = 'BREAKFAST';
+      }
       if (mode === 'RECOMMEND') this.loadReference();
     },
 
@@ -199,6 +219,9 @@ export const useReservationMerchantStore = defineStore('reservationMerchant', {
       this.category = category;
       this.merchants = [];
       this.searched = false;
+      if (category === 'RESTAURANT' && this.mode === 'RECOMMEND') {
+        this.mealType = 'BREAKFAST';
+      }
       if (this.mode === 'RECOMMEND') this.loadReference();
       this.accommodationType = '';
       this.noiseLevel = '';
