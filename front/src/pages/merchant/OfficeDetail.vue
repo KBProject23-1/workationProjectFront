@@ -2,16 +2,18 @@
 import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
-import { ChevronLeft, MapPin, Phone } from '@lucide/vue';
+import { ChevronLeft, Heart, MapPin, Phone } from '@lucide/vue';
 import OfficeProductCard from '@/components/merchant/OfficeProductCard.vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationGuestModal from '@/components/reservation/ReservationGuestModal.vue';
 import ReservationSpaceModal from '@/components/reservation/ReservationSpaceModal.vue';
 import { useOfficeStore } from '@/stores/merchant/officeStore';
+import { useErrorToast } from '@/composables/useErrorToast';
 
 const officeStore = useOfficeStore();
 const route = useRoute();
-const { office, startDate, endDate, spaceCount, guestCount, selectedProductId, selectedProduct, totalPrice, isLoading, error } = storeToRefs(officeStore);
+const { office, startDate, endDate, spaceCount, guestCount, selectedProductId, selectedProduct, totalPrice, isLoading, isBookmarkLoading, error } = storeToRefs(officeStore);
+const { showError } = useErrorToast();
 const dateModalMode = ref('');
 const isSpaceModalOpen = ref(false);
 const isGuestModalOpen = ref(false);
@@ -53,6 +55,14 @@ async function closeGuestModal() {
   await fetchOffice();
 }
 
+async function toggleBookmark() {
+  try {
+    await officeStore.toggleBookmark();
+  } catch (bookmarkError) {
+    showError(bookmarkError, '북마크 처리 중 오류가 발생했습니다.');
+  }
+}
+
 onMounted(async () => {
   applyRouteConditions();
   await fetchOffice();
@@ -79,6 +89,17 @@ onMounted(async () => {
     </section>
 
     <section class="merchant-section">
+      <button
+        type="button"
+        class="bookmark-button"
+        :class="{ bookmarked: office.bookmarked }"
+        :aria-label="office.bookmarked ? '북마크 해제' : '북마크 추가'"
+        :aria-pressed="office.bookmarked"
+        :disabled="isBookmarkLoading"
+        @click="toggleBookmark"
+      >
+        <Heart :size="18" :fill="office.bookmarked ? 'currentColor' : 'none'" />
+      </button>
       <h2>{{ office.name }}</h2>
       <p class="address"><MapPin :size="22" /> {{ office.address }}</p>
       <div class="rating-row">
@@ -152,7 +173,7 @@ onMounted(async () => {
 .status-message { padding:24px 16px; margin:0; text-align:center; color:#8a96a5; font-size:14px; }.status-message.error { color:#e05252; }.status-message.error p { margin:0 0 12px; }.status-message.error button { height:40px; padding:0 20px; color:#3087ed; border:1.5px solid #3087ed; border-radius:12px; background:#fff; font-weight:800; }
 .page-header { height:118px; display:grid; grid-template-columns:40px 1fr 40px; align-items:end; padding:0 16px 14px; }.page-header button { width:36px; height:36px; display:grid; place-items:center; padding:0; border:0; background:none; }.page-header h1 { margin:0; text-align:center; font-size:22px; font-weight:800; }
 .hero-image { position:relative; height:175px; margin:0 16px; overflow:hidden; border-radius:22px; background:#b4d3fb; }.office-wall { position:absolute; top:27px; left:25px; right:25px; height:105px; display:flex; align-items:flex-start; justify-content:space-around; padding-top:12px; border-radius:12px; background:#eef5ff; }.office-wall i { width:78px; height:52px; border-radius:6px; background:#dfedff; }.office-wall i:nth-child(2)::after { content:''; display:block; width:25px; height:25px; margin:9px auto; border-radius:50%; background:#ffd057; }.office-desk { position:absolute; left:58px; right:58px; bottom:43px; height:17px; border-radius:10px; background:#987f72; }.office-desk::before,.office-desk::after { content:''; position:absolute; top:16px; width:14px; height:29px; border-radius:6px; background:#856d62; }.office-desk::before { left:15px; }.office-desk::after { right:15px; }.office-desk span { position:absolute; bottom:14px; width:49px; height:12px; border-radius:7px; background:#e9b964; }.office-desk span:first-child { left:31px; }.office-desk span:last-child { right:31px; }
-.merchant-section { padding:10px 17px 8px; }.merchant-section h2 { margin:0 0 8px; font-size:22px; }.merchant-section p { margin:0; }.address { display:flex; align-items:center; gap:4px; color:#8592a2; font-size:12px; }.rating-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; }.rating { font-size:16px; font-weight:800; }.rating span { color:#ff8a00; }.rating b { color:#7b8794; }.review-button { flex:none; padding:5px 10px; border:1px solid #3087ed; border-radius:999px; color:#3087ed; background:#fff; font-size:12px; font-weight:800; }
+.merchant-section { position:relative; padding:10px 17px 8px; }.merchant-section h2 { margin:0 42px 8px 0; font-size:22px; }.merchant-section p { margin:0; }.bookmark-button { position:absolute; top:17px; right:18px; padding:0; color:#88a0bf; border:0; background:transparent; cursor:pointer; transition:color .16s ease,transform .16s ease; }.bookmark-button:hover { color:#3087ed; transform:scale(1.1); }.bookmark-button.bookmarked { color:#3087ed; }.bookmark-button:disabled { cursor:wait; opacity:.55; }.address { display:flex; align-items:center; gap:4px; color:#8592a2; font-size:12px; }.rating-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; }.rating { font-size:16px; font-weight:800; }.rating span { color:#ff8a00; }.rating b { color:#7b8794; }.review-button { flex:none; padding:5px 10px; border:1px solid #3087ed; border-radius:999px; color:#3087ed; background:#fff; font-size:12px; font-weight:800; }
 .office-info { margin:4px 16px 13px; padding:12px 14px; border:1.5px solid #dbe3ee; border-radius:16px; background:#f8fbff; }.office-info strong { font-size:12px; }.office-info p { margin:5px 0 8px; color:#7b8794; font-size:12px; }.office-info div { display:flex; align-items:center; gap:6px; color:#7b8794; font-size:12px; }
 h3 { margin:0 0 10px; font-size:16px; }.condition-section,.usage-section,.product-section { padding:0 16px; }.conditions { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }.conditions button,.conditions > div { height:75px; display:flex; flex-direction:column; justify-content:center; padding:9px 12px; text-align:left; color:#111827; border:1.5px solid #dbe3ee; border-radius:16px; background:#fff; }.conditions small { margin-bottom:9px; color:#8a96a5; font-size:12px; white-space:nowrap; }.conditions strong { font-size:16px; white-space:nowrap; }
 .usage-section { margin-top:17px; }.usage-info { height:48px; display:flex; align-items:center; justify-content:space-around; padding:0 18px; border:1.5px solid #dbe3ee; border-radius:15px; background:#f8fbff; font-size:12px; }.usage-info i { width:4px; height:4px; border-radius:50%; background:#c6d0dc; }.product-section { margin-top:3px; }.product-list { display:flex; flex-direction:column; gap:12px; }
