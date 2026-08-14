@@ -18,3 +18,26 @@ export const getMe = () => {
 export const updateProfile = (payload) => {
   return axiosInstance.patch('/users/me', payload);
 };
+
+// 내 비밀번호 변경 (PATCH /api/v1/users/me/password)
+// - docs: 로그인 후 비밀번호 변경 — 현재 비밀번호(currentPassword) 확인 후 새 비밀번호(newPassword)로 변경
+// - 로그인 사용자 전용 (accessToken HttpOnly Cookie 인증) — 상태 변경(PATCH)이므로 CSRF Header 적용
+// - 변경 성공 후에도 로그인 세션(인증 Cookie)이 유지된다 — Access/Refresh Token Cookie 를 삭제·재발급하지 않음
+// - 비밀번호 원문은 토큰/세션과 무관하게 Request Body 로만 전달한다 (Pinia/localStorage 저장 금지)
+// - 현재 비밀번호 불일치: AUTH_INVALID_PASSWORD(400), 동일 비밀번호: AUTH_SAME_PASSWORD(400),
+//   약한 비밀번호: WEAK_PASSWORD(422), 필수 값 누락: INVALID_PASSWORD_CHANGE_REQUEST(400),
+//   회원 없음: USER_NOT_FOUND(404)
+export const changePassword = (payload) => {
+  return axiosInstance.patch('/users/me/password', payload);
+};
+
+// 계정 설정 진입용 비밀번호 재인증 (POST /api/v1/users/me/account/verify)
+// - docs: 계정 설정 진입용 비밀번호 재인증 — 로그인 사용자가 계정 설정 화면에 진입하기 전
+//   현재 비밀번호(password)를 한 번 더 입력하여 본인임을 확인한다
+// - 재인증 성공 여부는 Redis/DB/Session 에 저장하지 않으며 Access/Refresh Token 도 재발급하지 않는다
+//   → 성공 여부는 프론트 인메모리에서만 유지한다 (localStorage/Pinia 장기 저장 금지)
+// - 비밀번호 불일치: AUTH_INVALID_PASSWORD(400), 이미 탈퇴: USER_ALREADY_WITHDRAWN(409),
+//   회원 없음: USER_NOT_FOUND(404), password 누락: COMMON_INVALID_REQUEST(400)
+export const verifyAccountPassword = (password) => {
+  return axiosInstance.post('/users/me/account/verify', { password });
+};

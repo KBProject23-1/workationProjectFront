@@ -11,6 +11,8 @@ import {
 import {
   getMe as getMeApi,
   updateProfile as updateProfileApi,
+  changePassword as changePasswordApi,
+  verifyAccountPassword as verifyAccountPasswordApi,
 } from '@/api/user';
 
 // 인증 도메인 스토어 (knowledgeFront.md: Auth Store)
@@ -32,6 +34,8 @@ export const useAuthStore = defineStore('auth', {
     user: null,
     // 앱 부팅 시 GET /users/me 로 로그인 상태를 1회 복원했는지 여부 (라우터 가드에서 대기)
     sessionChecked: false,
+    // 계정 설정 진입 비밀번호 재인증 통과 여부 (Pinia 인메모리 — 새로고침/로그아웃 시 초기화)
+    accountVerified: false,
     // 회원가입 플로우 상태 (인메모리 — 새로고침 시 초기화)
     signupAgreedTermIds: [],
     // POST /auth/pass 가 발급한 본인인증 고유 번호 — 회원가입 API 에 전달 (프론트 생성 금지)
@@ -264,6 +268,49 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
+     * 비밀번호 변경 — 로그인 사용자가 현재 비밀번호(currentPassword) 확인 후 새 비밀번호(newPassword)로 변경
+     * - PATCH /users/me/password 호출 (Cookie 기반 인증 — Access/Refresh Token 을 직접 다루지 않는다)
+     * - 변경 성공 후에도 로그인 세션(인증 Cookie)이 유지되므로 isAuthenticated/user 를 변경하지 않는다
+     *   (docs: 로그인 후 비밀번호 변경 — Access/Refresh Cookie 유지, 로그아웃/세션 revoke 없음)
+     * - 비밀번호 원문은 이 스토어에 저장하지 않는다 (Request Body 로만 백엔드에 전달)
+     * - 실패 시 err 를 그대로 throw → 화면에서 useErrorToast 로 안내한다.
+     */
+    async changePassword({ currentPassword, newPassword }) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        await changePasswordApi({ currentPassword, newPassword });
+      } catch (err) {
+        this.error = err;
+        throw err;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    /**
+     * 계정 설정 진입용 비밀번호 재인증 — POST /users/me/account/verify 호출
+     * - 로그인 사용자가 계정 설정 화면에 진입하기 전 현재 비밀번호를 입력해 본인임을 확인한다
+     * - 성공 시 accountVerified=true 로 유지해 휴대폰/이메일/비밀번호 변경 화면에서 뒤로 와도
+     *   다시 입력하지 않게 한다 (Pinia 인메모리 — localStorage/sessionStorage 저장 없음, 새로고침/로그아웃 시 초기화)
+     * - 비밀번호 원문은 이 스토어에 저장하지 않는다 (Request Body 로만 백엔드에 전달)
+     * - 실패 시 err 를 그대로 throw → 화면에서 useErrorToast 로 안내한다.
+     */
+    async verifyAccountPassword(password) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        await verifyAccountPasswordApi(password);
+        this.accountVerified = true;
+      } catch (err) {
+        this.error = err;
+        throw err;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    /**
      * 로그아웃 — POST /auth/logout 호출 후 인메모리 인증 상태를 초기화한다.
      * - 서버가 refreshToken 쿠키를 즉시 만료시키고, 성공 시 프론트의 isAuthenticated/user 를 비운다.
      * - 실패 시 상태를 유지한 채 err 를 throw 한다 (화면에서 실패 토스트 + 재시도 안내).
@@ -275,6 +322,8 @@ export const useAuthStore = defineStore('auth', {
         await logoutApi();
         this.isAuthenticated = false;
         this.user = null;
+        // 계정 설정 재인증 상태도 함께 초기화 (다른 계정 로그인 시 재인증 필요)
+        this.accountVerified = false;
       } catch (err) {
         this.error = err;
         throw err;
