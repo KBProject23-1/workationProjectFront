@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ChevronLeft, Heart, MapPin, Phone } from '@lucide/vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationOccupancyModal from '@/components/reservation/ReservationOccupancyModal.vue';
@@ -11,6 +11,7 @@ import { useErrorToast } from '@/composables/useErrorToast';
 
 const accommodationStore = useAccommodationStore();
 const route = useRoute();
+const router = useRouter();
 const { accommodation, checkIn, checkOut, roomCount, guestCount, selectedProductId, totalPrice, isLoading, isBookmarkLoading, error } = storeToRefs(accommodationStore);
 const { showError } = useErrorToast();
 const dateModalMode = ref('');
@@ -60,6 +61,23 @@ async function toggleBookmark() {
   } catch (bookmarkError) {
     showError(bookmarkError, '북마크 처리 중 오류가 발생했습니다.');
   }
+}
+
+function goToReservationCreate() {
+  if (!selectedProductId.value) return;
+
+  router.push({
+    name: 'ReservationCreate',
+    query: {
+      category: 'ACCOMMODATION',
+      merchantId: accommodation.value.merchantId,
+      productId: selectedProductId.value,
+      startDate: checkIn.value,
+      endDate: checkOut.value,
+      headcount: guestCount.value,
+      quantity: roomCount.value,
+    },
+  });
 }
 
 onMounted(async () => {
@@ -134,7 +152,7 @@ onMounted(async () => {
 
     <section class="booking-summary">
       <div><small>총 결제 금액</small><strong>{{ totalPrice.toLocaleString() }}원</strong></div>
-      <button type="button">예약하기</button>
+      <button type="button" :disabled="!selectedProductId" @click="goToReservationCreate">예약하기</button>
     </section>
 
     <ReservationDateModal
@@ -172,5 +190,6 @@ h3 { margin:0 0 10px; font-size:16px; }.room-section { padding:0 16px; }
 .stay-condition { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; padding:11px 16px 15px; }.stay-condition button { height:66px; display:flex; flex-direction:column; justify-content:center; padding:9px 13px; text-align:left; border:1.5px solid #dbe3ee; border-radius:16px; color:#111827; background:#fff; cursor:pointer; }.stay-condition button:active { border-color:#3087ed; }.stay-condition small { margin-bottom:8px; color:#8a96a5; font-size:12px; }.stay-condition strong { font-size:16px; white-space:nowrap; }
 .room-list { display:flex; flex-direction:column; gap:12px; }
 .booking-summary { display:flex; align-items:center; justify-content:space-between; gap:20px; margin-top:12px; padding:10px 16px 0; border-top:2px solid #edf0f4; }.booking-summary div { display:flex; flex-direction:column; }.booking-summary small { margin-bottom:3px; color:#8a96a5; font-size:12px; }.booking-summary strong { font-size:22px; }.booking-summary button { width:158px; height:52px; border:0; border-radius:15px; color:#fff; background:#3087ed; font-size:16px; font-weight:800; }
+.booking-summary button:disabled { cursor:not-allowed; background:#cbd5e1; }
 @media (max-width:360px) { .stay-condition { gap:5px; }.stay-condition > button { padding:8px; }.booking-summary { gap:10px; }.booking-summary button { width:140px; } }
 </style>

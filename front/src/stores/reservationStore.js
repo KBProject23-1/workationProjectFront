@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import {
   cancelReservation,
+  createReservation as createReservationApi,
   getReservationCancellation,
   getReservationDetails,
   getReservationList,
@@ -47,6 +48,9 @@ export const useReservationStore = defineStore('reservation', {
     cancellationDetail: null,
     isCancellationDetailLoading: false,
     cancellationDetailError: null,
+    reservationCreateResult: null,
+    isCreating: false,
+    createError: null,
   }),
 
   getters: {
@@ -55,6 +59,33 @@ export const useReservationStore = defineStore('reservation', {
   },
 
   actions: {
+    // PIN 인증을 포함한 예약 생성 요청의 중복 실행 방지 및 성공 결과 보관
+    async createReservation(payload) {
+      if (this.isCreating) return null;
+
+      this.isCreating = true;
+      this.createError = null;
+      this.reservationCreateResult = null;
+
+      try {
+        const { data } = await createReservationApi(payload);
+
+        if (!data?.reservationId || data.status !== 'CONFIRMED') {
+          throw new Error('예약 생성 응답 형식이 올바르지 않습니다.');
+        }
+
+        this.reservationCreateResult = data;
+        this.reservations = [];
+        this.pagination = createPagination();
+        return data;
+      } catch (error) {
+        this.createError = error.message;
+        throw error;
+      } finally {
+        this.isCreating = false;
+      }
+    },
+
     // 선택한 탭의 예약 상태를 기준으로 첫 페이지부터 다시 조회하는 처리
     async fetchReservations(statuses = DEFAULT_RESERVATION_STATUSES) {
       this.isLoading = true;
