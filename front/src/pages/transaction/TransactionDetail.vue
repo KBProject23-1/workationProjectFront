@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useTransactionStore } from '@/stores/transactionStore';
+import { useReviewStore } from '@/stores/reviewStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { toast } from 'vue-sonner';
 import { ChevronLeft, RotateCcw } from '@lucide/vue';
@@ -14,12 +15,14 @@ import { getStatusMeta, isInactiveStatus } from '@/utils/transactionStatus';
 const router = useRouter();
 const route = useRoute();
 const transactionStore = useTransactionStore();
+const reviewStore = useReviewStore();
 const { showError } = useErrorToast();
 
 const transactionId = Number(route.params.transactionId);
 const isValidId = Number.isSafeInteger(transactionId) && transactionId > 0;
 const isReceiptOpen = ref(false);
 const isCancelConfirmOpen = ref(false);
+const isReviewDeleteConfirmOpen = ref(false);
 const isCanceling = ref(false);
 
 const detail = computed(() => transactionStore.currentDetail);
@@ -68,6 +71,21 @@ function goToReview() {
   router.push(detail.value.reviewAction === 'EDIT'
     ? `/reviews/${detail.value.reviewId}/edit`
     : `/transactions/${transactionId}/reviews/new`);
+}
+
+function closeReviewDeleteModal() {
+  if (!reviewStore.isReviewDeleting) isReviewDeleteConfirmOpen.value = false;
+}
+
+async function confirmReviewDelete() {
+  const deleted = await reviewStore.deleteMyReview(detail.value.reviewId);
+  if (!deleted) {
+    toast.error(reviewStore.reviewDeleteError || '리뷰 삭제에 실패했어요.');
+    return;
+  }
+  isReviewDeleteConfirmOpen.value = false;
+  await loadDetail();
+  toast.success('리뷰가 삭제되었어요.');
 }
 
 async function openReceipt() {
@@ -227,9 +245,22 @@ onMounted(loadDetail);
       </div>
 
       <div class="w-full mt-auto pt-4 pb-2 text-center">
-        <BaseButton v-if="detail.reviewDeadline" :disabled="!canWriteOrEditReview" class="mb-3 w-full rounded-2xl py-3.5 text-[15px] font-bold disabled:bg-gray-200 disabled:text-gray-400" @click="goToReview">
-          {{ reviewButtonLabel }}
-        </BaseButton>
+        <div v-if="detail.reviewDeadline" class="mb-3 flex w-full gap-3">
+          <BaseButton
+            :disabled="!canWriteOrEditReview"
+            class="min-w-0 flex-1 rounded-2xl py-3.5 text-[15px] font-bold disabled:bg-gray-200 disabled:text-gray-400"
+            @click="goToReview"
+          >
+            {{ reviewButtonLabel }}
+          </BaseButton>
+          <BaseButton
+            v-if="detail.reviewId"
+            class="min-w-0 flex-1 rounded-2xl border border-[#3087ed] bg-white py-3.5 text-[15px] font-bold text-[#3087ed] hover:bg-blue-50"
+            @click="isReviewDeleteConfirmOpen = true"
+          >
+            리뷰 삭제하기
+          </BaseButton>
+        </div>
         <BaseButton
           v-if="
             detail.transactionType === 'PAYMENT' && detail.status === 'PAID'
@@ -255,6 +286,17 @@ onMounted(loadDetail);
       message="이 거래를 취소할까요? 취소 후에는 되돌릴 수 없어요."
       @confirm="handleCancel"
       @cancel="isCancelConfirmOpen = false"
+    />
+
+    <BaseConfirmModal
+      :visible="isReviewDeleteConfirmOpen"
+      :title="'리뷰를 삭제하시면\n재작성이 불가합니다.'"
+      message="삭제하시겠습니까?"
+      cancel-label="닫기"
+      confirm-label="확인"
+      :loading="reviewStore.isReviewDeleting"
+      @cancel="closeReviewDeleteModal"
+      @confirm="confirmReviewDelete"
     />
   </main>
 </template>
