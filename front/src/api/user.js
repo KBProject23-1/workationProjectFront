@@ -31,6 +31,19 @@ export const changePassword = (payload) => {
   return axiosInstance.patch('/users/me/password', payload);
 };
 
+// 내 휴대폰 번호 변경 (PATCH /api/v1/users/me/phone)
+// - docs: 휴대폰 번호 변경 — Mock PASS 인증(POST /auth/pass) 완료 후 백엔드가 발급한
+//   identityVerificationId 만 전달한다. 변경할 휴대폰 번호(phoneNumber)는 보내지 않는다
+//   (백엔드가 identityVerificationId 기준 PASS 인증 결과에서 인증된 번호를 조회해 변경 —
+//    프론트가 전달한 번호는 신뢰하지 않는다).
+// - identityVerificationId 는 백엔드가 발급한 값만 사용한다 (프론트 임의 생성 금지)
+// - 성공: data { updatedPhone } (PASS 인증으로 변경된 휴대폰 번호)
+// - 실패: INVALID_VERIFICATION_ID(400) / VERIFICATION_FAILED(400) / PHONE_SAME_AS_CURRENT(400) /
+//   PHONE_ALREADY_IN_USE(409) / USER_ALREADY_WITHDRAWN(409) / USER_NOT_FOUND(404)
+export const changePhone = (payload) => {
+  return axiosInstance.patch('/users/me/phone', payload);
+};
+
 // 계정 설정 진입용 비밀번호 재인증 (POST /api/v1/users/me/account/verify)
 // - docs: 계정 설정 진입용 비밀번호 재인증 — 로그인 사용자가 계정 설정 화면에 진입하기 전
 //   현재 비밀번호(password)를 한 번 더 입력하여 본인임을 확인한다

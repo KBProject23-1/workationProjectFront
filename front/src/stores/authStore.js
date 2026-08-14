@@ -13,6 +13,7 @@ import {
   updateProfile as updateProfileApi,
   changePassword as changePasswordApi,
   verifyAccountPassword as verifyAccountPasswordApi,
+  changePhone as changePhoneApi,
 } from '@/api/user';
 
 // 인증 도메인 스토어 (knowledgeFront.md: Auth Store)
@@ -280,6 +281,33 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
       try {
         await changePasswordApi({ currentPassword, newPassword });
+      } catch (err) {
+        this.error = err;
+        throw err;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    /**
+     * 휴대폰 번호 변경 — PASS 인증으로 발급받은 identityVerificationId 만 전달한다.
+     * - PATCH /users/me/phone 호출 — 변경할 휴대폰 번호는 전달하지 않는다 (백엔드가
+     *   identityVerificationId 기준 PASS 인증 결과에서 인증된 번호를 조회해 변경 — 프론트 번호 신뢰 금지)
+     * - identityVerificationId 는 백엔드(POST /auth/pass)가 발급한 값만 사용한다 (프론트 임의 생성 금지)
+     * - 성공 응답 data.updatedPhone 을 user.phoneNumber 에 반영해 내 정보 화면이 최신 번호를 표시한다
+     *   (변경 후 확인 버튼에서 fetchMyInfo 로도 한 번 더 갱신한다)
+     * - 실패 시 err 를 그대로 throw → 화면에서 useErrorToast 로 안내한다.
+     */
+    async changePhone(identityVerificationId) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const { data } = await changePhoneApi({ identityVerificationId });
+        this.user = {
+          ...this.user,
+          phoneNumber: data.updatedPhone,
+        };
+        return data;
       } catch (err) {
         this.error = err;
         throw err;
