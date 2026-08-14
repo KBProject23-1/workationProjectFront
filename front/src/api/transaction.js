@@ -24,8 +24,3 @@ export const getTransactionReceipt = (transactionId) => {
 export const createPayment = (payload) => {
   return axiosInstance.post('/payments', payload);
 };
-
-// 거래 취소
-export const cancelTransaction = (transactionId) => {
-  return axiosInstance.patch(`/transactions/${transactionId}/cancel`);
-};

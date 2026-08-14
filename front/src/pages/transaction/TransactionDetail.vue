@@ -5,7 +5,7 @@ import { useTransactionStore } from '@/stores/transactionStore';
 import { useReviewStore } from '@/stores/reviewStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { toast } from 'vue-sonner';
-import { ChevronLeft, RotateCcw } from '@lucide/vue';
+import { ChevronLeft } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import TransactionReceiptModal from '@/components/transaction/TransactionReceiptModal.vue';
@@ -21,9 +21,7 @@ const { showError } = useErrorToast();
 const transactionId = Number(route.params.transactionId);
 const isValidId = Number.isSafeInteger(transactionId) && transactionId > 0;
 const isReceiptOpen = ref(false);
-const isCancelConfirmOpen = ref(false);
 const isReviewDeleteConfirmOpen = ref(false);
-const isCanceling = ref(false);
 
 const detail = computed(() => transactionStore.currentDetail);
 const loading = ref(true); // 첫 렌더부터 스켈레톤 노출 (에러/빈 화면 깜빡임 방지)
@@ -54,11 +52,6 @@ const signedAmount = computed(() => {
   return `${sign}${detail.value.amount.toLocaleString('ko-KR')}원`;
 });
 
-const canCancel = computed(
-  () =>
-    detail.value?.transactionType === 'PAYMENT' &&
-    detail.value?.status === 'PAID',
-);
 const isReviewPeriodExpired = computed(() => detail.value?.reviewDeadline
   ? Date.now() > new Date(detail.value.reviewDeadline).getTime() : false);
 const canWriteOrEditReview = computed(() => ['WRITE', 'EDIT'].includes(detail.value?.reviewAction));
@@ -94,25 +87,6 @@ async function openReceipt() {
     isReceiptOpen.value = true;
   } catch (err) {
     showError(err, '매출전표를 불러오지 못했어요.');
-  }
-}
-
-async function handleCancel() {
-  isCanceling.value = true;
-  try {
-    const res = await transactionStore.cancelTransaction(transactionId);
-    await loadDetail();
-    const dest = res?.refundedTo === 'CARD' ? '카드' : '지갑';
-    const amountText =
-      res?.refundedAmount != null
-        ? `${res.refundedAmount.toLocaleString('ko-KR')}원 `
-        : '';
-    toast.success(`${dest}로 ${amountText}환불됐어요`);
-  } catch (err) {
-    showError(err, '거래 취소에 실패했어요.');
-  } finally {
-    isCanceling.value = false;
-    isCancelConfirmOpen.value = false;
   }
 }
 
@@ -230,20 +204,6 @@ onMounted(loadDetail);
         </div>
       </div>
 
-      <div v-if="canCancel" class="w-full flex justify-end px-1 mb-6">
-        <button
-          type="button"
-          class="flex items-center gap-1.5 text-[13px] font-semibold text-gray-500 hover:text-red-600 active:scale-95 transition-all py-1 px-2.5 rounded-lg hover:bg-red-50"
-          @click="isCancelConfirmOpen = true"
-        >
-          <RotateCcw
-            :size="14"
-            class="text-gray-500 group-hover:text-red-500"
-          />
-          <span>결제 취소</span>
-        </button>
-      </div>
-
       <div class="w-full mt-auto pt-4 pb-2 text-center">
         <div v-if="detail.reviewDeadline" class="mb-3 flex w-full gap-3">
           <BaseButton
@@ -277,15 +237,6 @@ onMounted(loadDetail);
       :visible="isReceiptOpen"
       :receipt="transactionStore.currentReceipt"
       @close="isReceiptOpen = false"
-    />
-
-    <BaseConfirmModal
-      :visible="isCancelConfirmOpen"
-      :loading="isCanceling"
-      title="거래 취소"
-      message="이 거래를 취소할까요? 취소 후에는 되돌릴 수 없어요."
-      @confirm="handleCancel"
-      @cancel="isCancelConfirmOpen = false"
     />
 
     <BaseConfirmModal
