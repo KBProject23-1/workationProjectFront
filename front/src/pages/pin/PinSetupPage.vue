@@ -119,6 +119,7 @@ function buildDeviceName() {
       :description="description"
       :error="error"
       :disabled="submitting"
+      :reshuffle-key="phase"
       @complete="handleComplete"
     />
   </main>

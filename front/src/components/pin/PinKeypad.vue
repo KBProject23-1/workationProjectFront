@@ -9,10 +9,13 @@ const props = defineProps({
   error: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
   maxLength: { type: Number, default: 6 },
+  // 값이 바뀔 때마다 키패드를 다시 섞는다 (예: PIN 등록의 enter→confirm 단계 전환).
+  // 넘기지 않으면 마운트 시 1회만 섞는 기존 동작 유지.
+  reshuffleKey: { type: [String, Number], default: null },
 });
 const emit = defineEmits(['update:modelValue', 'complete']);
 
-// 보안: 숫자·아이콘 칸을 매 마운트마다 섞는다. back 은 우하단 고정.
+// 보안: 숫자·아이콘 칸을 섞는다. back 은 우하단 고정.
 function shuffle(list) {
   const a = [...list];
   for (let i = a.length - 1; i > 0; i -= 1) {
@@ -21,10 +24,21 @@ function shuffle(list) {
   }
   return a;
 }
-const keys = [
-  ...shuffle(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '']),
-  'back',
-];
+function buildKeys() {
+  return [
+    ...shuffle(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '']),
+    'back',
+  ];
+}
+const keys = ref(buildKeys());
+
+// reshuffleKey 가 바뀌면(단계 전환 등) 배열을 새로 섞어 이전 배치와 달라지게 한다.
+watch(
+  () => props.reshuffleKey,
+  () => {
+    keys.value = buildKeys();
+  },
+);
 
 const shaking = ref(false);
 watch(
