@@ -1,5 +1,10 @@
 import axiosInstance from './axiosInstance';
 
+// 로그인한 사용자의 예약 생성 및 결제 처리
+export const createReservation = (payload) => {
+  return axiosInstance.post('/reservations', payload);
+};
+
 // Spring의 List<ReservationStatus>가 인식하도록 배열 값을 같은 키의 반복 파라미터로 변환
 function serializeReservationParams(params) {
   const searchParams = new URLSearchParams();
