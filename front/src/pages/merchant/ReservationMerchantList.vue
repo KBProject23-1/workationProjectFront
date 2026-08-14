@@ -141,12 +141,6 @@
             :options="FOOD_TYPES"
           />
           <FilterChipGroup
-            v-if="category === 'RESTAURANT' && !isRecommended"
-            v-model="priceLevel"
-            label="가격대"
-            :options="PRICE_LEVELS"
-          />
-          <FilterChipGroup
             v-if="category === 'ACTIVITY' && !isRecommended"
             v-model="activityType"
             label="활동 종류"
@@ -343,7 +337,6 @@ import {
   FOOD_TYPES,
   OFFICE_NOISE_LEVELS,
   MEAL_TYPES,
-  PRICE_LEVELS,
   RESERVATION_CATEGORIES,
   SEARCH_MODES,
   SORT_OPTIONS,
@@ -376,7 +369,6 @@ const {
   accommodationType,
   noiseLevel,
   foodType,
-  priceLevel,
   activityType,
   mealType,
   mode,

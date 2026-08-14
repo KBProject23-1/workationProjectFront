@@ -38,14 +38,6 @@ export const FOOD_TYPES = [
   { label: '바', value: 'BAR' },
 ];
 
-// restaurants.price_level. 고른 단계 이하를 모두 보여준다
-export const PRICE_LEVELS = [
-  { label: '전체', value: '' },
-  { label: '저렴한 편', value: 1 },
-  { label: '보통', value: 2 },
-  { label: '비싼 편', value: 3 },
-];
-
 // activities.activity_type
 export const ACTIVITY_TYPES = [
   { label: '전체', value: '' },
