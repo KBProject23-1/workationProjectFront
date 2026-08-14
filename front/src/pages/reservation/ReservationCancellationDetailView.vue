@@ -12,6 +12,17 @@ const reservationStore = useReservationStore();
 const reservationId = computed(() => Number(route.params.reservationId));
 const cancellation = computed(() => reservationStore.cancellationDetail);
 
+const merchantDetailRoutes = {
+  ACCOMMODATION: 'AccommodationDetail',
+  OFFICE: 'OfficeDetail',
+};
+
+const merchantCategoryByProductType = {
+  ROOM: 'ACCOMMODATION',
+  OFFICE_SEAT: 'OFFICE',
+  MEETING_ROOM: 'OFFICE',
+};
+
 function goToCancellationList() {
   router.push({ name: 'ReservationList', query: { tab: 'cancellation' } });
 }
@@ -25,6 +36,23 @@ function fetchCancellationDetail() {
   }
 
   reservationStore.fetchReservationCancellation(reservationId.value);
+}
+
+// 취소 상세 응답의 가맹점 식별자로 숙소·공유오피스 상세 이동
+function goToMerchantDetail() {
+  const merchantId = Number(cancellation.value?.merchantId);
+  const category = cancellation.value?.merchantCategory
+    ?? merchantCategoryByProductType[
+      cancellation.value?.reservationProduct?.productDetailType
+    ];
+  const routeName = merchantDetailRoutes[category];
+
+  if (!Number.isSafeInteger(merchantId) || merchantId <= 0 || !routeName) return;
+
+  router.push({
+    name: routeName,
+    params: { merchantId },
+  });
 }
 
 onMounted(fetchCancellationDetail);
@@ -74,15 +102,28 @@ onMounted(fetchCancellationDetail);
     </main>
 
     <main v-else-if="cancellation" class="flex-1 px-4 pb-8">
-      <img
-        :src="cancellation.reservationProduct.thumbnailUrl"
-        :alt="cancellation.reservationProduct.productName"
-        class="h-[202px] w-full rounded-xl bg-blue-100 object-cover"
-      />
+      <button
+        type="button"
+        class="block h-[202px] w-full overflow-hidden rounded-xl bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        :aria-label="`${cancellation.merchantName} 상세 보기`"
+        @click="goToMerchantDetail"
+      >
+        <img
+          :src="cancellation.reservationProduct.thumbnailUrl"
+          :alt="cancellation.reservationProduct.productName"
+          class="h-full w-full object-cover active:opacity-90"
+        />
+      </button>
 
       <div class="flex items-end justify-between gap-3 px-2 py-3">
         <h2 class="min-w-0 flex-1 truncate text-[17px] font-extrabold text-slate-800">
-          {{ cancellation.merchantName }}
+          <button
+            type="button"
+            class="max-w-full truncate text-left hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            @click="goToMerchantDetail"
+          >
+            {{ cancellation.merchantName }}
+          </button>
         </h2>
         <p class="shrink-0 text-[10px] text-slate-400">
           예약 번호 {{ cancellation.reservationCode }}

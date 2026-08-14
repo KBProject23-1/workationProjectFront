@@ -64,6 +64,17 @@ const reviewButtonLabel = computed(() => {
   return detail.value?.reviewAction === 'EDIT' ? '리뷰 수정하기' : '리뷰 작성하기';
 });
 
+const merchantDetailRoutes = {
+  ACCOMMODATION: 'AccommodationDetail',
+  OFFICE: 'OfficeDetail',
+};
+
+const merchantCategoryByProductType = {
+  ROOM: 'ACCOMMODATION',
+  OFFICE_SEAT: 'OFFICE',
+  MEETING_ROOM: 'OFFICE',
+};
+
 // 직접 URL 진입 시에도 예약 목록으로 돌아갈 수 있는 뒤로 가기 처리
 function goBack() {
   if (window.history.length > 1) {
@@ -80,6 +91,23 @@ function fetchDetail() {
     return;
   }
   reservationStore.fetchReservationDetails(reservationId.value);
+}
+
+// 예약 상세 응답의 가맹점 식별자로 숙소·공유오피스 상세 이동
+function goToMerchantDetail() {
+  const merchantId = Number(detail.value?.merchant?.merchantId);
+  const category = detail.value?.merchant?.category
+    ?? merchantCategoryByProductType[
+      detail.value?.reservationProduct?.productDetailType
+    ];
+  const routeName = merchantDetailRoutes[category];
+
+  if (!Number.isSafeInteger(merchantId) || merchantId <= 0 || !routeName) return;
+
+  router.push({
+    name: routeName,
+    params: { merchantId },
+  });
 }
 
 function goToCancellation() {
@@ -140,15 +168,28 @@ onMounted(fetchDetail);
 
     <template v-else-if="detail">
       <main class="flex-1 px-4 pb-8">
-        <img
-          :src="detail.reservationProduct.thumbnailUrl"
-          :alt="detail.reservationProduct.productName"
-          class="h-[202px] w-full rounded-xl bg-blue-100 object-cover"
-        />
+        <button
+          type="button"
+          class="block h-[202px] w-full overflow-hidden rounded-xl bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          :aria-label="`${detail.merchant.name} 상세 보기`"
+          @click="goToMerchantDetail"
+        >
+          <img
+            :src="detail.reservationProduct.thumbnailUrl"
+            :alt="detail.reservationProduct.productName"
+            class="h-full w-full object-cover active:opacity-90"
+          />
+        </button>
 
         <div class="flex items-end justify-between gap-3 px-2 py-3">
           <h2 class="min-w-0 flex-1 truncate text-[17px] font-extrabold text-slate-800">
-            {{ detail.merchant.name }}
+            <button
+              type="button"
+              class="max-w-full truncate text-left hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              @click="goToMerchantDetail"
+            >
+              {{ detail.merchant.name }}
+            </button>
           </h2>
           <p class="shrink-0 text-[10px] text-slate-400">
             예약 번호 {{ detail.reservationCode }}
