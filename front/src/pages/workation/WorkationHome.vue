@@ -82,7 +82,7 @@
         @select="goScheduleItem"
         @toggle="toggleScheduleRange"
         @reserve="goReservations"
-        @recommend="goRecommendation"
+        @history="goReservationHistory"
       />
 
       <!-- 지출로 가는 버튼 바로 위에 둬야 무엇을 눌러야 하는지 이어진다 -->
@@ -265,9 +265,9 @@ const goIncompleteStep = () => {
   );
 };
 
-// 추천은 한 항목만 골라 그 추천으로 바로 들어간다
-const goRecommendation = () => {
-  router.push('/recommendation?mode=single');
+// 지난 예약까지 모두 보는 화면
+const goReservationHistory = () => {
+  router.push('/reservations');
 };
 
 // 시안 기준으로 진행 중 워케이션이 있을 때와 없을 때 목록 제목이 다르다
@@ -359,7 +359,7 @@ const goUncheckedExpenses = () => {
   );
 };
 
-// 예약 내역이 아니라 예약할 상품을 고르는 화면으로 보낸다
+// 예약과 추천을 한 화면에서 고른다
 const goReservations = () => {
   router.push('/reservation/merchants');
 };

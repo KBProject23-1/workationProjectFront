@@ -24,13 +24,13 @@
               class="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-bold text-slate-600"
               @click="$emit('reserve')"
             >
-              예약
+              예약 · 추천
             </button>
             <button
               class="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-bold text-slate-600"
-              @click="$emit('recommend')"
+              @click="$emit('history')"
             >
-              추천
+              예약 내역
             </button>
           </div>
         </div>
@@ -118,7 +118,7 @@ defineProps({
   isLoading: { type: Boolean, default: false },
 });
 
-defineEmits(['select', 'toggle', 'reserve', 'recommend']);
+defineEmits(['select', 'toggle', 'reserve', 'history']);
 
 // 예약은 여러 날에 걸쳐 같은 id 로 반복되므로 날짜를 섞어 키를 만든다
 const itemKey = (item) =>
