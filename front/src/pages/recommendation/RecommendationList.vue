@@ -46,8 +46,8 @@ async function loadCategory(categoryKey) {
       recommendationStore.fetchRecommendations(categoryKey, {
         mealType: mealType.value,
       }),
-      recommendationStore.fetchBookmarkIds(categoryKey).catch(() => {}),
     ]);
+    await recommendationStore.fetchBookmarkIds(categoryKey);
   } catch (error) {
     showError(error, `${category.value.title} 추천 목록을 불러오지 못했습니다.`);
   }
@@ -130,7 +130,7 @@ function goDetail(item) {
 
 async function toggleBookmark(item) {
   try {
-    item.bookmarked = await recommendationStore.toggleBookmark(
+    await recommendationStore.toggleBookmark(
       item.merchantId,
       category.value.key,
       item.bookmarked ||

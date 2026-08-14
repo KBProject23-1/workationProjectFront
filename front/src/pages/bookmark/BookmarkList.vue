@@ -11,7 +11,7 @@ const categories = [
   { label: '전체', value: '' },
   { label: '숙소', value: 'ACCOMMODATION' },
   { label: '공유 오피스', value: 'OFFICE' },
-  { label: '식당', value: 'RESTAURANT' },
+  { label: '음식점', value: 'RESTAURANT' },
   { label: '여가', value: 'ACTIVITY' },
 ];
 const routeNames = {

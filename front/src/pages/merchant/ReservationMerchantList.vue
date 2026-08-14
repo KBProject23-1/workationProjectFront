@@ -270,7 +270,7 @@
             :key="item.merchantId"
             :merchant="item"
             @select="moveToMerchantDetails"
-            @toggle-bookmark="merchantStore.toggleBookmark"
+            @toggle-bookmark="toggleBookmark"
           />
         </div>
 
@@ -336,6 +336,7 @@ import ReservationMerchantCard from '@/components/merchant/ReservationMerchantCa
 import FilterChipGroup from '@/components/merchant/FilterChipGroup.vue';
 import ReferencePlaceSheet from '@/components/merchant/ReferencePlaceSheet.vue';
 import { useReservationMerchantStore } from '@/stores/merchant/reservationMerchantStore';
+import { useErrorToast } from '@/composables/useErrorToast';
 import {
   ACCOMMODATION_TYPES,
   ACTIVITY_TYPES,
@@ -360,6 +361,7 @@ const DETAIL_ROUTES = {
 
 const router = useRouter();
 const merchantStore = useReservationMerchantStore();
+const { showError } = useErrorToast();
 
 const {
   merchants,
@@ -465,6 +467,14 @@ const moveToMerchantDetails = (merchant) => {
     params: { merchantId: merchant.merchantId },
     query,
   });
+};
+
+const toggleBookmark = async (merchantId) => {
+  try {
+    await merchantStore.toggleBookmark(merchantId);
+  } catch (bookmarkError) {
+    showError(bookmarkError, '북마크 처리 중 오류가 발생했습니다.');
+  }
 };
 
 // 탭을 옮기면 조건을 새로 고르게 되므로 접혀 있던 필터를 다시 펼친다

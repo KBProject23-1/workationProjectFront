@@ -184,12 +184,37 @@ export const useRecommendationStore = defineStore('recommendation', {
       const categoryType = RECOMMENDATION_CATEGORIES.find(
         (item) => item.key === category,
       )?.type;
-      const { data } = await getBookmarks({
-        category: categoryType,
-        size: '50',
-      });
-      (data.content ?? []).forEach((bookmark) => {
-        this.bookmarkIdsByMerchant[bookmark.merchantId] = bookmark.bookmarkId;
+      if (!categoryType) return;
+
+      const bookmarkIds = {};
+      let cursor = null;
+
+      do {
+        const { data } = await getBookmarks({
+          category: categoryType,
+          cursor,
+          size: '100',
+        });
+        (data.content ?? []).forEach((bookmark) => {
+          bookmarkIds[bookmark.merchantId] = bookmark.bookmarkId;
+        });
+        cursor = data.hasNext ? data.nextCursor : null;
+      } while (cursor);
+
+      const recommendationMerchantIds = new Set(
+        this.recommendations[category].map((item) => item.merchantId),
+      );
+      const bookmarkIdsByMerchant = Object.fromEntries(
+        Object.entries(this.bookmarkIdsByMerchant).filter(
+          ([merchantId]) => !recommendationMerchantIds.has(Number(merchantId)),
+        ),
+      );
+      this.bookmarkIdsByMerchant = {
+        ...bookmarkIdsByMerchant,
+        ...bookmarkIds,
+      };
+      this.recommendations[category].forEach((item) => {
+        item.bookmarked = Boolean(bookmarkIds[item.merchantId]);
       });
     },
 
@@ -270,11 +295,13 @@ export const useRecommendationStore = defineStore('recommendation', {
         if (bookmarkId) {
           await deleteBookmark(bookmarkId);
           delete this.bookmarkIdsByMerchant[merchantId];
+          this.setRecommendationBookmarkState(merchantId, false);
           return false;
         }
 
         const { data } = await createBookmark(merchantId);
         this.bookmarkIdsByMerchant[merchantId] = data.bookmarkId;
+        this.setRecommendationBookmarkState(merchantId, true);
         return true;
       } finally {
         this.bookmarkLoadingMerchantIds =
@@ -282,6 +309,15 @@ export const useRecommendationStore = defineStore('recommendation', {
             (loadingMerchantId) => loadingMerchantId !== merchantId,
           );
       }
+    },
+
+    setRecommendationBookmarkState(merchantId, bookmarked) {
+      CATEGORY_ORDER.forEach((category) => {
+        const item = this.recommendations[category].find(
+          (recommendation) => recommendation.merchantId === merchantId,
+        );
+        if (item) item.bookmarked = bookmarked;
+      });
     },
   },
 });
