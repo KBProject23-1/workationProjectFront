@@ -14,12 +14,12 @@ const cardStore = useCardStore();
 const { showError } = useErrorToast();
 
 // 로그인 직후 온보딩 흐름(계좌→카드→PIN)이면 완료 후 PIN 설정으로, 그 외엔 지갑으로 이동한다.
+// (온보딩 체인은 계좌 0개=미온보딩 유저만 진입하므로 PIN 은 항상 미등록 상태다)
 function goAfterLink() {
   if (route.query.flow === 'onboarding') {
-    router.push({
-      path: '/pin/setup',
-      query: { redirect: route.query.redirect || '/workation' },
-    });
+    const redirect =
+      typeof route.query.redirect === 'string' ? route.query.redirect : '/workation';
+    router.push({ path: '/pin/setup', query: { redirect } });
   } else {
     router.push('/wallet');
   }
