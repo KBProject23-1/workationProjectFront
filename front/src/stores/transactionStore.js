@@ -5,7 +5,6 @@ import {
   getTransactionDetail,
   getTransactionReceipt,
   createPayment as createPaymentApi,
-  cancelTransaction as cancelTransactionApi,
 } from '@/api/transaction';
 import { toDateParam } from '@/utils/date';
 
@@ -142,23 +141,6 @@ export const useTransactionStore = defineStore('transaction', {
         throw err;
       } finally {
         this.isLoading = false;
-      }
-    },
-
-    async cancelTransaction(transactionId) {
-      try {
-        const { data } = await cancelTransactionApi(transactionId);
-        const target = this.transactions.find(
-          (t) => t.transactionId === transactionId,
-        );
-        if (target) {
-          target.status = data.status;
-        }
-        this.fetchSummary();
-        return data;
-      } catch (err) {
-        this.error = err.message;
-        throw err;
       }
     },
 
