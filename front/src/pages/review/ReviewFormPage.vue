@@ -35,7 +35,12 @@ async function submitReview(form) {
     reviewId: reviewId.value,
     ...form,
   });
-  if (result) router.push('/users/me/reviews');
+  if (!result) return;
+  if (mode.value === 'edit') {
+    router.push(`/reviews/${reviewId.value}`);
+    return;
+  }
+  router.push('/users/me/reviews');
 }
 </script>
 
