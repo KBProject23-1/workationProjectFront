@@ -5,7 +5,7 @@
         type="button"
         class="absolute left-3 rounded-full p-1 text-slate-700 active:bg-slate-100"
         aria-label="뒤로 가기"
-        @click="router.back()"
+        @click="goBack"
       >
         <ChevronLeft :size="24" :stroke-width="1.8" />
       </button>
@@ -355,6 +355,11 @@ const DETAIL_ROUTES = {
 const router = useRouter();
 const merchantStore = useReservationMerchantStore();
 const { showError } = useErrorToast();
+
+// 예약·추천 목록에서 워케이션 홈으로 이동
+function goBack() {
+  router.push({ name: 'WorkationHome' });
+}
 
 const {
   merchants,

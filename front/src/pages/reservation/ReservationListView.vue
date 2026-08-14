@@ -38,13 +38,9 @@ const activeTab = computed(
     reservationTabs[0],
 );
 
-// 직접 URL로 진입해 이전 이력이 없으면 서비스 홈으로 이동
+// 예약 목록의 두 탭에서 워케이션 홈으로 이동
 function goBack() {
-  if (window.history.length > 1) {
-    router.back();
-    return;
-  }
-  router.push('/wallet');
+  router.push({ name: 'WorkationHome' });
 }
 
 function goToDetail(reservationId) {
