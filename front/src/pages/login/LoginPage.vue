@@ -7,14 +7,16 @@
 //   type 을 tel/email 로 바꾸면 브라우저가 입력 컨트롤을 재생성해 캐럿이 첫 번째 자리로 이동한다.
 // - deviceId(기기 UUID)는 브라우저 localStorage 에 보관해 로그인 요청마다 함께 전송한다.
 //   백엔드가 user_device 등록 여부를 확인해 pinSetupRequired 로 알려준다.
-// - 로그인 성공 분기:
-//   * pinSetupRequired=true (기기 최초 로그인) → PIN 등록 화면(/pin/setup) 이동 + 미구현 안내 토스트
-//   * pinSetupRequired=false (기존 기기)       → 워케이션 홈(/workation) 이동
+// - 로그인 성공 분기 (온보딩 게이트, 우선순위):
+//   1) 연동 계좌 없음 → 계좌 연결(/account/link?flow=onboarding) → 카드 연결 → PIN 설정으로 이어짐
+//   2) 계좌 있음 + pinSetupRequired=true (기기 최초 로그인) → PIN 설정(/pin/setup)
+//   3) 계좌 있음 + pinSetupRequired=false (기존 기기)        → 원래 목적지(redirect, 기본 /workation)
 // - 아이디 찾기 → /find-id 화면 이동 (PASS 본인인증 기반) / 비밀번호 찾기 → 아직 미구현 안내 토스트
 import { ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ChevronLeft, Mail, Phone, Eye, EyeOff } from '@lucide/vue';
 import { useAuthStore } from '@/stores/authStore';
+import { useAccountStore } from '@/stores/accountStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { getDeviceId } from '@/utils/device';
 import { setPinRegistered } from '@/utils/pinRegistry';
@@ -24,6 +26,7 @@ import BaseButton from '@/components/common/BaseButton.vue';
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
+const accountStore = useAccountStore();
 const { showError } = useErrorToast();
 
 const loginId = ref('');
@@ -149,7 +152,9 @@ async function handleLogin() {
 
   isSubmitting.value = true;
   try {
-    const { data } = await authStore.login({
+    // authStore.login 은 언랩된 응답 data({ userId, name, pinSetupRequired })를 그대로 반환한다.
+    // (여기서 다시 { data } 로 구조분해하면 undefined 가 되어 PIN 분기가 통째로 깨진다)
+    const data = await authStore.login({
       loginType: 'PASSWORD',
       // 휴대폰은 하이픈 제거(숫자만) 전송 — 백엔드 findUserByLoginId 와 동일 정규화
       loginId: isEmail.value
@@ -166,8 +171,22 @@ async function handleLogin() {
     const redirect =
       typeof route.query.redirect === 'string' ? route.query.redirect : '/workation';
 
-    // 기기 최초 로그인(PIN 미등록) → PIN 등록 화면(설정 후 redirect 로 이어짐), 기존 기기 → redirect
-    if (data?.pinSetupRequired) {
+    // 로그인 직후 온보딩 게이트 (우선순위)
+    //  1) 연동 계좌가 없으면 → 계좌 연결부터 (AccountLink→CardLink→PIN 순으로 이어짐)
+    //  2) 계좌는 있으나 이 기기 PIN 미등록(pinSetupRequired) → PIN 설정
+    //  3) 둘 다 완료 → 원래 목적지(redirect)
+    // fetchMyAccounts 는 throw 하지 않고 store.error 에 담으므로, 조회 실패 시엔
+    // 정상 사용자를 온보딩으로 잘못 보내지 않도록 계좌 게이트를 건너뛴다.
+    await accountStore.fetchMyAccounts();
+    const needsAccountLink =
+      !accountStore.error && accountStore.accounts.length === 0;
+
+    if (needsAccountLink) {
+      router.replace({
+        path: '/account/link',
+        query: { flow: 'onboarding', redirect },
+      });
+    } else if (data?.pinSetupRequired) {
       router.replace({ path: '/pin/setup', query: { redirect } });
     } else {
       router.replace(redirect);

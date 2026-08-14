@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useCardStore } from '@/stores/cardStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import CardLinkPrimarySelect from '@/components/card/CardLinkPrimarySelect.vue';
@@ -9,8 +9,21 @@ import CardLinkComplete from '@/components/card/CardLinkComplete.vue';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
 
 const router = useRouter();
+const route = useRoute();
 const cardStore = useCardStore();
 const { showError } = useErrorToast();
+
+// 로그인 직후 온보딩 흐름(계좌→카드→PIN)이면 완료 후 PIN 설정으로, 그 외엔 지갑으로 이동한다.
+function goAfterLink() {
+  if (route.query.flow === 'onboarding') {
+    router.push({
+      path: '/pin/setup',
+      query: { redirect: route.query.redirect || '/workation' },
+    });
+  } else {
+    router.push('/wallet');
+  }
+}
 
 // 0: 목록 불러오는 중, 1: 주카드 선택, 2: 추가 선택, 3: 완료, 4: 연동 진행 중
 const step = ref(0);
@@ -70,11 +83,11 @@ function handleSkip() {
 }
 
 function finishFlow() {
-  router.push('/wallet');
+  goAfterLink();
 }
 
 function handleConfirm() {
-  router.push('/wallet');
+  goAfterLink();
 }
 
 function goToWallet() {

@@ -78,7 +78,12 @@ router.beforeEach(async (to) => {
 
   if (isEntry) return { path: '/workation' };
 
-  if (!path.startsWith('/pin') && !isPinRegistered()) {
+  // 온보딩 게이트(로그인 직후 계좌→카드→PIN)의 앞단계인 계좌/카드 연결은 PIN 미등록이어도
+  // 접근을 허용한다. 그렇지 않으면 이 체인이 곧바로 /pin/setup 으로 튕겨 순서가 깨진다.
+  const isOnboardingLink =
+    path.startsWith('/account/link') || path.startsWith('/card/link');
+
+  if (!path.startsWith('/pin') && !isOnboardingLink && !isPinRegistered()) {
     return { path: '/pin/setup', query: { redirect: to.fullPath } };
   }
 
