@@ -21,8 +21,14 @@ const { showError } = useErrorToast();
 
 const loading = ref(true);
 
-// 메뉴 카드(② 메뉴)의 행 — 모두 미구현 (토스트만)
-const menuLabels = ['내 장소', '나의 워케이션 스타일', '내가 작성한 리뷰'];
+// 메뉴 카드(② 메뉴)의 행
+// to 가 있으면 해당 화면으로 이동하고, 없으면 미구현이라 안내 토스트만 노출한다
+const menuItems = [
+  { label: '내 장소' },
+  { label: '나의 워케이션 스타일' },
+  { label: '내가 작성한 리뷰' },
+  { label: '워케이션 정산기록 보기', to: '/workation/records' },
+];
 
 // 설정 카드(③ 설정)의 행 — 모두 미구현 (토스트만)
 const settingLabels = ['계정 설정', '알림 설정'];
@@ -43,6 +49,14 @@ const avatarInitial = computed(
 // 아직 미구현된 기능 — 메뉴별 안내 토스트만 노출
 function showComingSoon(label) {
   toast(`${label} 기능은 준비 중이에요`);
+}
+
+function openMenu(item) {
+  if (item.to) {
+    router.push(item.to);
+    return;
+  }
+  showComingSoon(item.label);
 }
 
 function goBack() {
@@ -141,15 +155,16 @@ onMounted(async () => {
           </p>
           <div class="mt-1 divide-y divide-slate-100">
             <button
-              v-for="label in menuLabels"
-              :key="label"
+              v-for="item in menuItems"
+              :key="item.label"
               type="button"
               class="flex w-full items-center px-5 py-4 text-left transition-colors active:bg-slate-50"
-              @click="showComingSoon(label)"
+              @click="openMenu(item)"
             >
-              <span class="text-[15px] font-medium text-slate-900">
-                {{ label }}
+              <span class="flex-1 text-[15px] font-medium text-slate-900">
+                {{ item.label }}
               </span>
+              <span v-if="item.to" class="text-slate-300">›</span>
             </button>
           </div>
         </div>
