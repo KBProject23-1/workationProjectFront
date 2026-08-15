@@ -39,3 +39,13 @@ export const shortRange = (from, to) => {
     `${value.slice(5).replaceAll('-', '.')}(${weekday(value)})`;
   return `${trim(from)}~${trim(to)}`;
 };
+
+// reservation-check 응답의 { room, office } 를 문장으로 풀어 쓴다
+// { room: 1, office: 2 } -> 숙박 예약 1건, 공유오피스 예약 2건
+export const reservationSummaryText = (summary) => {
+  if (!summary) return '';
+  const parts = [];
+  if (summary.room > 0) parts.push(`숙박 예약 ${summary.room}건`);
+  if (summary.office > 0) parts.push(`공유오피스 예약 ${summary.office}건`);
+  return parts.join(', ');
+};
