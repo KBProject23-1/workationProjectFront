@@ -64,8 +64,8 @@ export const MEAL_TYPES = [
 // 검색은 내가 조건을 걸고, 추천은 워케이션 기간·예산·설문을 서버가 조건으로 쓴다.
 // 조건을 정하는 주체가 달라 같은 필터를 공유할 수 없다
 export const SEARCH_MODES = [
-  { label: '내 조건으로 찾기', value: 'SEARCH' },
   { label: '추천 받기', value: 'RECOMMEND' },
+  { label: '내 조건으로 찾기', value: 'SEARCH' },
 ];
 
 export const SORT_OPTIONS = [

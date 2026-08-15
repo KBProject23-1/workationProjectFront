@@ -318,7 +318,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { ChevronDown, ChevronLeft } from '@lucide/vue';
@@ -477,6 +477,11 @@ const toggleBookmark = async (merchantId) => {
 // 탭을 옮기면 조건을 새로 고르게 되므로 접혀 있던 필터를 다시 펼친다
 watch(category, () => {
   isFiltersExpanded.value = true;
+});
+
+// 메인 화면에서 다시 진입해도 항상 첫 번째 선택 상태로 시작한다
+onMounted(() => {
+  merchantStore.resetEntrySelection();
 });
 
 const applyFilters = async () => {
