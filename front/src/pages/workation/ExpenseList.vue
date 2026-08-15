@@ -359,6 +359,12 @@ const loadExpenses = async () => {
 
     await expenseStore.fetchExpenses(workationId, params);
   } catch (error) {
+    // 워케이션이 사라졌으면 이 목록이 성립하지 않는다
+    if (error.response?.data?.errorCode === 'WORKATION_NOT_FOUND') {
+      showError(error, '삭제된 워케이션입니다.');
+      router.replace('/workation');
+      return;
+    }
     showError(error, '지출 목록을 불러오지 못했습니다.');
   } finally {
     loading.value = false;
@@ -479,6 +485,14 @@ const confirmSelected = async () => {
     // 원래 보던 필터·페이지로 돌아간다
     await loadExpenses();
   } catch (error) {
+    // 정산이 끝난 뒤에는 확인 처리를 할 수 없다. 선택 모드를 풀고 목록을 새로 받는다
+    if (error.response?.data?.errorCode === 'ALREADY_SETTLED') {
+      selectMode.value = false;
+      selectedIds.value = [];
+      await loadExpenses();
+      showError(error, '이미 정산이 완료된 워케이션입니다.');
+      return;
+    }
     showError(error, '확인 처리를 하지 못했습니다.');
   } finally {
     confirming.value = false;

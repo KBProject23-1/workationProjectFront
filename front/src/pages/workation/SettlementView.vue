@@ -232,12 +232,19 @@ import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { ChevronLeft, Trash2 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
+import { useBudgetStore } from '@/stores/budgetStore';
+import { useExpenseStore } from '@/stores/expenseStore';
+import { useScheduleStore } from '@/stores/scheduleStore';
 import { useSettlementStore } from '@/stores/settlementStore';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { useFileDownload } from '@/composables/useFileDownload';
 import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
-import { dotDate, won } from '@/components/workation/format';
+import {
+  dotDate,
+  reservationSummaryText,
+  won,
+} from '@/components/workation/format';
 import SettlementCategoryItem from '@/components/workation/SettlementCategoryItem.vue';
 import SettlementClaimPrompt from '@/components/workation/SettlementClaimPrompt.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
@@ -248,6 +255,9 @@ const route = useRoute();
 const router = useRouter();
 const settlementStore = useSettlementStore();
 const workationStore = useWorkationStore();
+const budgetStore = useBudgetStore();
+const expenseStore = useExpenseStore();
+const scheduleStore = useScheduleStore();
 const { showError } = useErrorToast();
 const { download } = useFileDownload();
 
@@ -332,9 +342,19 @@ const goUncheckedExpenses = () => {
 
 const loadSettlement = async () => {
   loading.value = true;
+
+  // 직전에 보던 워케이션이 남아 있으면 로딩이 끝나기 전에 그 값이 잠깐 보인다
+  settlementStore.reset();
+
   try {
     await settlementStore.fetchSettlement(workationId);
   } catch (error) {
+    // 기록이 사라진 워케이션으로 들어온 경우. 목록으로 돌려보낸다
+    if (error.response?.data?.errorCode === 'WORKATION_NOT_FOUND') {
+      showError(error, '삭제된 워케이션입니다.');
+      router.replace('/workation');
+      return;
+    }
     showError(error, '정산 내역을 불러오지 못했습니다.');
   } finally {
     loading.value = false;
@@ -369,8 +389,30 @@ const settle = async () => {
   settling.value = true;
   try {
     await workationStore.settleWorkation(workationId);
+
+    // 정산이 끝나면 진행 중 워케이션이 사라진다. 딸린 store 도 비운다
+    budgetStore.reset();
+    expenseStore.reset();
+    scheduleStore.reset();
+
     router.push(`/workation/${workationId}/settlement/complete`);
   } catch (error) {
+    const errorCode = error.response?.data?.errorCode;
+
+    // 다른 탭에서 이미 정산을 끝낸 경우. 화면을 기록 조회 모드로 바꿔 준다
+    if (errorCode === 'ALREADY_SETTLED') {
+      confirmOpen.value = false;
+      await loadSettlement();
+      showError(error, '이미 정산이 완료된 워케이션입니다.');
+      return;
+    }
+
+    if (errorCode === 'WORKATION_NOT_FOUND') {
+      showError(error, '삭제된 워케이션입니다.');
+      router.replace('/workation');
+      return;
+    }
+
     showError(error, '워케이션을 완료하지 못했습니다.');
   } finally {
     settling.value = false;
@@ -378,23 +420,14 @@ const settle = async () => {
   }
 };
 
-// 숙박 0건, 공유오피스 0건 형태로 풀어 쓴다
-const describe = (summary) => {
-  if (!summary) return '';
-  const parts = [];
-  if (summary.room > 0) parts.push(`숙박 예약 ${summary.room}건`);
-  if (summary.office > 0) parts.push(`공유오피스 예약 ${summary.office}건`);
-  return parts.join(', ');
-};
-
 const upcomingMessage = computed(
   () =>
-    `${describe(reservationCheck.value?.upcoming)}이 남아있어요. 예약을 먼저 취소해 주세요.`,
+    `${reservationSummaryText(reservationCheck.value?.upcoming)}이 남아있어요. 예약을 먼저 취소해 주세요.`,
 );
 
 const ongoingMessage = computed(
   () =>
-    `${describe(reservationCheck.value?.ongoing)}이 진행 중이에요. 이미 이용이 시작돼 취소할 수 없어요. 예약 내역은 그대로 남아요.`,
+    `${reservationSummaryText(reservationCheck.value?.ongoing)}이 진행 중이에요. 이미 이용이 시작돼 취소할 수 없어요. 예약 내역은 그대로 남아요.`,
 );
 
 // 지우기 전에 예약 상태부터 본다
