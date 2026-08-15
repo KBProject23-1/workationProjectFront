@@ -32,6 +32,8 @@ export const useWorkationStore = defineStore('workation', {
     uncheckedExpenseCount: (state) => state.current?.uncheckedExpenseCount ?? 0,
     recordById: (state) => (workationId) =>
       state.records.find((record) => record.id === Number(workationId)),
+    // 더 받아올 기록이 남아 있는지. 목록 화면의 더보기 버튼이 쓴다
+    hasMoreRecords: (state) => state.page + 1 < state.totalPages,
     // 지역은 가나다 순으로 보여준다
     sortedRegions: (state) =>
       [...state.regions].sort((a, b) => a.name.localeCompare(b.name, 'ko')),
@@ -56,16 +58,24 @@ export const useWorkationStore = defineStore('workation', {
       }
     },
 
-    async fetchRecords(page = 0, size = 10) {
+    // append 를 주면 기존 목록 뒤에 이어 붙인다. 목록 화면의 더보기가 쓴다
+    async fetchRecords(page = 0, size = 10, { append = false } = {}) {
       try {
         const { data } = await getWorkations({ page, size });
-        this.records = data.content ?? [];
+        const content = data.content ?? [];
+
+        this.records = append ? [...this.records, ...content] : content;
         this.page = data.page ?? page;
         this.totalPages = data.totalPages ?? 0;
         this.totalElements = data.totalElements ?? 0;
+        this.error = null;
+        return true;
       } catch (err) {
+        // 홈 화면이 이 호출과 함께 다른 요청을 Promise.all 로 묶고 있어
+        // 여기서 throw 하면 홈 전체가 멈춘다. 성공 여부만 돌려준다
         this.error = err.message;
-        this.records = [];
+        if (!append) this.records = [];
+        return false;
       }
     },
 
