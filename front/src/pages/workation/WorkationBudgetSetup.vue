@@ -486,6 +486,27 @@ const submit = async () => {
     }
     router.push('/workation');
   } catch (error) {
+    const errorCode = error.response?.data?.errorCode;
+
+    // 설정과 수정 API 가 갈리는데, 다른 탭에서 먼저 저장하면 판정이 어긋난다.
+    // 현재 배정 상태를 다시 받아 맞춘 뒤 사용자가 다시 저장하게 한다
+    if (
+      errorCode === 'BUDGET_ALREADY_EXISTS' ||
+      errorCode === 'BUDGET_NOT_SET'
+    ) {
+      await loadBudgetStatus();
+      showError(error, '예산 정보가 바뀌었어요. 다시 확인해 주세요.');
+      return;
+    }
+
+    // 워케이션이 사라졌거나 정산이 끝나면 이 화면에 머물 이유가 없다
+    if (errorCode === 'WORKATION_NOT_FOUND' || errorCode === 'ALREADY_SETTLED') {
+      leaving.value = true;
+      showError(error, '예산을 저장하지 못했습니다.');
+      router.replace('/workation');
+      return;
+    }
+
     showError(error, '예산을 저장하지 못했습니다.');
   } finally {
     submitting.value = false;

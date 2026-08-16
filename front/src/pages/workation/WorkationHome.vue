@@ -157,12 +157,15 @@ import { toast } from 'vue-sonner';
 import { Bell, FileSpreadsheet, ReceiptText, UserRound } from '@lucide/vue';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useBudgetStore } from '@/stores/budgetStore';
+import { useExpenseStore } from '@/stores/expenseStore';
+import { useSettlementStore } from '@/stores/settlementStore';
 import { useSurveyStore } from '@/stores/surveyStore';
 import {
   useScheduleStore,
   DEFAULT_DAYS,
   EXPANDED_DAYS,
 } from '@/stores/scheduleStore';
+import { reservationSummaryText } from '@/components/workation/format';
 import WorkationProgressCard from '@/components/workation/WorkationProgressCard.vue';
 import WorkationScheduler from '@/components/workation/WorkationScheduler.vue';
 import UncheckedExpenseAlert from '@/components/workation/UncheckedExpenseAlert.vue';
@@ -174,6 +177,8 @@ import { useErrorToast } from '@/composables/useErrorToast';
 const router = useRouter();
 const workationStore = useWorkationStore();
 const budgetStore = useBudgetStore();
+const expenseStore = useExpenseStore();
+const settlementStore = useSettlementStore();
 const surveyStore = useSurveyStore();
 const scheduleStore = useScheduleStore();
 const { showError } = useErrorToast();
@@ -297,18 +302,17 @@ const goEdit = () => {
   router.push(`/workation/${workationStore.workationId}/edit`);
 };
 
-// 숙박 0건, 공유오피스 0건 형태로 풀어 쓴다
-const describe = (summary) => {
-  if (!summary) return '';
-  const parts = [];
-  if (summary.room > 0) parts.push(`숙박 예약 ${summary.room}건`);
-  if (summary.office > 0) parts.push(`공유오피스 예약 ${summary.office}건`);
-  return parts.join(', ');
+// 워케이션에 딸린 store 를 한 번에 비운다
+const clearWorkationStores = () => {
+  budgetStore.reset();
+  expenseStore.reset();
+  scheduleStore.reset();
+  settlementStore.reset();
 };
 
 const upcomingMessage = computed(
   () =>
-    `${describe(reservationCheck.value?.upcoming)}이 남아 있어요. 필요하면 예약 내역에서 직접 취소해 주세요.`,
+    `${reservationSummaryText(reservationCheck.value?.upcoming)}이 남아 있어요. 필요하면 예약 내역에서 직접 취소해 주세요.`,
 );
 
 
@@ -327,6 +331,11 @@ const checkBeforeDelete = async () => {
       .catch(() => null);
 
     await workationStore.deleteWorkation(workationStore.workationId);
+
+    // 워케이션이 사라졌으므로 딸린 store 도 비운다.
+    // 남겨 두면 다음 워케이션을 등록했을 때 이전 예산·지출이 잠깐 보인다
+    clearWorkationStores();
+
     confirmOpen.value = false;
 
     // 아직 이용하지 않은 예약이 남아 있으면 예약 내역으로 안내한다
@@ -336,6 +345,16 @@ const checkBeforeDelete = async () => {
     }
   } catch (error) {
     confirmOpen.value = false;
+
+    // 다른 기기에서 이미 지웠거나 정산이 끝난 경우. 화면을 새로 맞춰 준다
+    const errorCode = error.response?.data?.errorCode;
+    if (errorCode === 'WORKATION_NOT_FOUND') {
+      clearWorkationStores();
+      await workationStore.fetchCurrent();
+      showError(error, '이미 삭제된 워케이션입니다.');
+      return;
+    }
+
     showError(error, '워케이션을 삭제하지 못했습니다.');
   } finally {
     deleting.value = false;

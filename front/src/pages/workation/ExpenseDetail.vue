@@ -345,12 +345,31 @@ const targetBudgetTypeCategories = computed(() =>
   categoryStore.categoriesOf(targetBudgetType.value),
 );
 
+// 이 화면이 더 이상 성립하지 않는 오류들.
+// 지출이 사라졌거나 정산이 끝나 수정할 수 없는 상태라 목록으로 돌려보낸다.
+// 처리했으면 true 를 돌려준다
+const leaveIfGone = (error, fallbackMessage) => {
+  const errorCode = error.response?.data?.errorCode;
+
+  if (
+    errorCode === 'EXPENSE_NOT_FOUND' ||
+    errorCode === 'WORKATION_NOT_FOUND' ||
+    errorCode === 'ALREADY_SETTLED'
+  ) {
+    showError(error, fallbackMessage);
+    router.replace(listLocation);
+    return true;
+  }
+  return false;
+};
+
 const loadDetail = async () => {
   loading.value = true;
   try {
     const data = await expenseStore.fetchDetail(expenseId);
     draftCategoryId.value = data?.expenseCategoryId ?? null;
   } catch (error) {
+    if (leaveIfGone(error, '지출 정보를 불러오지 못했습니다.')) return;
     showError(error, '지출 정보를 불러오지 못했습니다.');
   } finally {
     loading.value = false;
@@ -384,6 +403,15 @@ const changeBudgetType = async (categoryId) => {
     draftCategoryId.value = categoryId;
     budgetTypeSheetOpen.value = false;
   } catch (error) {
+    if (leaveIfGone(error, '경비 구분을 변경하지 못했습니다.')) return;
+
+    // 바꾸려는 예산 유형에 없는 카테고리를 고른 경우. 시트를 열어 둔 채 다시 고르게 한다
+    if (error.response?.data?.errorCode === 'CATEGORY_TYPE_MISMATCH') {
+      showError(error, '변경할 예산 유형에 없는 카테고리입니다.');
+      return;
+    }
+
+    budgetTypeSheetOpen.value = false;
     showError(error, '경비 구분을 변경하지 못했습니다.');
   }
 };
@@ -395,6 +423,7 @@ const remove = async () => {
     await expenseStore.deleteExpense(workationId, expenseId);
     router.push(listLocation);
   } catch (error) {
+    if (leaveIfGone(error, '지출을 삭제하지 못했습니다.')) return;
     showError(error, '지출을 삭제하지 못했습니다.');
   } finally {
     removing.value = false;
@@ -419,6 +448,15 @@ const confirmAndClose = async () => {
     }
     router.push(listLocation);
   } catch (error) {
+    if (leaveIfGone(error, '저장하지 못했습니다.')) return;
+
+    // 예산에서 빠진 카테고리를 고른 경우. 다시 고를 수 있게 시트를 연다
+    if (error.response?.data?.errorCode === 'CATEGORY_TYPE_MISMATCH') {
+      categorySheetOpen.value = true;
+      showError(error, '선택한 카테고리를 사용할 수 없습니다.');
+      return;
+    }
+
     showError(error, '저장하지 못했습니다.');
   } finally {
     confirming.value = false;

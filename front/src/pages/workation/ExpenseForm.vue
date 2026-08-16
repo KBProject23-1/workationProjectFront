@@ -338,6 +338,40 @@ const submit = async () => {
 
     router.push(backLocation);
   } catch (error) {
+    // 어느 입력칸이 틀렸는지 알 수 있는 오류는 그 칸 아래에 표시한다.
+    // 토스트로만 띄우면 사용자가 어디를 고쳐야 하는지 알 수 없다
+    const errorCode = error.response?.data?.errorCode;
+
+    const fieldOf = {
+      MERCHANT_NAME_REQUIRED: 'merchantName',
+      MERCHANT_NAME_TOO_LONG: 'merchantName',
+      SPENT_DATE_REQUIRED: 'spentDate',
+      SPENT_DATE_OUT_OF_PERIOD: 'spentDate',
+      AMOUNT_INVALID: 'amount',
+      CARD_REQUIRED: 'cardId',
+      CARD_TYPE_MISMATCH: 'cardId',
+      CARD_NOT_FOUND: 'cardId',
+      CORPORATE_CARD_REQUIRED: 'cardId',
+      CATEGORY_REQUIRED: 'expenseCategoryId',
+      CATEGORY_TYPE_MISMATCH: 'expenseCategoryId',
+    }[errorCode];
+
+    if (fieldOf) {
+      errors[fieldOf] = error.message;
+      return;
+    }
+
+    // 정산이 끝났거나 워케이션이 사라진 경우. 이 화면에 더 머물 이유가 없다
+    if (
+      errorCode === 'ALREADY_SETTLED' ||
+      errorCode === 'WORKATION_NOT_FOUND' ||
+      errorCode === 'EXPENSE_NOT_FOUND'
+    ) {
+      showError(error, '지출을 저장하지 못했습니다.');
+      router.replace(backLocation);
+      return;
+    }
+
     showError(error, '지출을 저장하지 못했습니다.');
   } finally {
     submitting.value = false;
