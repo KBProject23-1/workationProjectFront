@@ -9,6 +9,13 @@ export default [
     name: 'WorkationCreate',
     component: () => import('@/pages/workation/WorkationForm.vue'),
   },
+  // 정산을 마친 지난 워케이션 목록.
+  // 고정 경로라 :workationId 를 쓰는 라우트들보다 위에 둔다
+  {
+    path: '/workation/records',
+    name: 'SettlementRecordList',
+    component: () => import('@/pages/workation/SettlementRecordList.vue'),
+  },
   {
     path: '/workation/:workationId/edit',
     name: 'WorkationEdit',

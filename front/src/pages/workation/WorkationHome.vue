@@ -113,17 +113,7 @@
 
     <WorkationEmptyState v-else @register="goCreate" />
 
-    <section v-if="records.length > 0" class="mt-6">
-      <h3 class="mb-2 text-sm font-bold text-slate-900">{{ recordsTitle }}</h3>
-      <div class="space-y-2">
-        <SettlementRecordItem
-          v-for="record in records"
-          :key="record.id"
-          :record="record"
-          @click="goRecord"
-        />
-      </div>
-    </section>
+<!-- 지난 워케이션 정산기록은 내 정보 > 워케이션 정산기록 보기 에서 본다 -->
 
     <!-- ① 삭제 확인 -->
     <BaseConfirmModal
@@ -169,7 +159,6 @@ import { reservationSummaryText } from '@/components/workation/format';
 import WorkationProgressCard from '@/components/workation/WorkationProgressCard.vue';
 import WorkationScheduler from '@/components/workation/WorkationScheduler.vue';
 import UncheckedExpenseAlert from '@/components/workation/UncheckedExpenseAlert.vue';
-import SettlementRecordItem from '@/components/workation/SettlementRecordItem.vue';
 import WorkationEmptyState from '@/components/workation/WorkationEmptyState.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import { useErrorToast } from '@/composables/useErrorToast';
@@ -182,7 +171,7 @@ const settlementStore = useSettlementStore();
 const surveyStore = useSurveyStore();
 const scheduleStore = useScheduleStore();
 const { showError } = useErrorToast();
-const { current, records, error: errorMessage } = storeToRefs(workationStore);
+const { current, error: errorMessage } = storeToRefs(workationStore);
 
 const loading = ref(true);
 const confirmOpen = ref(false);
@@ -229,10 +218,8 @@ const goScheduleItem = (item) => {
 };
 
 onMounted(async () => {
-  await Promise.all([
-    workationStore.fetchCurrent(),
-    workationStore.fetchRecords(),
-  ]);
+  // 정산기록은 홈에서 보여주지 않으므로 여기서 받지 않는다
+  await workationStore.fetchCurrent();
   await loadSetupState();
   loading.value = false;
 });
@@ -274,11 +261,6 @@ const goIncompleteStep = () => {
 const goReservationHistory = () => {
   router.push('/reservations');
 };
-
-// 시안 기준으로 진행 중 워케이션이 있을 때와 없을 때 목록 제목이 다르다
-const recordsTitle = computed(() =>
-  current.value ? '워케이션 정산기록 보기' : '지난 워케이션 정산 보기',
-);
 
 const goPay = () => {
   router.push('/wallet');
@@ -389,10 +371,5 @@ const goExpenses = () => {
 
 const goSettlement = () => {
   router.push(`/workation/${workationStore.workationId}/settlement`);
-};
-
-// 지난 워케이션은 정산 화면이 기록 조회 모드로 열린다
-const goRecord = (workationId) => {
-  router.push(`/workation/${workationId}/settlement`);
 };
 </script>

@@ -479,7 +479,13 @@ const goReservationsToCancel = () => {
   router.push('/reservations');
 };
 
+// 홈에서도 오고 정산기록 목록에서도 오므로 왔던 곳으로 되돌린다.
+// 새로고침 등으로 이력이 없으면 홈으로 보낸다
 const goBack = () => {
+  if (window.history.state?.back) {
+    router.back();
+    return;
+  }
   router.push('/workation');
 };
 </script>
