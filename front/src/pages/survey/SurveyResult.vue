@@ -1,8 +1,13 @@
 <template>
   <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
     <header class="relative mb-4 flex items-center justify-center">
-      <button class="absolute left-0 text-xl text-slate-900" @click="goBack">
-        ‹
+      <button
+        type="button"
+        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
+        aria-label="뒤로 가기"
+        @click="goBack"
+      >
+        <ChevronLeft class="h-7 w-7" />
       </button>
       <h1 class="text-base font-bold text-slate-900">나의 워케이션 스타일</h1>
     </header>
@@ -46,9 +51,18 @@
     </template>
 
     <div v-else class="flex flex-1 flex-col items-center justify-center">
-      <p class="text-sm text-slate-400">아직 저장된 설문이 없어요</p>
-      <Button class="mt-6 h-12 w-full rounded-xl text-base" @click="goIntro">
-        설문 시작하기
+      <p class="text-sm font-bold text-slate-900">
+        아직 워케이션 스타일을 정하지 않았어요
+      </p>
+      <p class="mt-2 text-center text-xs leading-5 text-slate-400">
+        워케이션을 등록하면 취향 설문을 진행하고,<br />
+        그에 맞는 숙소와 공간을 추천해 드려요
+      </p>
+      <Button
+        class="mt-6 h-12 w-full rounded-xl text-base"
+        @click="goCreateWorkation"
+      >
+        워케이션 등록하기
       </Button>
     </div>
   </div>
@@ -58,6 +72,7 @@
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { ChevronLeft } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { useSurveyStore } from '@/stores/surveyStore';
 import { useErrorToast } from '@/composables/useErrorToast';
@@ -100,11 +115,20 @@ const goEdit = () => {
   router.push('/account/me/survey/edit');
 };
 
-const goIntro = () => {
-  router.replace('/workation');
+// 설문이 없는 사용자는 워케이션을 한 번도 등록하지 않은 경우뿐이다.
+// 설문 생성은 첫 워케이션 등록 단계에 있고, 추천도 워케이션의 지역·기간이 있어야
+// 돌아가므로 여기서 설문만 따로 만들게 하지 않는다
+const goCreateWorkation = () => {
+  router.push('/workation/create');
 };
 
+// push 로 되돌리면 히스토리가 쌓여 내 정보에서 다시 이 화면으로 들어온다.
+// 왔던 곳으로 돌아가되, 주소를 직접 입력해 이력이 없으면 내 정보로 보낸다
 const goBack = () => {
+  if (window.history.state?.back) {
+    router.back();
+    return;
+  }
   router.push('/account/me');
 };
 </script>
