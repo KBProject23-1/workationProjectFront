@@ -146,16 +146,6 @@ onMounted(async () => {
                 프로필 수정
               </span>
             </button>
-            <!-- 비밀번호 변경 — docs: 로그인 후 비밀번호 변경 (PATCH /users/me/password) -->
-            <button
-              type="button"
-              class="flex w-full items-center border-t border-slate-100 px-5 py-4 text-left transition-colors active:bg-slate-50"
-              @click="router.push('/account/me/password')"
-            >
-              <span class="text-[15px] font-semibold text-blue-600">
-                비밀번호 변경
-              </span>
-            </button>
           </div>
         </div>
       </section>
