@@ -26,7 +26,10 @@ const hasSelection = computed(
 
 onMounted(async () => {
   try {
-    const surveyResult = await surveyStore.fetchMySurvey();
+    const [surveyResult] = await Promise.all([
+      surveyStore.fetchMySurvey(),
+      workationStore.fetchCurrent(),
+    ]);
 
     // 설문이 없으면 추천할 근거가 없다.
     // 곧바로 설문 화면으로 넘기면 추천을 누른 사람이 이유를 모르니 안내를 띄운다
@@ -39,6 +42,7 @@ onMounted(async () => {
     recommendationStore.startFlow({
       mode: route.query.mode === 'single' ? 'single' : 'flow',
       sourceRoute: route.query.source ?? null,
+      workation: workationStore.workation,
     });
   } finally {
     loading.value = false;

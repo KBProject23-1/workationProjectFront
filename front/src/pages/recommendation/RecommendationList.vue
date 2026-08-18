@@ -122,9 +122,22 @@ async function loadMore() {
 }
 
 function goDetail(item) {
+  const query =
+    category.value.key === 'accommodations' || category.value.key === 'offices'
+      ? {
+          startDate: recommendationStore.startDate,
+          endDate: recommendationStore.endDate,
+          guestCount: recommendationStore.guestCount,
+          ...(category.value.key === 'accommodations'
+            ? { roomCount: recommendationStore.roomCount }
+            : {}),
+        }
+      : {};
+
   router.push({
     name: category.value.detailRoute,
     params: { merchantId: item.merchantId },
+    query,
   });
 }
 

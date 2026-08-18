@@ -10,6 +10,16 @@ import {
   getRecommendations,
 } from '@/api/recommendation';
 
+const formatDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+const today = new Date();
+const tomorrow = new Date(today);
+tomorrow.setDate(today.getDate() + 1);
+
 const CATEGORY_ORDER = RECOMMENDATION_CATEGORIES.map(
   (category) => category.key,
 );
@@ -66,6 +76,10 @@ export const useRecommendationStore = defineStore('recommendation', {
     selectedCategories: [],
     currentCategory: null,
     sourceRoute: null,
+    startDate: formatDate(today),
+    endDate: formatDate(tomorrow),
+    guestCount: 1,
+    roomCount: 1,
     selectedReferencePlaces: {},
     bookmarkIdsByMerchant: {},
     bookmarkLoadingMerchantIds: [],
@@ -87,9 +101,13 @@ export const useRecommendationStore = defineStore('recommendation', {
   },
 
   actions: {
-    startFlow({ mode = 'flow', sourceRoute = null } = {}) {
+    startFlow({ mode = 'flow', sourceRoute = null, workation = null } = {}) {
       this.mode = mode;
       this.sourceRoute = sourceRoute;
+      this.startDate = workation?.startDate ?? formatDate(today);
+      this.endDate = workation?.endDate ?? formatDate(tomorrow);
+      this.guestCount = 1;
+      this.roomCount = 1;
       this.selectedCategories = [];
       this.currentCategory = null;
       this.selectedReferencePlaces = {};

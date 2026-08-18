@@ -33,7 +33,7 @@ export const useOfficeStore = defineStore('office', {
     startDate: formatDate(today),
     endDate: formatDate(tomorrow),
     spaceCount: 1,
-    guestCount: 2,
+    guestCount: 1,
     selectedProductId: null,
     isLoading: false,
     isBookmarkLoading: false,
