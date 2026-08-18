@@ -1,7 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { CalendarDays, CalendarPlus, ChevronRight } from '@lucide/vue';
+import { CalendarDays, CalendarPlus, ChevronRight, Clock } from '@lucide/vue';
 import ScheduleDateModal from '@/components/schedule/ScheduleDateModal.vue';
+import ScheduleTimePicker from '@/components/workation/ScheduleTimePicker.vue';
 
 const props = defineProps({
   selectedDate: { type: String, default: '' },
@@ -11,11 +12,12 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
   errorMessage: { type: String, default: '' },
+  disabledTimes: { type: Array, default: () => [] },
 });
 
 const emit = defineEmits(['update:selectedDate', 'update:selectedTime', 'register']);
 const dateModalVisible = ref(false);
-const times = Array.from({ length: 13 }, (_, index) => `${String(index + 8).padStart(2, '0')}:00`);
+const timePickerVisible = ref(false);
 const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
 
 const formattedDate = computed(() => {
@@ -32,6 +34,11 @@ function selectDate(value) {
   emit('update:selectedDate', value);
   dateModalVisible.value = false;
 }
+
+function selectTime(value) {
+  emit('update:selectedTime', value);
+  timePickerVisible.value = false;
+}
 </script>
 
 <template>
@@ -44,18 +51,16 @@ function selectDate(value) {
     </button>
 
     <h3>시간 선택</h3>
-    <div class="time-list" aria-label="일정 시간 선택">
-      <button
-        v-for="time in times"
-        :key="time"
-        type="button"
-        :class="{ selected: selectedTime === time }"
-        :disabled="disabled"
-        @click="$emit('update:selectedTime', time)"
-      >
-        {{ time }}
-      </button>
-    </div>
+    <button
+      type="button"
+      class="time-button"
+      :disabled="disabled"
+      @click="timePickerVisible = true"
+    >
+      <Clock :size="19" />
+      <span>{{ selectedTime }}</span>
+      <ChevronRight :size="19" />
+    </button>
 
     <p v-if="errorMessage" class="schedule-error">{{ errorMessage }}</p>
     <button
@@ -77,11 +82,23 @@ function selectDate(value) {
       @close="dateModalVisible = false"
       @select="selectDate"
     />
+
+    <ScheduleTimePicker
+      :visible="timePickerVisible"
+      :date="selectedDate"
+      :current="selectedTime"
+      :loading="loading"
+      :disabled-times="disabledTimes"
+      title="몇 시로 등록할까요?"
+      confirm-label="등록"
+      @confirm="selectTime"
+      @cancel="timePickerVisible = false"
+    />
   </section>
 </template>
 
 <style scoped>
 .schedule-panel { margin-top:16px; padding-top:16px; border-top:1px solid #e3e8ee; }.schedule-panel h3 { margin:0 0 9px; font-size:14px; }.date-button { width:100%; height:44px; display:grid; grid-template-columns:20px 1fr 20px; align-items:center; gap:8px; padding:0 14px; color:#3f4d5f; border:1px solid #dbe3ee; border-radius:13px; background:#f8fafc; text-align:left; }.date-button:disabled { color:#9ca8b6; }
-.time-list { display:flex; gap:8px; margin:0 -4px 16px; padding:0 4px 4px; overflow-x:auto; scrollbar-width:none; }.time-list::-webkit-scrollbar { display:none; }.time-list button { flex:0 0 auto; min-width:60px; height:36px; padding:0 11px; color:#64748b; border:1px solid #dbe3ee; border-radius:999px; background:#fff; font-size:12px; font-weight:800; }.time-list button.selected { color:#fff; border-color:#3087ed; background:#3087ed; }.time-list button:disabled { opacity:.55; }
+.time-button { width:100%; height:44px; display:grid; grid-template-columns:20px 1fr 20px; align-items:center; gap:8px; margin-bottom:16px; padding:0 14px; color:#3f4d5f; border:1px solid #dbe3ee; border-radius:13px; background:#f8fafc; text-align:left; }.time-button:disabled { color:#9ca8b6; }
 .register-button { width:100%; height:48px; display:flex; align-items:center; justify-content:center; gap:8px; color:#fff; border:0; border-radius:14px; background:#3087ed; font-weight:800; }.register-button:disabled { background:#a9c9ee; }.schedule-error { margin:0 0 10px; color:#e05252; font-size:12px; line-height:1.45; }
 </style>

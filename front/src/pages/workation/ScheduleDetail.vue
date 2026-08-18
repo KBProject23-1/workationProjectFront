@@ -157,6 +157,7 @@
       :date="visitDate"
       :current="visitTime"
       :loading="saving"
+      :disabled-times="unavailableTimes"
       @confirm="changeTime"
       @cancel="timePickerOpen = false"
     />
@@ -232,6 +233,15 @@ const confirmOpen = ref(false);
 const timePickerOpen = ref(false);
 const errorMessage = ref('');
 const sameDayItems = ref([]);
+
+const unavailableTimes = computed(() => [
+  ...new Set(
+    sameDayItems.value
+      .map((item) => item.scheduledTime ?? item.scheduledAt?.slice(11))
+      .filter(Boolean)
+      .map((time) => time.slice(0, 5)),
+  ),
+]);
 
 const detail = computed(() => scheduleStore.detail);
 
@@ -332,6 +342,17 @@ const changeTime = async (time) => {
   if (saving.value) return;
   saving.value = true;
   try {
+    const hasConflict = await scheduleStore.hasScheduleAt(
+      workationId,
+      visitDate.value,
+      time,
+      scheduleId.value,
+    );
+    if (hasConflict) {
+      await loadSameDay();
+      showError(null, '이미 등록한 일정이 있습니다');
+      return;
+    }
     await scheduleStore.updateSchedule(
       workationId,
       scheduleId.value,

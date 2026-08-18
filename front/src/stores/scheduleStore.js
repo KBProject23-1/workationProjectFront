@@ -22,6 +22,7 @@ export const useScheduleStore = defineStore('schedule', {
     detail: null,
     isLoading: false,
     isCreating: false,
+    isCheckingAvailability: false,
     error: null,
     createError: null,
   }),
@@ -82,6 +83,39 @@ export const useScheduleStore = defineStore('schedule', {
         throw err;
       } finally {
         this.isCreating = false;
+      }
+    },
+
+    async getScheduledTimes(workationId, date, excludedScheduleId = null) {
+      const { data } = await getSchedules(workationId, {
+        startDate: date,
+        days: 1,
+      });
+      const times = (data.schedules ?? []).flatMap((day) =>
+        (day.items ?? [])
+          .filter(
+            (item) =>
+              excludedScheduleId === null ||
+              String(item.scheduleId ?? '') !== String(excludedScheduleId),
+          )
+          .map((item) => item.scheduledTime ?? item.scheduledAt?.slice(11))
+          .filter(Boolean)
+          .map((scheduledTime) => scheduledTime.slice(0, 5)),
+      );
+      return [...new Set(times)];
+    },
+
+    async hasScheduleAt(workationId, date, time, excludedScheduleId = null) {
+      this.isCheckingAvailability = true;
+      try {
+        const scheduledTimes = await this.getScheduledTimes(
+          workationId,
+          date,
+          excludedScheduleId,
+        );
+        return scheduledTimes.includes(time);
+      } finally {
+        this.isCheckingAvailability = false;
       }
     },
 

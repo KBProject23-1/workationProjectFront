@@ -2,7 +2,7 @@
   <Dialog :open="visible" @update:open="handleOpenChange">
     <DialogContent :show-close-button="false" class="max-w-sm">
       <DialogHeader class="text-center">
-        <DialogTitle>몇 시로 바꿀까요?</DialogTitle>
+        <DialogTitle>{{ title }}</DialogTitle>
         <DialogDescription>{{ dotDate(date) }}</DialogDescription>
       </DialogHeader>
 
@@ -10,12 +10,15 @@
         <button
           v-for="time in TIME_OPTIONS"
           :key="time"
+          type="button"
+          :disabled="isTimeDisabled(time)"
           class="rounded-lg border py-2 text-xs font-bold"
-          :class="
+          :class="[
             time === selected
               ? 'border-blue-600 bg-blue-50 text-blue-600'
-              : 'border-slate-200 text-slate-600'
-          "
+              : 'border-slate-200 text-slate-600',
+            isTimeDisabled(time) ? 'cursor-not-allowed opacity-35' : '',
+          ]"
           @click="selected = time"
         >
           {{ time }}
@@ -33,10 +36,10 @@
         </Button>
         <Button
           class="h-11 flex-1 rounded-xl"
-          :disabled="loading || !selected"
+          :disabled="loading || !selected || isTimeDisabled(selected)"
           @click="$emit('confirm', selected)"
         >
-          변경
+          {{ confirmLabel }}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -70,11 +73,16 @@ const props = defineProps({
   // 현재 시각. 열 때 이 값이 선택된 상태로 시작한다
   current: { type: String, default: '' },
   loading: { type: Boolean, default: false },
+  title: { type: String, default: '몇 시로 바꿀까요?' },
+  confirmLabel: { type: String, default: '변경' },
+  disabledTimes: { type: Array, default: () => [] },
 });
 
 const emit = defineEmits(['confirm', 'cancel']);
 
 const selected = ref(props.current);
+
+const isTimeDisabled = (time) => props.disabledTimes.includes(time);
 
 // 다시 열 때 지난 선택이 남아 있으면 현재 시각과 어긋나 보인다
 watch(
