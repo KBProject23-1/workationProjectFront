@@ -30,8 +30,11 @@ const menuItems = [
   { label: '워케이션 정산기록 보기', to: '/workation/records' },
 ];
 
-// 설정 카드(③ 설정)의 행 — 모두 미구현 (토스트만)
-const settingLabels = ['계정 설정', '알림 설정'];
+// 설정 카드(③ 설정)의 행 — 계정 설정은 진입 route 로 이동, 알림 설정은 미구현 (토스트만)
+const settingItems = [
+  { label: '계정 설정', to: '/account/me/settings' },
+  { label: '알림 설정', to: null },
+];
 
 // 휴대폰 번호는 010-0000-0000 형식으로 표기한다 (저장값은 하이픈 없는 숫자 — 로그인 화면과 동일 규칙)
 function formatPhone(digits) {
@@ -103,14 +106,14 @@ onMounted(async () => {
         >
           <ChevronLeft class="h-7 w-7" />
         </button>
-        <h1 class="text-base font-bold text-slate-900">
-          내 정보
-        </h1>
+        <h1 class="text-base font-bold text-slate-900">내 정보</h1>
       </header>
 
       <!-- ① 사용자 프로필 / 기본 정보 + 프로필 수정 -->
       <section>
-        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div
+          class="overflow-hidden rounded-xl border border-slate-200 bg-white"
+        >
           <div class="flex items-center gap-4 px-5 pt-5 pb-4">
             <div
               class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[20px] font-extrabold text-blue-600"
@@ -149,10 +152,10 @@ onMounted(async () => {
 
       <!-- ② 메뉴 -->
       <section class="mt-3">
-        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-          <p class="px-5 pt-3.5 text-xs font-medium text-slate-400">
-            메뉴
-          </p>
+        <div
+          class="overflow-hidden rounded-xl border border-slate-200 bg-white"
+        >
+          <p class="px-5 pt-3.5 text-xs font-medium text-slate-400">메뉴</p>
           <div class="mt-1 divide-y divide-slate-100">
             <button
               v-for="item in menuItems"
@@ -172,20 +175,22 @@ onMounted(async () => {
 
       <!-- ③ 설정 -->
       <section class="mt-3">
-        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-          <p class="px-5 pt-3.5 text-xs font-medium text-slate-400">
-            설정
-          </p>
+        <div
+          class="overflow-hidden rounded-xl border border-slate-200 bg-white"
+        >
+          <p class="px-5 pt-3.5 text-xs font-medium text-slate-400">설정</p>
           <div class="mt-1 divide-y divide-slate-100">
             <button
-              v-for="label in settingLabels"
-              :key="label"
+              v-for="item in settingItems"
+              :key="item.label"
               type="button"
               class="flex w-full items-center px-5 py-4 text-left transition-colors active:bg-slate-50"
-              @click="showComingSoon(label)"
+              @click="
+                item.to ? router.push(item.to) : showComingSoon(item.label)
+              "
             >
               <span class="text-[15px] font-medium text-slate-900">
-                {{ label }}
+                {{ item.label }}
               </span>
             </button>
           </div>
