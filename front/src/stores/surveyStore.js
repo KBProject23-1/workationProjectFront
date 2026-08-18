@@ -47,7 +47,9 @@ export const useSurveyStore = defineStore('survey', {
       }
     },
 
-    // 응답이 없으면 404 가 온다. 아직 서버가 진행 중 워케이션을 요구해서 403 도 같은 뜻으로 본다
+    // 아직 응답하지 않았으면 404 가 온다. 오류가 아니라 빈 상태로 다룬다.
+    // 서버가 진행 중 워케이션을 요구하던 시절의 403 처리는 걷어냈다.
+    // 이제 403 은 진짜 권한 오류이므로 그대로 올려보낸다
     async fetchMySurvey() {
       this.isLoading = true;
       this.error = null;
@@ -56,8 +58,7 @@ export const useSurveyStore = defineStore('survey', {
         this.result = data;
         return data;
       } catch (err) {
-        const status = err.response?.status;
-        if (status === 404 || status === 403) {
+        if (err.response?.data?.errorCode === 'SURVEY_NOT_FOUND') {
           this.result = null;
           return null;
         }

@@ -163,6 +163,20 @@
       @cancel="cardNoticeOpen = false"
     />
 
+    <!--
+      두 번째 워케이션부터는 설문 화면을 건너뛴다.
+      건너뛴다는 사실과 그 근거를 알리고, 취향이 바뀌었으면 고칠 기회를 준다.
+    -->
+    <BaseConfirmModal
+      :visible="surveyReuseOpen"
+      title="기존 설문을 바탕으로 추천해 드릴게요"
+      message="지난번에 고른 워케이션 취향을 그대로 사용해요. 취향이 바뀌었다면 지금 수정할 수 있어요."
+      confirm-label="이대로 진행"
+      cancel-label="설문 수정하기"
+      @confirm="goBudgetSetup"
+      @cancel="goSurveyEdit"
+    />
+
     <!-- 기간이 바뀌면 예약이 어긋난다. 무엇이 걸리는지에 따라 안내가 갈린다 -->
     <BaseConfirmModal
       :visible="reservationOpen"
@@ -223,6 +237,10 @@ const submitting = ref(false);
 // 기간 축소로 밀려나는 지출이 있을 때 확인받는다
 const outOfPeriodOpen = ref(false);
 const outOfPeriodMessage = ref('');
+
+// 두 번째 워케이션 등록 시 기존 설문을 재사용한다는 안내
+const surveyReuseOpen = ref(false);
+const createdWorkationId = ref(null);
 
 // 총예산을 바꾸면 기존 카테고리 배정 합계와 어긋난다. 저장 후 안내하려고 원래 값을 들고 있는다
 const originalBudget = { business: '', personal: '' };
@@ -439,6 +457,24 @@ const validate = () => {
   return Object.values(errors).every((message) => message === '');
 };
 
+// 설문을 건너뛰므로 등록은 일정·예산 2단계다
+const goBudgetSetup = () => {
+  surveyReuseOpen.value = false;
+  router.push(
+    `/workation/${createdWorkationId.value}/budgets?step=create&steps=2`,
+  );
+};
+
+// 등록 흐름 안에서 설문만 고치러 간다.
+// reuse=1 이 붙으면 설문 화면이 저장·뒤로가기 모두 예산으로 이어 준다.
+// 첫 등록(step=create 단독)과 달리 뒤로가기로 워케이션을 지우지 않는다
+const goSurveyEdit = () => {
+  surveyReuseOpen.value = false;
+  router.push(
+    `/workation/${createdWorkationId.value}/survey?step=create&reuse=1`,
+  );
+};
+
 const buildPayload = () => ({
   title: form.title.trim(),
   regionId: form.regionId,
@@ -457,13 +493,18 @@ const save = async (force) => {
 
     const id = data.id ?? workationId;
 
-    // 설문을 아직 안 했으면 설문으로, 했으면 예산 배분으로 이어진다
+    // 설문을 아직 안 했으면 설문으로 이어진다.
+    //
+    // 이미 했으면 설문 화면을 건너뛰는데, 아무 말 없이 넘어가면
+    // 무엇을 근거로 추천하는지 알 수 없다. 기존 응답을 쓴다고 알리고
+    // 고칠 기회를 준 뒤 예산으로 보낸다
     if (!isEdit) {
-      router.push(
-        surveyDone.value
-          ? `/workation/${id}/budgets?step=create&steps=2`
-          : `/workation/${id}/survey?step=create`,
-      );
+      if (surveyDone.value) {
+        createdWorkationId.value = id;
+        surveyReuseOpen.value = true;
+        return;
+      }
+      router.push(`/workation/${id}/survey?step=create`);
       return;
     }
 
