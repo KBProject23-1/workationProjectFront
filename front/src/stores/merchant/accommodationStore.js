@@ -35,7 +35,7 @@ export const useAccommodationStore = defineStore('accommodation', {
     checkIn: formatDate(today),
     checkOut: formatDate(tomorrow),
     roomCount: 1,
-    guestCount: 2,
+    guestCount: 1,
     selectedProductId: null,
     isLoading: false,
     isBookmarkLoading: false,

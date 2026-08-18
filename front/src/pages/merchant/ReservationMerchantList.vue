@@ -330,6 +330,7 @@ import ReservationMerchantCard from '@/components/merchant/ReservationMerchantCa
 import FilterChipGroup from '@/components/merchant/FilterChipGroup.vue';
 import ReferencePlaceSheet from '@/components/merchant/ReferencePlaceSheet.vue';
 import { useReservationMerchantStore } from '@/stores/merchant/reservationMerchantStore';
+import { useWorkationStore } from '@/stores/workationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import {
   ACCOMMODATION_TYPES,
@@ -354,6 +355,7 @@ const DETAIL_ROUTES = {
 
 const router = useRouter();
 const merchantStore = useReservationMerchantStore();
+const workationStore = useWorkationStore();
 const { showError } = useErrorToast();
 
 // 예약·추천 목록에서 워케이션 홈으로 이동
@@ -480,8 +482,9 @@ watch(category, () => {
 });
 
 // 메인 화면에서 다시 진입해도 항상 첫 번째 선택 상태로 시작한다
-onMounted(() => {
-  merchantStore.resetEntrySelection();
+onMounted(async () => {
+  await workationStore.fetchCurrent();
+  merchantStore.resetEntrySelection(workationStore.workation);
 });
 
 const applyFilters = async () => {

@@ -69,7 +69,7 @@ export const useReservationMerchantStore = defineStore('reservationMerchant', {
     merchants: [],
     checkIn: formatDate(today),
     checkOut: formatDate(tomorrow),
-    guestCount: 2,
+    guestCount: 1,
     roomCount: 1,
     // 예약 유형 4탭. 탭마다 쓰는 필터가 달라 전체 탭은 두지 않는다
     category: 'ACCOMMODATION',
@@ -144,7 +144,11 @@ export const useReservationMerchantStore = defineStore('reservationMerchant', {
   },
 
   actions: {
-    resetEntrySelection() {
+    resetEntrySelection(workation = null) {
+      this.checkIn = workation?.startDate ?? formatDate(today);
+      this.checkOut = workation?.endDate ?? formatDate(tomorrow);
+      this.guestCount = 1;
+      this.roomCount = 1;
       this.category = 'ACCOMMODATION';
       this.mode = 'RECOMMEND';
       this.merchants = [];
