@@ -27,6 +27,7 @@ const {
   isCreating,
   selectedDate,
   selectedTime,
+  unavailableTimes,
   confirmVisible,
   registrationDisabled,
   registrationMessage,
@@ -100,6 +101,7 @@ async function toggleBookmark() {
         :max-date="workation?.endDate ?? ''"
         :loading="isCreating"
         :disabled="registrationDisabled"
+        :disabled-times="unavailableTimes"
         :error-message="registrationMessage"
         @register="requestRegistration"
       />

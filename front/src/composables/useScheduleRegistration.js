@@ -1,4 +1,4 @@
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
@@ -10,16 +10,23 @@ export function useScheduleRegistration(merchant) {
   const scheduleStore = useScheduleStore();
   const workationStore = useWorkationStore();
   const router = useRouter();
-  const { isCreating } = storeToRefs(scheduleStore);
+  const { isCreating, isCheckingAvailability } = storeToRefs(scheduleStore);
   const { workation } = storeToRefs(workationStore);
   const { showError } = useErrorToast();
   const selectedDate = ref('');
   const selectedTime = ref('10:00');
   const confirmVisible = ref(false);
   const registrationError = ref('');
+  const unavailableTimes = ref([]);
+  const isLoadingUnavailableTimes = ref(false);
+  let availabilityRequestId = 0;
 
   const registrationDisabled = computed(
-    () => !workation.value || !merchant.value?.merchantId,
+    () =>
+      !workation.value ||
+      !merchant.value?.merchantId ||
+      isCheckingAvailability.value ||
+      isLoadingUnavailableTimes.value,
   );
   const registrationMessage = computed(() => {
     if (registrationError.value) return registrationError.value;
@@ -48,10 +55,47 @@ export function useScheduleRegistration(merchant) {
         : today;
   }
 
-  function requestRegistration() {
+  async function requestRegistration() {
     if (registrationDisabled.value || !selectedDate.value || !selectedTime.value) return;
     registrationError.value = '';
-    confirmVisible.value = true;
+    try {
+      const hasConflict = await scheduleStore.hasScheduleAt(
+        workationStore.workationId,
+        selectedDate.value,
+        selectedTime.value,
+      );
+      if (hasConflict) {
+        registrationError.value = '이미 등록한 일정이 있습니다';
+        return;
+      }
+      confirmVisible.value = true;
+    } catch (error) {
+      registrationError.value = '일정 정보를 확인하지 못했습니다.';
+      showError(error, '일정 정보를 확인하지 못했습니다.');
+    }
+  }
+
+  async function loadUnavailableTimes(date) {
+    const requestId = ++availabilityRequestId;
+    unavailableTimes.value = [];
+    if (!date || !workationStore.workationId) return;
+
+    isLoadingUnavailableTimes.value = true;
+    try {
+      const times = await scheduleStore.getScheduledTimes(
+        workationStore.workationId,
+        date,
+      );
+      if (requestId === availabilityRequestId) unavailableTimes.value = times;
+    } catch {
+      if (requestId === availabilityRequestId) {
+        registrationError.value = '일정 정보를 확인하지 못했습니다.';
+      }
+    } finally {
+      if (requestId === availabilityRequestId) {
+        isLoadingUnavailableTimes.value = false;
+      }
+    }
   }
 
   async function registerSchedule() {
@@ -76,11 +120,18 @@ export function useScheduleRegistration(merchant) {
     initializeSelectedDate();
   });
 
+  watch([selectedDate, selectedTime], () => {
+    registrationError.value = '';
+  });
+
+  watch(selectedDate, loadUnavailableTimes);
+
   return {
     workation,
     isCreating,
     selectedDate,
     selectedTime,
+    unavailableTimes,
     confirmVisible,
     registrationDisabled,
     registrationMessage,
