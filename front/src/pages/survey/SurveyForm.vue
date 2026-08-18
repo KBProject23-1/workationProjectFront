@@ -192,12 +192,12 @@ const submit = async () => {
     // 저장을 마쳤으니 이탈 확인을 걸지 않는다
     leaving.value = true;
 
-    // 등록 흐름이면 3/3 예산 배분으로, 아니면 메인으로 돌아간다
+    // 등록 흐름이면 3/3 예산 배분으로, 수정 흐름이면 결과 화면으로 돌아간다
     // 설문을 거쳤으니 전체 3단계다
     router.replace(
       isCreateFlow
         ? `/workation/${workationId}/budgets?step=create&steps=3`
-        : '/workation',
+        : '/account/me/survey',
     );
   } catch (error) {
     showError(error, '설문을 저장하지 못했습니다.');
@@ -228,7 +228,7 @@ const goBack = () => {
     cancelOpen.value = true;
     return;
   }
-  router.push('/workation');
+  router.push('/account/me/survey');
 };
 
 // 헤더 버튼뿐 아니라 브라우저 뒤로가기와 주소 직접 입력도 잡는다.
