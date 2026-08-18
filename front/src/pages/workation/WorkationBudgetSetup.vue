@@ -147,11 +147,11 @@
     <BaseConfirmModal
       :visible="recommendOpen"
       title="워케이션 등록이 끝났어요"
-      :message="recommendMessage"
-      confirm-label="확인"
-      hide-cancel
+      message="지금 바로 추천 장소를 확인해보시겠어요?"
+      confirm-label="추천 확인하기"
+      cancel-label="다음에 볼게요"
       @confirm="goRecommendation"
-      @cancel="goRecommendation"
+      @cancel="goWorkation"
     />
   </div>
 </template>
@@ -218,15 +218,8 @@ const sheetOpen = ref(false);
 const renameTarget = ref(null);
 const shaking = ref(false);
 
-// 마지막 단계를 마친 직후 뜨는 추천 안내.
-// 설문을 건너뛴 경우에는 이전에 답한 취향을 쓴다는 것을 알려준다
+// 마지막 단계를 마친 직후 뜨는 추천 안내
 const recommendOpen = ref(false);
-
-const recommendMessage = computed(() =>
-  totalSteps === 2
-    ? '기존 설문을 바탕으로 워케이션 일정을 추천해 드립니다.'
-    : '설문을 바탕으로 워케이션 일정을 추천해 드립니다.',
-);
 
 // 등록 도중 이탈 확인
 const cancelOpen = ref(false);
@@ -513,10 +506,16 @@ const submit = async () => {
   }
 };
 
-// 추천은 한 항목씩 고른다. 여러 개를 모아 고르는 흐름은 쓰지 않는다
+// 추천 확인을 선택하면 예약 가능한 장소 목록으로 이동한다
 const goRecommendation = () => {
   recommendOpen.value = false;
-  router.replace('/recommendation?mode=single');
+  router.replace('/reservation/merchants');
+};
+
+// 추천을 나중에 확인하면 워케이션 홈으로 이동한다
+const goWorkation = () => {
+  recommendOpen.value = false;
+  router.replace('/workation');
 };
 
 // 등록 도중 나가면 예산 없는 워케이션이 남으므로 확인을 받는다

@@ -3,7 +3,7 @@
 // - 로그인 사용자의 기본 정보(이름/이메일/휴대폰)를 GET /users/me 로 조회해 보여준다 (authStore.fetchMyInfo 재사용)
 // - 카드 구성 (Figma 내활동 기준)
 //   ① 프로필 + 프로필 수정  ② 메뉴(내 장소·나의 워케이션 스타일·내가 작성한 리뷰)  ③ 설정(계정·알림)
-// - 메뉴들은 아직 미구현 기능이므로 진입 대신 안내 토스트만 노출한다.
+// - 구현된 메뉴는 해당 화면으로 이동하고, 미구현 메뉴는 안내 토스트만 노출한다.
 // - 하단 로그아웃 버튼: POST /auth/logout 호출 → authStore 초기화 → 로그인 화면(/login) 이동
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -24,9 +24,9 @@ const loading = ref(true);
 // 메뉴 카드(② 메뉴)의 행
 // to 가 있으면 해당 화면으로 이동하고, 없으면 미구현이라 안내 토스트만 노출한다
 const menuItems = [
-  { label: '내 장소' },
-  { label: '나의 워케이션 스타일' },
-  { label: '내가 작성한 리뷰' },
+  { label: '내 장소', to: '/bookmarks' },
+  { label: '나의 워케이션 스타일', to: '/account/me/survey' },
+  { label: '내가 작성한 리뷰', to: '/users/me/reviews' },
   { label: '워케이션 정산기록 보기', to: '/workation/records' },
 ];
 
