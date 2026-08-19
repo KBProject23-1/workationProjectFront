@@ -11,7 +11,7 @@ defineProps({
   // inline: 버튼+제목이 좌측 정렬로 자연스럽게 흐르는 헤더 (목록/입력 화면 등)
   // centered: 버튼은 absolute 로 빠지고 제목이 중앙 정렬되는 헤더 (상세/폼 화면 등)
   variant: { type: String, default: 'centered' },
-  // detail: centered 변형 중 118px 높이의 상세 페이지용(구 page-header 그리드) 크기
+  // detail: centered 변형 중 80px 높이의 상세 페이지용(구 118px page-header 그리드에서 축소) 크기
   size: { type: String, default: 'default' },
   backLabel: { type: String, default: '뒤로 가기' },
   titleClass: { type: [String, Array, Object], default: 'text-[18px] font-bold text-gray-900' },
@@ -41,19 +41,23 @@ defineEmits(['back']);
 
   <header
     v-else
-    class="relative flex items-center justify-center"
-    :class="size === 'detail' ? 'h-[118px] items-end pb-3.5' : 'h-14 shrink-0'"
+    class="relative flex justify-center"
+    :class="size === 'detail' ? 'h-20 items-end pb-3.5' : 'h-14 shrink-0 items-center'"
   >
     <button
       type="button"
       class="absolute left-0 p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+      :class="size === 'detail' ? 'bottom-3.5' : 'top-1/2 -translate-y-1/2'"
       :aria-label="backLabel"
       @click="$emit('back')"
     >
       <ChevronLeft :size="24" />
     </button>
     <h1 :class="titleClass">{{ title }}</h1>
-    <div class="absolute right-0 flex items-center gap-1">
+    <div
+      class="absolute right-0 flex items-center gap-1"
+      :class="size === 'detail' ? 'bottom-3.5' : 'top-1/2 -translate-y-1/2'"
+    >
       <slot name="right" />
     </div>
   </header>
