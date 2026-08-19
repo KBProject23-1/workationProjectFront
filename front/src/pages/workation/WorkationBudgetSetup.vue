@@ -1,15 +1,13 @@
 <template>
   <div class="min-h-screen bg-white px-5 pt-4 pb-8">
-    <header class="relative mb-4 flex items-center justify-center">
-      <button
-        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-        aria-label="뒤로 가기"
-        @click="goBack"
-      >
-        <ChevronLeft class="h-7 w-7" />
-      </button>
-      <h1 class="text-base font-bold text-slate-900">예산 세부 금액 설정</h1>
-    </header>
+    <div class="mb-4">
+      <BaseHeader
+        title="예산 세부 금액 설정"
+        variant="centered"
+        title-class="text-base font-bold text-slate-900"
+        @back="goBack"
+      />
+    </div>
 
     <!-- 마지막 단계다. 설문을 건너뛰었으면 2/2, 했으면 3/3 -->
     <template v-if="isCreateFlow">
@@ -97,13 +95,14 @@
         </div>
       </div>
 
-      <Button
+      <BaseButton
+        variant="default"
         class="mt-8 h-12 w-full rounded-xl text-base"
         :disabled="submitting"
         @click="submit"
       >
         {{ submitting ? '저장 중...' : '완료' }}
-      </Button>
+      </BaseButton>
 
       <p v-if="guideMessage" class="mt-2 text-center text-xs text-slate-400">
         {{ guideMessage }}
@@ -159,11 +158,11 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
-import { ChevronLeft } from '@lucide/vue';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useCategoryStore } from '@/stores/categoryStore';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import { won } from '@/components/workation/format';

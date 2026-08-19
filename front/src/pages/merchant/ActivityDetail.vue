@@ -2,8 +2,9 @@
 import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
-import { ChevronLeft, Heart, MapPin } from '@lucide/vue';
+import { Heart, MapPin } from '@lucide/vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import MerchantReviewCard from '@/components/merchant/MerchantReviewCard.vue';
 import ScheduleRegistrationPanel from '@/components/schedule/ScheduleRegistrationPanel.vue';
 import { useScheduleRegistration } from '@/composables/useScheduleRegistration';
@@ -47,11 +48,15 @@ async function toggleBookmark() {
 
 <template>
   <main class="activity-page">
-    <header class="page-header">
-      <button type="button" aria-label="뒤로 가기" @click="$router.back()"><ChevronLeft :size="32" /></button>
-      <h1>여가 상세보기</h1>
-      <span></span>
-    </header>
+    <div class="px-4">
+      <BaseHeader
+        title="여가 상세보기"
+        variant="centered"
+        size="detail"
+        title-class="text-[22px] font-extrabold text-gray-900"
+        @back="$router.back()"
+      />
+    </div>
 
     <p v-if="isLoading" class="status-message">여가 정보를 불러오고 있습니다.</p>
     <div v-else-if="error" class="status-message error">
@@ -134,7 +139,6 @@ async function toggleBookmark() {
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
 .activity-page { width:min(402px,100%); min-height:min(871px,100vh); margin:0 auto; padding-bottom:22px; color:#111827; background:#fff; font-family:'SUIT Variable','SUIT',sans-serif; } button { font:inherit; }
 .status-message { padding:24px 16px; margin:0; text-align:center; color:#8a96a5; font-size:14px; }.status-message.error { color:#e05252; }.status-message.error p { margin:0 0 12px; }.status-message.error button { height:40px; padding:0 20px; color:#3087ed; border:1.5px solid #3087ed; border-radius:12px; background:#fff; font-weight:800; }
-.page-header { height:118px; display:grid; grid-template-columns:40px 1fr 40px; align-items:end; padding:0 16px 14px; }.page-header button { width:36px; height:36px; display:grid; place-items:center; padding:0; border:0; background:none; }.page-header h1 { margin:0; text-align:center; font-size:22px; font-weight:800; }
 .hero-image { position:relative; height:175px; margin:0 16px 16px; overflow:hidden; border-radius:22px; background:#b4d3fb; }.activity-window { position:absolute; top:27px; left:26px; right:26px; height:104px; overflow:hidden; border-radius:11px; background:#edf4fd; }.activity-window::after { content:''; position:absolute; left:-20px; right:-20px; bottom:-18px; height:65px; border-radius:50% 50% 0 0; background:#b6d3f5; }.activity-window i { position:absolute; top:12px; right:39px; z-index:1; width:24px; height:24px; border-radius:50%; background:#ffd057; }.surfer { position:absolute; left:102px; bottom:62px; z-index:2; width:73px; height:70px; border-radius:48% 48% 40% 40%; background:#c8c5c8; }.surfer::after { content:''; position:absolute; left:-30px; right:-8px; bottom:-8px; height:34px; border-radius:50% 50% 0 0; background:#5da0d2; }.surfboard { position:absolute; right:92px; bottom:69px; z-index:2; width:78px; height:7px; border-radius:8px; background:#3c83c8; transform:rotate(31deg); }.surfboard::after { content:''; position:absolute; left:54px; top:24px; width:53px; height:7px; border-radius:8px; background:#4d91d2; transform:rotate(-5deg); }
 .hero-image > img { width:100%; height:100%; object-fit:cover; }
 .bookmark-button:disabled { cursor:wait; opacity:.55; }

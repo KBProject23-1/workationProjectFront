@@ -35,15 +35,15 @@
       </ul>
     </div>
 
-    <Button class="h-12 w-full rounded-xl text-base" @click="goForm">
+    <BaseButton variant="default" class="h-12 w-full rounded-xl text-base" @click="goForm">
       시작하기
-    </Button>
+    </BaseButton>
   </div>
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
 
 const router = useRouter();
 

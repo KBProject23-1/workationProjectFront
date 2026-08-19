@@ -3,10 +3,11 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { useCardStore } from '@/stores/cardStore';
-import { ChevronLeft, SlidersHorizontal } from '@lucide/vue';
+import { SlidersHorizontal } from '@lucide/vue';
 import TransactionListItem from '@/components/transaction/TransactionListItem.vue';
 import TransactionSummary from '@/components/transaction/TransactionSummary.vue';
 import TransactionFilterModal from '@/components/transaction/TransactionFilterModal.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 
 const router = useRouter();
 const transactionStore = useTransactionStore();
@@ -67,16 +68,19 @@ onUnmounted(() => {
 <template>
   <main class="flex flex-col items-center w-full min-h-screen bg-white">
     <div class="sticky top-0 z-10 w-full bg-white px-5 pt-6 pb-3">
-      <div class="w-full flex items-center justify-between mb-4">
-        <div class="flex items-center">
-          <button type="button" aria-label="뒤로 가기" @click="goToWallet">
-            <ChevronLeft :size="24" />
-          </button>
-          <h1 class="text-xl font-bold ml-2">거래내역</h1>
-        </div>
-        <button type="button" aria-label="필터" @click="isFilterOpen = true">
-          <SlidersHorizontal :size="20" class="text-gray-500" />
-        </button>
+      <div class="w-full mb-4">
+        <BaseHeader
+          title="거래내역"
+          variant="inline"
+          title-class="text-xl font-bold text-gray-900"
+          @back="goToWallet"
+        >
+          <template #right>
+            <button type="button" aria-label="필터" @click="isFilterOpen = true">
+              <SlidersHorizontal :size="20" class="text-gray-500" />
+            </button>
+          </template>
+        </BaseHeader>
       </div>
 
       <TransactionSummary

@@ -1,11 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { ChevronLeft } from '@lucide/vue';
 import { useWalletStore } from '@/stores/walletStore';
 import { useCardStore } from '@/stores/cardStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import WalletBalanceCard from '@/components/wallet/WalletBalanceCard.vue';
 import WalletCardCarousel from '@/components/wallet/WalletCardCarousel.vue';
 
@@ -70,16 +70,13 @@ onMounted(() => {
   <main
     class="flex flex-col items-center w-full min-h-screen px-5 pt-6 pb-8 bg-white"
   >
-    <div class="relative w-full flex items-center justify-center h-9 mb-4">
-      <button
-        type="button"
-        class="absolute left-0 -ml-1 rounded-full p-1 text-slate-700 active:bg-slate-100"
-        aria-label="뒤로 가기"
-        @click="goBack"
-      >
-        <ChevronLeft :size="24" />
-      </button>
-      <h1 class="text-[18px] font-bold text-slate-900">내 지갑</h1>
+    <div class="w-full mb-4">
+      <BaseHeader
+        title="내 지갑"
+        variant="centered"
+        title-class="text-[18px] font-bold text-slate-900"
+        @back="goBack"
+      />
     </div>
 
     <WalletBalanceCard

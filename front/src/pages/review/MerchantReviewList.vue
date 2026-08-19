@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import ReviewListItem from '@/components/review/ReviewListItem.vue';
 import ReviewPagination from '@/components/review/ReviewPagination.vue';
 import { useReviewStore } from '@/stores/reviewStore';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -29,13 +30,12 @@ function moveToReviewDetail(reviewId) {
 
 <template>
   <main class="review-page">
-    <header class="page-header">
-      <button type="button" aria-label="뒤로 가기" @click="router.back()">
-        ‹
-      </button>
-      <h1>{{ merchantName || '서핑 체험 강릉' }}</h1>
-      <span aria-hidden="true"></span>
-    </header>
+    <BaseHeader
+      :title="merchantName || '서핑 체험 강릉'"
+      variant="centered"
+      title-class="max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap text-[18px] font-extrabold text-gray-900"
+      @back="router.back()"
+    />
 
     <section class="review-section" aria-labelledby="review-summary">
       <p id="review-summary" class="review-summary">
@@ -66,9 +66,6 @@ function moveToReviewDetail(reviewId) {
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
 .review-page { width:min(402px,100%); min-height:871px; display:flex; flex-direction:column; margin:0 auto; padding:0 23px 28px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
 button { font:inherit; }
-.page-header { position:relative; height:50px; display:flex; align-items:center; justify-content:center; }
-.page-header button { position:absolute; left:4px; width:36px; height:32px; padding:0; color:#172033; border:0; background:transparent; font-size:40px; line-height:1; cursor:pointer; }
-.page-header h1 { max-width:280px; margin:0; overflow:hidden; text-align:center; font-size:18px; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
 .review-section { padding-top:17px; }
 .review-summary { margin:0 5px 14px; color:#8997aa; font-size:12px; }
 .review-list { display:flex; flex-direction:column; align-items:center; gap:10px; }

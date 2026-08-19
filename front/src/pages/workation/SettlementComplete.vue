@@ -66,8 +66,8 @@
         </dl>
       </section>
 
-      <Button class="mt-8 h-12 w-full rounded-xl text-base" @click="goHome"
-        >확인</Button
+      <BaseButton variant="default" class="mt-8 h-12 w-full rounded-xl text-base" @click="goHome"
+        >확인</BaseButton
       >
     </template>
   </div>
@@ -76,7 +76,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { storeToRefs } from 'pinia';
 import { useSettlementStore } from '@/stores/settlementStore';
 import { useErrorToast } from '@/composables/useErrorToast';

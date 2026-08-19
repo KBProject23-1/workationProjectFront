@@ -11,9 +11,10 @@
 //   PATCH /users/me/phone 호출 전용 상태(isChanging/isChanged)만 추가로 관리한다.
 import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { CheckCircle2, ChevronLeft, ShieldCheck } from '@lucide/vue';
+import { CheckCircle2, ShieldCheck } from '@lucide/vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useErrorToast } from '@/composables/useErrorToast';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import {
   useIdentityVerification,
   VERIFICATION_STATUS,
@@ -128,17 +129,14 @@ async function goToMyInfo() {
 
     <template v-else>
       <!-- 헤더 -->
-      <header v-if="showHeader" class="relative mb-6 flex items-center justify-center">
-        <button
-          type="button"
-          class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-          aria-label="뒤로 가기"
-          @click="goBack"
-        >
-          <ChevronLeft class="h-7 w-7" />
-        </button>
-        <h1 class="text-base font-bold text-slate-900">휴대폰 번호 변경</h1>
-      </header>
+      <div v-if="showHeader" class="mb-6">
+        <BaseHeader
+          title="휴대폰 번호 변경"
+          variant="centered"
+          title-class="text-base font-bold text-slate-900"
+          @back="goBack"
+        />
+      </div>
 
       <!-- 변경 완료 화면 -->
       <div

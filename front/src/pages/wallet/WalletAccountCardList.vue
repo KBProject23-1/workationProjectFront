@@ -3,8 +3,9 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAccountStore } from '@/stores/accountStore';
 import { useErrorToast } from '@/composables/useErrorToast';
-import { ChevronLeft, Plus, Landmark } from '@lucide/vue';
+import { Plus, Landmark } from '@lucide/vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import AccountListItem from '@/components/account/AccountListItem.vue';
 
 const router = useRouter();
@@ -59,16 +60,8 @@ onMounted(() => {
 
 <template>
   <main class="flex flex-col w-full min-h-screen px-5 py-5 bg-white text-left">
-    <div class="flex items-center gap-2 mb-6">
-      <button
-        type="button"
-        class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
-        aria-label="뒤로 가기"
-        @click="goToWallet"
-      >
-        <ChevronLeft :size="24" />
-      </button>
-      <h1 class="text-[18px] font-bold text-gray-900">연결 계좌</h1>
+    <div class="mb-6">
+      <BaseHeader title="연결 계좌" variant="inline" @back="goToWallet" />
     </div>
 
     <div class="flex items-center justify-between mb-3">

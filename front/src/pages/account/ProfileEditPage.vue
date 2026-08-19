@@ -12,11 +12,11 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { toast } from 'vue-sonner';
-import { ChevronLeft } from '@lucide/vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import BaseInput from '@/components/common/BaseInput.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
 
 const router = useRouter();
@@ -159,19 +159,14 @@ onMounted(async () => {
 
     <template v-else>
       <!-- 헤더 -->
-      <header class="relative mb-6 flex items-center justify-center">
-        <button
-          type="button"
-          class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-          aria-label="뒤로 가기"
-          @click="goBack"
-        >
-          <ChevronLeft class="h-7 w-7" />
-        </button>
-        <h1 class="text-base font-bold text-slate-900">
-          프로필 수정
-        </h1>
-      </header>
+      <div class="mb-6">
+        <BaseHeader
+          title="프로필 수정"
+          variant="centered"
+          title-class="text-base font-bold text-slate-900"
+          @back="goBack"
+        />
+      </div>
 
       <!-- 프로필 사진 — 기존 내정보 화면과 동일한 아바타 -->
       <div class="flex justify-center">

@@ -1,7 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ChevronLeft } from '@lucide/vue';
 import { useRecommendationStore } from '@/stores/recommendationStore';
 import {
   MEAL_TYPES,
@@ -10,7 +9,8 @@ import {
 import RecommendationListItem from '@/components/recommendation/RecommendationListItem.vue';
 import RecommendationReferenceModal from '@/components/recommendation/RecommendationReferenceModal.vue';
 import { useErrorToast } from '@/composables/useErrorToast';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -170,13 +170,12 @@ function moveNext() {
 
 <template>
   <main v-if="category" class="recommendation-list-page">
-    <header class="list-header">
-      <button type="button" aria-label="뒤로 가기" @click="goBack">
-        <ChevronLeft :size="32" />
-      </button>
-      <h1>{{ category.pageTitle }}</h1>
-      <span></span>
-    </header>
+    <BaseHeader
+      :title="category.pageTitle"
+      variant="centered"
+      title-class="text-[22px] font-extrabold text-[#0c1118] tracking-[-0.5px]"
+      @back="goBack"
+    />
 
     <nav v-if="isRestaurant" class="meal-tabs" aria-label="식사 시간대">
       <button
@@ -240,13 +239,14 @@ function moveNext() {
       </button>
     </section>
 
-    <Button
+    <BaseButton
       v-if="recommendationStore.mode === 'flow'"
+      variant="default"
       class="mt-5 h-12 w-full rounded-xl text-base"
       @click="moveNext"
     >
       {{ isLastCategory ? '추천 완료' : '다음 추천 보기' }}
-    </Button>
+    </BaseButton>
 
     <RecommendationReferenceModal
       :open="isReferenceModalOpen"
@@ -269,30 +269,6 @@ function moveNext() {
   background: #ffffff;
   color: #12213b;
   font-family: 'SUIT', 'Pretendard Variable', sans-serif;
-}
-
-.list-header {
-  display: grid;
-  grid-template-columns: 40px 1fr 40px;
-  align-items: center;
-  height: 50px;
-}
-
-.list-header button {
-  display: flex;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #0c1118;
-}
-
-.list-header h1 {
-  margin: 0;
-  color: #0c1118;
-  font-size: 22px;
-  font-weight: 800;
-  text-align: center;
-  letter-spacing: -0.5px;
 }
 
 .meal-tabs {

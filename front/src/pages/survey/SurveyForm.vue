@@ -1,15 +1,13 @@
 <template>
   <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
-    <header class="relative mb-4 flex items-center justify-center">
-      <button
-        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-        aria-label="뒤로 가기"
-        @click="goBack"
-      >
-        <ChevronLeft class="h-7 w-7" />
-      </button>
-      <h1 class="text-base font-bold text-slate-900">나의 워케이션 스타일</h1>
-    </header>
+    <div class="mb-4">
+      <BaseHeader
+        title="나의 워케이션 스타일"
+        variant="centered"
+        title-class="text-base font-bold text-slate-900"
+        @back="goBack"
+      />
+    </div>
 
     <!--
       첫 등록에서만 단계를 센다.
@@ -58,14 +56,15 @@
       </div>
     </div>
 
-    <Button
+    <BaseButton
       v-if="!loading && questions.length > 0"
+      variant="default"
       class="mt-8 h-12 w-full rounded-xl text-base"
       :disabled="submitting"
       @click="submit"
     >
       {{ submitLabel }}
-    </Button>
+    </BaseButton>
 
     <p
       v-if="unansweredCount > 0 && !loading"
@@ -89,10 +88,10 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { ChevronLeft } from '@lucide/vue';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { useSurveyStore } from '@/stores/surveyStore';
 import { useWorkationStore } from '@/stores/workationStore';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import { useErrorToast } from '@/composables/useErrorToast';
 import SurveyQuestionBlock from '@/components/survey/SurveyQuestionBlock.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';

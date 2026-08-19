@@ -5,9 +5,10 @@
 // - '로그인하기' → 로그인 화면(/login)으로 이동한다 (PIN 등록 화면 이동은 제거됨).
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { ChevronLeft, Check, Mail } from '@lucide/vue';
+import { Check, Mail } from '@lucide/vue';
 import { useAuthStore } from '@/stores/authStore';
 import BaseButton from '@/components/common/BaseButton.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -38,17 +39,14 @@ function goNext() {
 <template>
   <div class="flex flex-col h-dvh bg-white overflow-hidden">
     <!-- 헤더 -->
-    <header class="shrink-0 flex items-center gap-1 px-2 pt-2">
-      <button
-        type="button"
-        aria-label="뒤로 가기"
-        class="flex h-10 w-10 items-center justify-center rounded-full text-[#0B3155] transition-colors hover:bg-[#F5F8FC] active:scale-95"
-        @click="goBack"
-      >
-        <ChevronLeft :size="24" :stroke-width="2.5" />
-      </button>
-      <h1 class="text-[17px] font-bold tracking-tight text-[#191F28]">회원가입</h1>
-    </header>
+    <div class="shrink-0 px-2 pt-2">
+      <BaseHeader
+        title="회원가입"
+        variant="inline"
+        title-class="text-[17px] font-bold tracking-tight text-[#191F28]"
+        @back="goBack"
+      />
+    </div>
 
     <!-- 본문 -->
     <main class="flex min-h-0 flex-1 flex-col items-center px-6 pt-10 pb-6">

@@ -277,8 +277,13 @@ onMounted(initialize);
 <template>
   <div class="mx-auto flex min-h-screen w-full max-w-[402px] flex-col bg-white text-slate-900">
     <header class="flex h-16 shrink-0 items-center px-3">
-      <button type="button" class="rounded-full p-2 active:bg-slate-100" aria-label="뒤로 가기" @click="router.back()">
-        <ChevronLeft :size="26" />
+      <button
+        type="button"
+        class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+        aria-label="뒤로 가기"
+        @click="router.back()"
+      >
+        <ChevronLeft :size="24" />
       </button>
     </header>
 

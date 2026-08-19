@@ -64,13 +64,14 @@
       청구할 만한 지출이 없어요
     </p>
 
-    <Button
+    <BaseButton
+      variant="default"
       class="mt-3 h-10 w-full rounded-lg text-sm"
       :disabled="picked.length === 0 || working"
       @click="claim"
     >
       {{ working ? '처리 중...' : `${picked.length}건 ${workLabel}로 옮기기` }}
-    </Button>
+    </BaseButton>
 
     <!-- 추천에 안 걸린 지출도 청구할 수 있어야 한다 -->
     <button
@@ -86,7 +87,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { Check } from '@lucide/vue';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { useExpenseStore } from '@/stores/expenseStore';
 import { useCategoryStore } from '@/stores/categoryStore';
 import { useErrorToast } from '@/composables/useErrorToast';

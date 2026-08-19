@@ -1,15 +1,13 @@
 <template>
   <div class="min-h-screen bg-white px-5 pt-4 pb-8">
-    <header class="relative mb-4 flex items-center justify-center">
-      <button
-        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-        aria-label="뒤로 가기"
-        @click="goBack"
-      >
-        <ChevronLeft class="h-7 w-7" />
-      </button>
-      <h1 class="text-base font-bold text-slate-900">{{ pageTitle }}</h1>
-    </header>
+    <div class="mb-4">
+      <BaseHeader
+        :title="pageTitle"
+        variant="centered"
+        title-class="text-base font-bold text-slate-900"
+        @back="goBack"
+      />
+    </div>
 
     <!-- 설문은 사용자당 1회다. 이미 했으면 단계가 하나 줄어든다 -->
     <template v-if="!isEdit">
@@ -132,13 +130,14 @@
       </p>
     </div>
 
-    <Button
+    <BaseButton
+      variant="default"
       class="mt-8 h-12 w-full rounded-xl text-base"
       :disabled="submitting"
       @click="submit"
     >
       {{ submitLabel }}
-    </Button>
+    </BaseButton>
 
     <BaseConfirmModal
       :visible="outOfPeriodOpen"
@@ -194,11 +193,11 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
-import { ChevronLeft } from '@lucide/vue';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useWorkationStore } from '@/stores/workationStore';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import { useSurveyStore } from '@/stores/surveyStore';

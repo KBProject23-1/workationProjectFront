@@ -1,17 +1,13 @@
 <template>
   <div class="min-h-screen bg-white px-5 pt-4 pb-8">
-    <header class="relative mb-4 flex items-center justify-center">
-      <button
-        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-        aria-label="뒤로 가기"
-        @click="goBack"
-      >
-        <ChevronLeft class="h-7 w-7" />
-      </button>
-      <h1 class="text-base font-bold text-slate-900">
-        {{ isEdit ? '지출 내역 수정하기' : '지출 내역 추가하기' }}
-      </h1>
-    </header>
+    <div class="mb-4">
+      <BaseHeader
+        :title="isEdit ? '지출 내역 수정하기' : '지출 내역 추가하기'"
+        variant="centered"
+        title-class="text-base font-bold text-slate-900"
+        @back="goBack"
+      />
+    </div>
 
     <p v-if="!isEdit" class="mb-4 text-xs text-slate-400">
       지갑으로 결제하지 않은 내역을 등록해 주세요
@@ -129,22 +125,22 @@
       </WorkationFormField>
     </div>
 
-    <Button
+    <BaseButton
+      variant="default"
       class="mt-8 h-12 w-full rounded-xl text-base"
       :disabled="submitting"
       @click="submit"
     >
       {{ submitting ? '저장 중...' : '저장하기' }}
-    </Button>
+    </BaseButton>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ChevronLeft } from '@lucide/vue';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { useExpenseStore } from '@/stores/expenseStore';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useCardStore } from '@/stores/cardStore';
@@ -152,6 +148,7 @@ import { useWorkationStore } from '@/stores/workationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import WorkationFormField from '@/components/workation/WorkationFormField.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import WorkationDateInput from '@/components/workation/WorkationDateInput.vue';
 
 const { workLabel, hasCorporateCard, ensureCards } = useBudgetTypeLabel();

@@ -5,9 +5,9 @@ import { useTransactionStore } from '@/stores/transactionStore';
 import { useReviewStore } from '@/stores/reviewStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { toast } from 'vue-sonner';
-import { ChevronLeft } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import TransactionReceiptModal from '@/components/transaction/TransactionReceiptModal.vue';
 import { formatDateTime } from '@/utils/date';
 import { getStatusMeta, isInactiveStatus } from '@/utils/transactionStatus';
@@ -97,17 +97,8 @@ onMounted(loadDetail);
   <main
     class="flex flex-col items-center w-full min-h-screen px-5 py-5 bg-white text-left"
   >
-    <div class="w-full flex items-center justify-between mb-6">
-      <button
-        type="button"
-        class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
-        aria-label="뒤로 가기"
-        @click="router.back()"
-      >
-        <ChevronLeft :size="24" />
-      </button>
-      <h1 class="text-[18px] font-bold text-gray-900">거래 상세</h1>
-      <div class="w-[28px]"></div>
+    <div class="w-full mb-6">
+      <BaseHeader title="거래 상세" variant="centered" @back="router.back()" />
     </div>
 
     <!-- 로딩 스켈레톤 -->

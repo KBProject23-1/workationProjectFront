@@ -9,10 +9,11 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { toast } from 'vue-sonner';
-import { ChevronLeft, Mail, Phone } from '@lucide/vue';
+import { Mail, Phone } from '@lucide/vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -97,17 +98,14 @@ onMounted(async () => {
 
     <template v-else>
       <!-- 헤더 -->
-      <header class="relative mb-4 flex items-center justify-center">
-        <button
-          type="button"
-          class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-          aria-label="뒤로 가기"
-          @click="goBack"
-        >
-          <ChevronLeft class="h-7 w-7" />
-        </button>
-        <h1 class="text-base font-bold text-slate-900">내 정보</h1>
-      </header>
+      <div class="mb-4">
+        <BaseHeader
+          title="내 정보"
+          variant="centered"
+          title-class="text-base font-bold text-slate-900"
+          @back="goBack"
+        />
+      </div>
 
       <!-- ① 사용자 프로필 / 기본 정보 + 프로필 수정 -->
       <section>

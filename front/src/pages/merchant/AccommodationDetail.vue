@@ -2,10 +2,11 @@
 import { onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { ChevronLeft, Heart, MapPin, Phone } from '@lucide/vue';
+import { Heart, MapPin, Phone } from '@lucide/vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationOccupancyModal from '@/components/reservation/ReservationOccupancyModal.vue';
 import AccommodationProductCard from '@/components/merchant/AccommodationProductCard.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import { useAccommodationStore } from '@/stores/merchant/accommodationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 
@@ -88,11 +89,15 @@ onMounted(async () => {
 
 <template>
   <main class="detail-page">
-    <header class="page-header">
-      <button type="button" aria-label="뒤로 가기" @click="$router.back()"><ChevronLeft :size="32" /></button>
-      <h1>숙소 상세</h1>
-      <span></span>
-    </header>
+    <div class="px-4">
+      <BaseHeader
+        title="숙소 상세"
+        variant="centered"
+        size="detail"
+        title-class="text-[22px] font-extrabold text-gray-900"
+        @back="$router.back()"
+      />
+    </div>
 
     <p v-if="isLoading" class="status-message">숙소 정보를 불러오고 있습니다.</p>
     <div v-else-if="error" class="status-message error">
@@ -177,9 +182,6 @@ onMounted(async () => {
 .detail-page { width:min(402px,100%); min-height:min(871px,100vh); margin:0 auto; padding-bottom:16px; color:#111827; background:#fff; font-family:'SUIT Variable','SUIT',sans-serif; }
 .status-message { padding:24px 16px; margin:0; text-align:center; color:#8a96a5; font-size:14px; }.status-message.error { color:#e05252; }.status-message.error p { margin:0 0 12px; }.status-message.error button { height:40px; padding:0 20px; color:#3087ed; border:1.5px solid #3087ed; border-radius:12px; background:#fff; font-weight:800; }
 button { font:inherit; }
-.page-header { height:118px; display:grid; grid-template-columns:40px 1fr 40px; align-items:end; padding:0 16px 14px; }
-.page-header button { width:36px; height:36px; display:grid; place-items:center; padding:0; border:0; background:none; }
-.page-header h1 { margin:0; text-align:center; font-size:22px; font-weight:800; }
 .hero-image { position:relative; height:175px; margin:0 16px; overflow:hidden; border-radius:22px; background:#b4d3fb; }
 .hero-window { position:absolute; top:27px; left:26px; right:26px; height:104px; overflow:hidden; border-radius:11px; background:#edf4fd; }
 .hero-window::after { content:''; position:absolute; left:-15px; right:-15px; bottom:-14px; height:55px; border-radius:50% 50% 0 0; background:#b6d3f5; }.hero-window span { position:absolute; top:0; bottom:0; left:50%; width:4px; background:#c5dcf8; }.hero-window span::after { content:''; position:absolute; top:12px; left:98px; width:24px; height:24px; border-radius:50%; background:#ffd057; }

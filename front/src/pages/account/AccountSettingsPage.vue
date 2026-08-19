@@ -9,11 +9,12 @@
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { ChevronLeft, ChevronRight, Eye, EyeOff } from '@lucide/vue';
+import { ChevronRight, Eye, EyeOff } from '@lucide/vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import BaseInput from '@/components/common/BaseInput.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
 
 const router = useRouter();
@@ -86,17 +87,14 @@ onMounted(async () => {
 
     <!-- 진입 비밀번호 재인증 — API 성공 시에만 메인 화면으로 전환 -->
     <template v-else-if="!accountVerified">
-      <header class="relative mb-6 flex items-center justify-center">
-        <button
-          type="button"
-          class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-          aria-label="뒤로 가기"
-          @click="goBack"
-        >
-          <ChevronLeft class="h-7 w-7" />
-        </button>
-        <h1 class="text-base font-bold text-slate-900">계정 설정</h1>
-      </header>
+      <div class="mb-6">
+        <BaseHeader
+          title="계정 설정"
+          variant="centered"
+          title-class="text-base font-bold text-slate-900"
+          @back="goBack"
+        />
+      </div>
 
       <p class="text-[13px] font-medium leading-relaxed text-slate-500">
         안전한 계정 관리를 위해<br />현재 비밀번호를 입력해주세요.
@@ -154,17 +152,14 @@ onMounted(async () => {
     <!-- 계정 설정 메인 -->
     <template v-else>
       <!-- 헤더 -->
-      <header class="relative mb-4 flex items-center justify-center">
-        <button
-          type="button"
-          class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-          aria-label="뒤로 가기"
-          @click="goBack"
-        >
-          <ChevronLeft class="h-7 w-7" />
-        </button>
-        <h1 class="text-base font-bold text-slate-900">계정 설정</h1>
-      </header>
+      <div class="mb-4">
+        <BaseHeader
+          title="계정 설정"
+          variant="centered"
+          title-class="text-base font-bold text-slate-900"
+          @back="goBack"
+        />
+      </div>
 
       <!-- ① 계정 정보 — 이름은 수정할 수 없는 표시 전용 -->
       <section>

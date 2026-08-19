@@ -8,7 +8,7 @@ import { useWorkationStore } from '@/stores/workationStore';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import { RECOMMENDATION_CATEGORIES } from '@/config/recommendation';
 import RecommendationCategoryCard from '@/components/recommendation/RecommendationCategoryCard.vue';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -109,8 +109,13 @@ function startRecommendation() {
 
   <main v-else-if="hasSurvey" class="recommendation-home">
     <header class="home-header">
-      <button type="button" aria-label="뒤로 가기" @click="goBack">
-        <ChevronLeft :size="28" />
+      <button
+        type="button"
+        class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+        aria-label="뒤로 가기"
+        @click="goBack"
+      >
+        <ChevronLeft :size="24" />
       </button>
     </header>
 
@@ -135,13 +140,14 @@ function startRecommendation() {
     </section>
 
     <div v-if="!isSingleMode" class="start-area">
-      <Button
+      <BaseButton
+        variant="default"
         class="h-12 w-full rounded-xl text-base"
         :disabled="!hasSelection"
         @click="startRecommendation"
       >
         추천받기
-      </Button>
+      </BaseButton>
     </div>
   </main>
 
@@ -175,18 +181,6 @@ function startRecommendation() {
   align-items: center;
   height: 44px;
   margin: 0 0 18px -8px;
-}
-
-.home-header button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border: 0;
-  background: none;
-  color: #10213d;
-  cursor: pointer;
 }
 
 .home-content {

@@ -18,7 +18,7 @@ const emit = defineEmits(['update:modelValue', 'complete', 'back']);
   <div class="flex flex-col min-h-screen px-5 pt-6 pb-8 bg-[#F5F8FC]">
     <button
       type="button"
-      class="self-start p-1 -ml-1 text-gray-700 active:bg-gray-100 rounded-full"
+      class="self-start p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
       aria-label="뒤로 가기"
       @click="emit('back')"
     >

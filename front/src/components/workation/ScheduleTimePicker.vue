@@ -26,21 +26,22 @@
       </div>
 
       <DialogFooter class="flex-row gap-2 sm:justify-center">
-        <Button
+        <BaseButton
           variant="outline"
           class="h-11 flex-1 rounded-xl"
           :disabled="loading"
           @click="$emit('cancel')"
         >
           취소
-        </Button>
-        <Button
+        </BaseButton>
+        <BaseButton
+          variant="default"
           class="h-11 flex-1 rounded-xl"
           :disabled="loading || !selected || isTimeDisabled(selected)"
           @click="$emit('confirm', selected)"
         >
           {{ confirmLabel }}
-        </Button>
+        </BaseButton>
       </DialogFooter>
     </DialogContent>
   </Dialog>
@@ -56,7 +57,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { dotDate } from './format';
 
 // 일정은 30분 단위로 잡는다. 09:00 부터 자정 직전까지

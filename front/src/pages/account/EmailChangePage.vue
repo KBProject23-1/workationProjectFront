@@ -13,11 +13,12 @@
 //   (페이지 unmount 시 반드시 clearInterval — 타이머 중복 생성 방지)
 import { computed, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { CheckCircle2, ChevronLeft } from '@lucide/vue';
+import { CheckCircle2 } from '@lucide/vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import BaseInput from '@/components/common/BaseInput.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 
 const router = useRouter();
@@ -254,17 +255,14 @@ async function goToMyInfo() {
     <!-- 이메일 입력 / 인증번호 확인 화면 -->
     <template v-else>
       <!-- 헤더 -->
-      <header class="relative mb-6 flex items-center justify-center">
-        <button
-          type="button"
-          class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-          aria-label="뒤로 가기"
-          @click="goBack"
-        >
-          <ChevronLeft class="h-7 w-7" />
-        </button>
-        <h1 class="text-base font-bold text-slate-900">이메일 변경</h1>
-      </header>
+      <div class="mb-6">
+        <BaseHeader
+          title="이메일 변경"
+          variant="centered"
+          title-class="text-base font-bold text-slate-900"
+          @back="goBack"
+        />
+      </div>
 
       <!-- 안내 문구 -->
       <p class="text-[13px] font-medium leading-relaxed text-slate-500">

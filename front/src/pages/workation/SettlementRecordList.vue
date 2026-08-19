@@ -1,16 +1,13 @@
 <template>
   <div class="min-h-screen bg-white px-5 pt-4 pb-8">
-    <header class="relative mb-4 flex items-center justify-center">
-      <button
-        type="button"
-        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-        aria-label="뒤로 가기"
-        @click="goBack"
-      >
-        <ChevronLeft class="h-7 w-7" />
-      </button>
-      <h1 class="text-base font-bold text-slate-900">워케이션 정산기록</h1>
-    </header>
+    <div class="mb-4">
+      <BaseHeader
+        title="워케이션 정산기록"
+        variant="centered"
+        title-class="text-base font-bold text-slate-900"
+        @back="goBack"
+      />
+    </div>
 
     <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
       불러오는 중...
@@ -79,10 +76,10 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { ChevronLeft } from '@lucide/vue';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import { dotDate, won } from '@/components/workation/format';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 
 const PAGE_SIZE = 10;
 

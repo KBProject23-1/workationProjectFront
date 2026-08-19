@@ -10,7 +10,7 @@
 // - 이메일은 백엔드가 마스킹하여 반환한다 (프론트 마스킹 불필요 — EmailMasker)
 import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { CheckCircle2, ChevronLeft, Mail, ShieldCheck } from '@lucide/vue';
+import { CheckCircle2, Mail, ShieldCheck } from '@lucide/vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import {
@@ -18,6 +18,7 @@ import {
   VERIFICATION_STATUS,
 } from '@/composables/useIdentityVerification';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import IdentityVerificationFailure from '@/components/identity/IdentityVerificationFailure.vue';
 import PassCarrierSelect from '@/components/identity/PassCarrierSelect.vue';
@@ -113,17 +114,14 @@ function goToLogin() {
 
   <div v-else class="flex h-dvh flex-col overflow-hidden bg-white">
     <!-- 헤더 -->
-    <header v-if="showHeader" class="flex shrink-0 items-center gap-1 px-2 pt-2">
-      <button
-        type="button"
-        aria-label="뒤로 가기"
-        class="flex h-10 w-10 items-center justify-center rounded-full text-[#0B3155] transition-colors hover:bg-[#F5F8FC] active:scale-95"
-        @click="goBack"
-      >
-        <ChevronLeft :size="24" :stroke-width="2.5" />
-      </button>
-      <h1 class="text-[17px] font-bold tracking-tight text-[#191F28]">아이디 찾기</h1>
-    </header>
+    <div v-if="showHeader" class="shrink-0 px-2 pt-2">
+      <BaseHeader
+        title="아이디 찾기"
+        variant="inline"
+        title-class="text-[17px] font-bold tracking-tight text-[#191F28]"
+        @back="goBack"
+      />
+    </div>
 
     <!-- 상태별 화면 -->
     <div class="flex min-h-0 flex-1 flex-col">

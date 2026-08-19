@@ -3,8 +3,8 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useCardStore } from '@/stores/cardStore';
 import { useErrorToast } from '@/composables/useErrorToast';
-import { ChevronLeft } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import CardNicknameForm from '@/components/card/CardNicknameForm.vue';
 
 const router = useRouter();
@@ -49,16 +49,8 @@ onMounted(() => {
   <main
     class="flex flex-col items-center w-full min-h-screen px-5 py-5 bg-white"
   >
-    <div class="w-full flex items-center gap-2 mb-6">
-      <button
-        type="button"
-        class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
-        aria-label="뒤로 가기"
-        @click="router.back()"
-      >
-        <ChevronLeft :size="24" />
-      </button>
-      <h1 class="text-[18px] font-bold text-gray-900">카드 별칭 설정</h1>
+    <div class="w-full mb-6">
+      <BaseHeader title="카드 별칭 설정" variant="inline" @back="router.back()" />
     </div>
 
     <CardNicknameForm v-if="card" :card="card" @update="handleUpdate" />

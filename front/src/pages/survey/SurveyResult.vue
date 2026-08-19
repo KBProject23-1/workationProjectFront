@@ -1,16 +1,13 @@
 <template>
   <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
-    <header class="relative mb-4 flex items-center justify-center">
-      <button
-        type="button"
-        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-        aria-label="뒤로 가기"
-        @click="goBack"
-      >
-        <ChevronLeft class="h-7 w-7" />
-      </button>
-      <h1 class="text-base font-bold text-slate-900">나의 워케이션 스타일</h1>
-    </header>
+    <div class="mb-4">
+      <BaseHeader
+        title="나의 워케이션 스타일"
+        variant="centered"
+        title-class="text-base font-bold text-slate-900"
+        @back="goBack"
+      />
+    </div>
 
     <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
       불러오는 중...
@@ -45,9 +42,9 @@
         응답을 수정하면 추천 결과에도 반영돼요.
       </p>
 
-      <Button class="mt-5 h-12 w-full rounded-xl text-base" @click="goEdit">
+      <BaseButton variant="default" class="mt-5 h-12 w-full rounded-xl text-base" @click="goEdit">
         수정하기
-      </Button>
+      </BaseButton>
     </template>
 
     <div v-else class="flex flex-1 flex-col items-center justify-center">
@@ -58,12 +55,13 @@
         워케이션을 등록하면 취향 설문을 진행하고,<br />
         그에 맞는 숙소와 공간을 추천해 드려요
       </p>
-      <Button
+      <BaseButton
+        variant="default"
         class="mt-6 h-12 w-full rounded-xl text-base"
         @click="goCreateWorkation"
       >
         워케이션 등록하기
-      </Button>
+      </BaseButton>
     </div>
   </div>
 </template>
@@ -72,10 +70,10 @@
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { ChevronLeft } from '@lucide/vue';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { useSurveyStore } from '@/stores/surveyStore';
 import { useErrorToast } from '@/composables/useErrorToast';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 
 // 시안이 문항마다 다른 배경색을 쓴다
 const CARD_TONES = [

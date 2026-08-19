@@ -1,9 +1,9 @@
 <script setup>
 import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ChevronLeft } from '@lucide/vue';
 import ReservationCancellationSummary from '@/components/reservation/ReservationCancellationSummary.vue';
 import { useReservationStore } from '@/stores/reservationStore';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -60,17 +60,15 @@ onMounted(fetchCancellationDetail);
 
 <template>
   <div class="flex min-h-screen w-full flex-col bg-white">
-    <header class="relative flex h-14 shrink-0 items-center justify-center px-4">
-      <button
-        type="button"
-        class="absolute left-3 rounded-full p-1 text-slate-700 active:bg-slate-100"
-        aria-label="취소 내역으로 돌아가기"
-        @click="goToCancellationList"
-      >
-        <ChevronLeft :size="24" :stroke-width="1.8" />
-      </button>
-      <h1 class="text-[19px] font-extrabold text-slate-900">예약 내역 상세</h1>
-    </header>
+    <div class="px-4">
+      <BaseHeader
+        title="예약 내역 상세"
+        variant="centered"
+        title-class="text-[19px] font-extrabold text-slate-900"
+        back-label="취소 내역으로 돌아가기"
+        @back="goToCancellationList"
+      />
+    </div>
 
     <main
       v-if="reservationStore.isCancellationDetailLoading"
