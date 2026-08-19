@@ -93,8 +93,6 @@ const ICON_CLASSES = {
 const PRICE_UNITS = {
   ACCOMMODATION: '/ 1박',
   OFFICE: '/ 1일',
-  RESTAURANT: '기준',
-  ACTIVITY: '기준',
 };
 
 const props = defineProps({
