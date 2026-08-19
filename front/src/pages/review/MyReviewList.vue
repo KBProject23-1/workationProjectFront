@@ -45,12 +45,12 @@ function moveToReviewDetail(reviewId) {
 
 <template>
   <main class="my-review-page">
-    <BaseHeader
-      title="내 리뷰"
-      variant="centered"
-      title-class="text-[18px] font-extrabold text-gray-900"
-      @back="router.back()"
-    />
+    <div class="-mx-[23px] px-5 pt-4 mb-4">
+      <BaseHeader
+        title="내 리뷰"
+        @back="router.back()"
+      />
+    </div>
 
     <nav class="category-tabs" aria-label="리뷰 카테고리">
       <button
@@ -91,7 +91,7 @@ function moveToReviewDetail(reviewId) {
 
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
-.my-review-page { width:min(402px,100%); min-height:871px; display:flex; flex-direction:column; margin:0 auto; padding:0 23px 36px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
+.my-review-page { min-height:871px; display:flex; flex-direction:column; padding:0 23px 36px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
 button { font:inherit; }
 .category-tabs { display:grid; grid-template-columns:53px 72px 96px 54px 54px; justify-content:space-between; gap:4px; margin:0 5px 17px; }
 .category-tabs button { height:36px; padding:0 5px; color:#64748b; border:1px solid #dce5ef; border-radius:19px; background:#fff; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }

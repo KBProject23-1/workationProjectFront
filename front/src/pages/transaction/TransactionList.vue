@@ -71,8 +71,6 @@ onUnmounted(() => {
       <div class="w-full mb-4">
         <BaseHeader
           title="거래내역"
-          variant="inline"
-          title-class="text-xl font-bold text-gray-900"
           @back="goToWallet"
         >
           <template #right>

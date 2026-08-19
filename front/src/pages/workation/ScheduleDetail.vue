@@ -3,8 +3,6 @@
     <div class="px-4">
       <BaseHeader
         title="일정 상세"
-        variant="centered"
-        title-class="text-[19px] font-extrabold text-slate-900"
         @back="goBack"
       />
     </div>

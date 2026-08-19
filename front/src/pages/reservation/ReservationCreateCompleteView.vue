@@ -78,7 +78,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="mx-auto flex min-h-screen w-full max-w-[402px] flex-col bg-white text-slate-900">
+  <div class="flex min-h-screen w-full flex-col bg-white text-slate-900">
     <header class="flex h-16 shrink-0 items-center justify-center px-4">
       <h1 class="text-[19px] font-extrabold">예약 완료</h1>
     </header>

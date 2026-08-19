@@ -3,8 +3,6 @@
     <div class="mb-4">
       <BaseHeader
         :title="isEdit ? '지출 내역 수정하기' : '지출 내역 추가하기'"
-        variant="centered"
-        title-class="text-base font-bold text-slate-900"
         @back="goBack"
       />
     </div>

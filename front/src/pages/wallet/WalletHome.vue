@@ -73,8 +73,6 @@ onMounted(() => {
     <div class="w-full mb-4">
       <BaseHeader
         title="내 지갑"
-        variant="centered"
-        title-class="text-[18px] font-bold text-slate-900"
         @back="goBack"
       />
     </div>

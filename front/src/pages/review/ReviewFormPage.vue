@@ -49,8 +49,6 @@ async function submitReview(form) {
   <main class="form-page">
     <BaseHeader
       :title="title"
-      variant="centered"
-      title-class="text-[18px] font-extrabold text-gray-900"
       @back="goBack"
     />
     <p v-if="reviewSaveError" class="error-message">{{ reviewSaveError }}</p>
@@ -67,7 +65,7 @@ async function submitReview(form) {
 
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
-.form-page { width:min(402px,100%); min-height:871px; margin:0 auto; padding:0 29px 31px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
+.form-page { min-height:871px; padding:0 29px 31px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
 .error-message { margin:0 0 10px; color:#dc2626; text-align:center; font-size:12px; }
 @media (max-width:360px) { .form-page { padding-right:20px; padding-left:20px; } }
 </style>

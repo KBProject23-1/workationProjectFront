@@ -30,12 +30,9 @@ onMounted(() => bookmarkStore.fetchBookmarks());
 
 <template>
   <main class="bookmark-page">
-    <div class="px-[25px] max-[370px]:px-4">
+    <div class="px-5 pt-4 mb-4">
       <BaseHeader
         title="내 장소"
-        variant="centered"
-        size="detail"
-        title-class="text-[22px] font-extrabold text-gray-900 mb-1"
         @back="router.back()"
       />
     </div>
@@ -67,7 +64,7 @@ onMounted(() => bookmarkStore.fetchBookmarks());
 
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
-.bookmark-page { width:min(402px,100%); min-height:min(871px,100vh); margin:0 auto; padding-bottom:24px; color:#172033; background:#fff; font-family:'SUIT Variable','SUIT',sans-serif; }
+.bookmark-page { min-height:min(871px,100vh); padding-bottom:24px; color:#172033; background:#fff; font-family:'SUIT Variable','SUIT',sans-serif; }
 button { font:inherit; }
 .category-tabs { width:100%; height:50px; display:grid; grid-template-columns:.72fr .85fr 1.4fr .72fr .72fr; align-items:center; gap:5px; padding:0 25px; }
 .category-tabs button { min-width:0; height:36px; padding:0 4px; overflow:hidden; color:#667085; border:1.5px solid #e1e8f0; border-radius:999px; background:#fff; font-size:12px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; cursor:pointer; }.category-tabs button.active { color:#fff; border-color:#3087ed; background:#3087ed; }

@@ -3,8 +3,6 @@
     <div class="mb-4">
       <BaseHeader
         title="나의 워케이션 스타일"
-        variant="centered"
-        title-class="text-base font-bold text-slate-900"
         @back="goBack"
       />
     </div>

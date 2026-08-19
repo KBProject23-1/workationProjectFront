@@ -113,8 +113,6 @@ async function handleChangePassword() {
     <div class="mb-6">
       <BaseHeader
         title="비밀번호 변경"
-        variant="centered"
-        title-class="text-base font-bold text-slate-900"
         @back="goBack"
       />
     </div>

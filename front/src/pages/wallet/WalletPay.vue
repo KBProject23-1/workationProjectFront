@@ -65,7 +65,7 @@ onUnmounted(() => {
   >
     <!-- 상단 헤더 -->
     <div class="w-full mb-6">
-      <BaseHeader title="결제 QR" variant="centered" @back="router.back()" />
+      <BaseHeader title="결제 QR" @back="router.back()" />
     </div>
 
     <!-- 안내 텍스트 -->

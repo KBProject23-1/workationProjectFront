@@ -64,8 +64,6 @@ onMounted(() => {
     <div class="px-4">
       <BaseHeader
         title="예약 취소 (경고)"
-        variant="centered"
-        title-class="text-[19px] font-extrabold text-slate-900"
         back-label="예약 상세로 돌아가기"
         @back="goToDetail"
       />

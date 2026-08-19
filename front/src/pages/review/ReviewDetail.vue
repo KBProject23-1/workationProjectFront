@@ -51,8 +51,6 @@ async function confirmDelete() {
   <main class="detail-page">
     <BaseHeader
       title="리뷰 상세보기"
-      variant="centered"
-      title-class="text-[18px] font-extrabold text-gray-900"
       @back="router.back()"
     />
 
@@ -127,7 +125,7 @@ async function confirmDelete() {
 
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
-.detail-page { width:min(402px,100%); min-height:871px; margin:0 auto; padding:0 29px 50px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
+.detail-page { min-height:871px; padding:0 29px 50px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
 button { font:inherit; }
 .review-content { display:flex; flex-direction:column; }
 .merchant-summary { display:flex; align-items:flex-start; gap:14px; }

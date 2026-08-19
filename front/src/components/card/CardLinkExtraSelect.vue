@@ -27,7 +27,7 @@ function toggleSelect(id) {
 <template>
   <div class="flex flex-col w-full min-h-screen px-5 py-5 bg-white text-left">
     <div class="mb-6">
-      <BaseHeader title="추가 카드 연동" variant="inline" @back="$emit('back')" />
+      <BaseHeader title="추가 카드 연동" @back="$emit('back')" />
     </div>
 
     <div class="mb-5 flex items-end justify-between">

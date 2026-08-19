@@ -3,8 +3,6 @@
     <div class="mb-4">
       <BaseHeader
         title="사용내역 상세"
-        variant="centered"
-        title-class="text-base font-bold text-slate-900"
         @back="goBack"
       />
     </div>

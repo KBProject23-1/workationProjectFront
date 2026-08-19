@@ -42,8 +42,6 @@ function goNext() {
     <div class="shrink-0 px-2 pt-2">
       <BaseHeader
         title="회원가입"
-        variant="inline"
-        title-class="text-[17px] font-bold tracking-tight text-[#191F28]"
         @back="goBack"
       />
     </div>

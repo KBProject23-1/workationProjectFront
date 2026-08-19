@@ -3,8 +3,6 @@
     <div class="mb-4">
       <BaseHeader
         :title="settled ? '지난 워케이션 상세' : '정산 내역 보기'"
-        variant="centered"
-        title-class="text-base font-bold text-slate-900"
         @back="goBack"
       >
         <template v-if="settled" #right>

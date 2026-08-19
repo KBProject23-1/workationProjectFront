@@ -3,8 +3,6 @@
     <div class="mb-4">
       <BaseHeader
         :title="pageTitle"
-        variant="centered"
-        title-class="text-base font-bold text-slate-900"
         @back="goBack"
       />
     </div>

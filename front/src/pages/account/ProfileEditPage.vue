@@ -162,8 +162,6 @@ onMounted(async () => {
       <div class="mb-6">
         <BaseHeader
           title="프로필 수정"
-          variant="centered"
-          title-class="text-base font-bold text-slate-900"
           @back="goBack"
         />
       </div>

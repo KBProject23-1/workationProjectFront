@@ -258,8 +258,6 @@ async function goToMyInfo() {
       <div class="mb-6">
         <BaseHeader
           title="이메일 변경"
-          variant="centered"
-          title-class="text-base font-bold text-slate-900"
           @back="goBack"
         />
       </div>

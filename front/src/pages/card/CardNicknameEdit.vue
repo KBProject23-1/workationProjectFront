@@ -50,7 +50,7 @@ onMounted(() => {
     class="flex flex-col items-center w-full min-h-screen px-5 py-5 bg-white"
   >
     <div class="w-full mb-6">
-      <BaseHeader title="카드 별칭 설정" variant="inline" @back="router.back()" />
+      <BaseHeader title="카드 별칭 설정" @back="router.back()" />
     </div>
 
     <CardNicknameForm v-if="card" :card="card" @update="handleUpdate" />

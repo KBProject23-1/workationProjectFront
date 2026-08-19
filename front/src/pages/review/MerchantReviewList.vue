@@ -32,8 +32,7 @@ function moveToReviewDetail(reviewId) {
   <main class="review-page">
     <BaseHeader
       :title="merchantName || '서핑 체험 강릉'"
-      variant="centered"
-      title-class="max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap text-[18px] font-extrabold text-gray-900"
+      title-class="max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap text-[18px] font-bold text-gray-900"
       @back="router.back()"
     />
 
@@ -64,7 +63,7 @@ function moveToReviewDetail(reviewId) {
 
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
-.review-page { width:min(402px,100%); min-height:871px; display:flex; flex-direction:column; margin:0 auto; padding:0 23px 28px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
+.review-page { min-height:871px; display:flex; flex-direction:column; padding:0 23px 28px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
 button { font:inherit; }
 .review-section { padding-top:17px; }
 .review-summary { margin:0 5px 14px; color:#8997aa; font-size:12px; }

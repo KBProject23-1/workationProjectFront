@@ -90,8 +90,6 @@ onMounted(async () => {
       <div class="mb-6">
         <BaseHeader
           title="계정 설정"
-          variant="centered"
-          title-class="text-base font-bold text-slate-900"
           @back="goBack"
         />
       </div>
@@ -155,8 +153,6 @@ onMounted(async () => {
       <div class="mb-4">
         <BaseHeader
           title="계정 설정"
-          variant="centered"
-          title-class="text-base font-bold text-slate-900"
           @back="goBack"
         />
       </div>

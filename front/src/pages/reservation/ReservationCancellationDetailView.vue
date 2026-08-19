@@ -63,8 +63,6 @@ onMounted(fetchCancellationDetail);
     <div class="px-4">
       <BaseHeader
         title="예약 내역 상세"
-        variant="centered"
-        title-class="text-[19px] font-extrabold text-slate-900"
         back-label="취소 내역으로 돌아가기"
         @back="goToCancellationList"
       />

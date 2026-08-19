@@ -98,7 +98,7 @@ onMounted(loadDetail);
     class="flex flex-col items-center w-full min-h-screen px-5 py-5 bg-white text-left"
   >
     <div class="w-full mb-6">
-      <BaseHeader title="거래 상세" variant="centered" @back="router.back()" />
+      <BaseHeader title="거래 상세" @back="router.back()" />
     </div>
 
     <!-- 로딩 스켈레톤 -->

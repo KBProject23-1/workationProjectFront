@@ -139,8 +139,6 @@ function continueToSignup() {
     <div v-if="showHeader" class="shrink-0 px-2 pt-2">
       <BaseHeader
         title="본인인증"
-        variant="inline"
-        title-class="text-[17px] font-bold tracking-tight text-[#191F28]"
         @back="goBack"
       />
     </div>

@@ -50,8 +50,6 @@ onMounted(fetchResult);
     <div class="px-4">
       <BaseHeader
         title="예약 취소 완료"
-        variant="centered"
-        title-class="text-[19px] font-extrabold text-slate-900"
         back-label="취소 내역으로 이동"
         @back="goToCancellationList"
       />

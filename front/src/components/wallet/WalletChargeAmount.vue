@@ -69,7 +69,7 @@ function handleNext() {
 <template>
   <div class="flex flex-col w-full min-h-screen px-5 py-5 bg-white text-left">
     <div class="mb-6">
-      <BaseHeader title="충전하기" variant="inline" @back="$emit('back')" />
+      <BaseHeader title="충전하기" @back="$emit('back')" />
     </div>
 
     <div class="mb-6">

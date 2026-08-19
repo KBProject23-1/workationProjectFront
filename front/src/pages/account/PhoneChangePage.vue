@@ -132,8 +132,6 @@ async function goToMyInfo() {
       <div v-if="showHeader" class="mb-6">
         <BaseHeader
           title="휴대폰 번호 변경"
-          variant="centered"
-          title-class="text-base font-bold text-slate-900"
           @back="goBack"
         />
       </div>

@@ -172,8 +172,6 @@ function moveNext() {
   <main v-if="category" class="recommendation-list-page">
     <BaseHeader
       :title="category.pageTitle"
-      variant="centered"
-      title-class="text-[22px] font-extrabold text-[#0c1118] tracking-[-0.5px]"
       @back="goBack"
     />
 

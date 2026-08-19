@@ -132,8 +132,6 @@ onMounted(fetchDetail);
     <div class="px-4">
       <BaseHeader
         title="예약 내역 상세"
-        variant="centered"
-        title-class="text-[19px] font-extrabold text-slate-900"
         @back="goBack"
       />
     </div>

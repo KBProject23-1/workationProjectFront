@@ -3,8 +3,6 @@
     <div class="mb-4">
       <BaseHeader
         title="워케이션 정산기록"
-        variant="centered"
-        title-class="text-base font-bold text-slate-900"
         @back="goBack"
       />
     </div>

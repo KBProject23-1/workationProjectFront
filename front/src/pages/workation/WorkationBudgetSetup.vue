@@ -3,8 +3,6 @@
     <div class="mb-4">
       <BaseHeader
         title="예산 세부 금액 설정"
-        variant="centered"
-        title-class="text-base font-bold text-slate-900"
         @back="goBack"
       />
     </div>
