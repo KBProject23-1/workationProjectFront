@@ -8,6 +8,7 @@ import TransactionListItem from '@/components/transaction/TransactionListItem.vu
 import TransactionSummary from '@/components/transaction/TransactionSummary.vue';
 import TransactionFilterModal from '@/components/transaction/TransactionFilterModal.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 
 const router = useRouter();
 const transactionStore = useTransactionStore();
@@ -133,12 +134,10 @@ onUnmounted(() => {
           :transaction="transaction"
           @select="goToDetail"
         />
-        <p
+        <BaseEmptyState
           v-if="transactionStore.transactions.length === 0"
-          class="text-[14px] text-gray-500 text-center mt-8"
-        >
-          이번 달 거래내역이 없어요
-        </p>
+          title="이번 달 거래내역이 없어요"
+        />
       </template>
 
       <!-- sentinel 은 항상 렌더해 옵저버 부착이 깨지지 않도록 유지 -->

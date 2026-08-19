@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useReservationStore } from '@/stores/reservationStore';
 import ReservationListItem from '@/components/reservation/ReservationListItem.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -89,7 +90,7 @@ onUnmounted(() => {
 <template>
   <div class="flex min-h-screen w-full flex-col bg-white pb-8">
     <header class="sticky top-0 z-10 bg-white">
-      <div class="px-5 pt-4">
+      <div class="px-4 pt-4">
         <BaseHeader
           title="예약 내역"
           @back="goBack"
@@ -146,9 +147,9 @@ onUnmounted(() => {
 
       <div
         v-else-if="reservationStore.reservations.length === 0"
-        class="flex flex-1 items-center justify-center pb-24 text-[14px] text-slate-400"
+        class="flex flex-1 items-center justify-center pb-24"
       >
-        {{ activeTab.emptyMessage }}
+        <BaseEmptyState :title="activeTab.emptyMessage" />
       </div>
 
       <template v-else>

@@ -31,12 +31,7 @@
       {{ errorMessage }}
     </p>
 
-    <p
-      v-else-if="questions.length === 0"
-      class="py-20 text-center text-sm text-slate-400"
-    >
-      등록된 설문 문항이 없어요
-    </p>
+    <BaseEmptyState v-else-if="questions.length === 0" title="등록된 설문 문항이 없어요" />
 
     <!-- 문항 4개를 한 화면에 모두 놓고 스크롤로 내려본다 -->
     <div v-else class="mt-6 flex-1 space-y-10">
@@ -90,6 +85,7 @@ import BaseButton from '@/components/common/BaseButton.vue';
 import { useSurveyStore } from '@/stores/surveyStore';
 import { useWorkationStore } from '@/stores/workationStore';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 import { useErrorToast } from '@/composables/useErrorToast';
 import SurveyQuestionBlock from '@/components/survey/SurveyQuestionBlock.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';

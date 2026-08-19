@@ -11,6 +11,7 @@ import RecommendationReferenceModal from '@/components/recommendation/Recommenda
 import { useErrorToast } from '@/composables/useErrorToast';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -201,12 +202,10 @@ function moveNext() {
       >
         {{ category.title }} 추천을 불러오고 있습니다.
       </p>
-      <p
+      <BaseEmptyState
         v-else-if="!recommendationItems.length"
-        class="result-status"
-      >
-        추천할 수 있는 {{ category.title }}이(가) 없습니다.
-      </p>
+        :title="`추천할 수 있는 ${category.title}이(가) 없습니다.`"
+      />
       <RecommendationListItem
         v-for="(item, index) in recommendationItems"
         :key="item.merchantId"

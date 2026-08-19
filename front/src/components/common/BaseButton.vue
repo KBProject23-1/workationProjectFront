@@ -4,10 +4,9 @@ import { cn } from '@/lib/utils';
 
 const props = defineProps({
   disabled: { type: Boolean, default: false },
-  // shadcn Button 의 variant/size 를 그대로 전달한다. 지정하지 않으면(기존 호출부) 아래
+  // shadcn Button 의 variant 를 그대로 전달한다. 지정하지 않으면(기존 호출부) 아래
   // CTA 고정 클래스가 그대로 적용돼 기존 화면 모양이 바뀌지 않는다.
   variant: { type: String, required: false, default: undefined },
-  size: { type: String, required: false, default: undefined },
   // 로그인 버튼 gradient 등 개별 스타일 오버라이드용 (twMerge 로 병합)
   class: {
     type: [Boolean, null, String, Object, Array],
@@ -23,7 +22,6 @@ const props = defineProps({
     type="button"
     :disabled="disabled"
     :variant="variant"
-    :size="size"
     :class="
       cn(
         variant === undefined

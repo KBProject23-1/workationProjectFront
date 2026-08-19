@@ -3,6 +3,7 @@ import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import BookmarkPlaceCard from '@/components/bookmark/BookmarkPlaceCard.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 import { useBookmarkStore } from '@/stores/bookmarkStore';
 
 const router = useRouter();
@@ -57,7 +58,10 @@ onMounted(() => bookmarkStore.fetchBookmarks());
         @remove="bookmarkStore.removeBookmark"
         @details="showDetails"
       />
-      <p v-if="!bookmarkStore.isLoading && bookmarkStore.filteredBookmarks.length === 0" class="empty-message">저장한 장소가 없습니다.</p>
+      <BaseEmptyState
+        v-if="!bookmarkStore.isLoading && bookmarkStore.filteredBookmarks.length === 0"
+        title="저장한 장소가 없습니다."
+      />
     </section>
   </main>
 </template>
@@ -69,6 +73,5 @@ button { font:inherit; }
 .category-tabs { width:100%; height:50px; display:grid; grid-template-columns:.72fr .85fr 1.4fr .72fr .72fr; align-items:center; gap:5px; padding:0 25px; }
 .category-tabs button { min-width:0; height:36px; padding:0 4px; overflow:hidden; color:#667085; border:1.5px solid #e1e8f0; border-radius:999px; background:#fff; font-size:12px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; cursor:pointer; }.category-tabs button.active { color:#fff; border-color:#3087ed; background:#3087ed; }
 .bookmark-list { display:flex; flex-direction:column; gap:8px; padding:10px 25px; }
-.empty-message { margin:90px 0 0; text-align:center; color:#718096; font-size:16px; }
 @media (max-width:370px) { .category-tabs,.bookmark-list { padding-left:16px; padding-right:16px; }.category-tabs { gap:4px; }.category-tabs button { font-size:11px; } }
 </style>

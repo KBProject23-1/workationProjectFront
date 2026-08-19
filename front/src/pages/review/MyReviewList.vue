@@ -6,6 +6,7 @@ import MyReviewListItem from '@/components/review/MyReviewListItem.vue';
 import ReviewPagination from '@/components/review/ReviewPagination.vue';
 import { useReviewStore } from '@/stores/reviewStore';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 
 const categories = [
   { value: 'ALL', label: '전체' },
@@ -67,7 +68,7 @@ function moveToReviewDetail(reviewId) {
 
     <p v-if="isMyReviewsLoading" class="status-message">리뷰를 불러오고 있어요.</p>
     <p v-else-if="myReviewsError" class="status-message">{{ myReviewsError }}</p>
-    <p v-else-if="myReviews.length === 0" class="status-message">작성한 리뷰가 없습니다.</p>
+    <BaseEmptyState v-else-if="myReviews.length === 0" title="작성한 리뷰가 없습니다." />
 
     <section v-else class="review-list" aria-label="내 리뷰 목록">
       <MyReviewListItem

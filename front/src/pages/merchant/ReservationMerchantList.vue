@@ -1,6 +1,6 @@
 <template>
   <div class="flex min-h-screen w-full flex-col bg-white">
-    <div class="px-5 pt-4">
+    <div class="px-4 pt-4">
       <BaseHeader
         title="예약 · 추천"
         @back="goBack"
@@ -263,9 +263,7 @@
           />
         </div>
 
-        <p v-if="merchants.length === 0" class="py-12 text-center text-[14px] text-slate-400">
-          조건에 맞는 검색 결과가 없습니다.
-        </p>
+        <BaseEmptyState v-if="merchants.length === 0" title="조건에 맞는 검색 결과가 없습니다." />
 
         <button
           v-if="hasNext"
@@ -319,6 +317,7 @@ import { storeToRefs } from 'pinia';
 import { ChevronDown } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationGuestModal from '@/components/reservation/ReservationGuestModal.vue';
 import ReservationOccupancyModal from '@/components/reservation/ReservationOccupancyModal.vue';
