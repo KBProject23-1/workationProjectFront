@@ -115,14 +115,18 @@ export const fetchPopularPlaces = async ({ regionId, size = 10 } = {}) => {
     console.warn('[popularPlaces] 기간 조회 실패', error.message);
   }
 
-  try {
-    const [restaurants, activities] = await Promise.all([
-      getMerchants({ ...base, category: 'RESTAURANT' }),
-      getMerchants({ ...base, category: 'ACTIVITY' }),
-    ]);
-    return rank([...contentOf(restaurants), ...contentOf(activities)], size);
-  } catch (error) {
-    console.warn('[popularPlaces] 업종 조회 실패', error.message);
+  // 하나가 실패해도 성공한 업종만이라도 보여준다
+  const collect = (result, label) => {
+    if (result.status === 'fulfilled') return contentOf(result.value);
+    console.warn(`[popularPlaces] ${label} 조회 실패`, result.reason?.message);
     return [];
-  }
+  };
+
+  const [restaurants, activities] = await Promise.allSettled([
+    getMerchants({ ...base, category: 'RESTAURANT' }),
+    getMerchants({ ...base, category: 'ACTIVITY' }),
+  ]);
+  const places = [...collect(restaurants, '음식점'), ...collect(activities, '여가')];
+
+  return rank(places, size);
 };

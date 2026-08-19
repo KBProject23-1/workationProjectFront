@@ -226,6 +226,7 @@ import { useErrorToast } from '@/composables/useErrorToast';
 import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import { useSurveyStore } from '@/stores/surveyStore';
 import WorkationFormField from '@/components/workation/WorkationFormField.vue';
+import { daysBetween, SURVEY_CARD_TONES, selectedOptionsText } from '@/components/workation/format';
 import WorkationDateInput from '@/components/workation/WorkationDateInput.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 
@@ -237,27 +238,12 @@ const { showError } = useErrorToast();
 const { hasCorporateCard, workLabel, ensureCards } = useBudgetTypeLabel();
 const surveyStore = useSurveyStore();
 
-// 설문 결과 화면과 같은 색 순서로 기존 응답을 보여준다
-const SURVEY_CARD_TONES = [
-  'bg-blue-50',
-  'bg-emerald-50',
-  'bg-amber-50',
-  'bg-violet-50',
-];
-
 const surveyAnswers = computed(() =>
-  (surveyStore.result?.questions ?? []).map((question) => {
-    const selectedOptionIds = new Set(question.selectedOptionIds ?? []);
-    const selectedOptionNames = (question.options ?? [])
-      .filter((option) => selectedOptionIds.has(option.optionId))
-      .map((option) => option.optionName);
-
-    return {
-      questionId: question.questionId,
-      question: question.question,
-      selectedText: selectedOptionNames.join(' · ') || '-',
-    };
-  }),
+  (surveyStore.result?.questions ?? []).map((question) => ({
+    questionId: question.questionId,
+    question: question.question,
+    selectedText: selectedOptionsText(question),
+  })),
 );
 
 // 설문은 사용자당 1회다. 이미 답했으면 등록이 2단계로 줄어든다
@@ -473,14 +459,8 @@ const onPersonalBudgetInput = (value) => {
   form.personalBudgetTotal = toDigits(value);
 };
 
-// 시작일과 종료일을 모두 고른 경우에만 일수를 보여준다. 양 끝날을 포함해서 센다
-const totalDays = computed(() => {
-  if (!form.startDate || !form.endDate) return 0;
-  const start = new Date(form.startDate);
-  const end = new Date(form.endDate);
-  const diff = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
-  return diff > 0 ? diff : 0;
-});
+// 시작일과 종료일을 모두 고른 경우에만 일수를 보여준다
+const totalDays = computed(() => daysBetween(form.startDate, form.endDate));
 
 const totalDaysText = computed(() =>
   totalDays.value > 0 ? `총 ${totalDays.value}일` : '',

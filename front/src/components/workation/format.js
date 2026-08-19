@@ -23,6 +23,17 @@ export const dotDate = (value) => {
   return value.replaceAll('-', '.');
 };
 
+// 2026-08-01, 2026-08-20 -> 20 (양 끝날 포함).
+// Math.round 를 쓰는 이유: 두 Date 를 T00:00:00 로 만들어도 서머타임을 쓰는
+// 타임존을 지나면 23/25시간짜리 날이 껴서 24시간 배수가 아닐 수 있다
+export const daysBetween = (startDate, endDate) => {
+  if (!startDate || !endDate) return 0;
+  const start = new Date(`${startDate}T00:00:00`);
+  const end = new Date(`${endDate}T00:00:00`);
+  const days = Math.round((end - start) / 86400000) + 1;
+  return days > 0 ? days : 0;
+};
+
 // 2026-08-12 -> 8월 12일 (수)
 export const dayLabel = (value) => {
   if (!value) return '';
@@ -51,6 +62,25 @@ export const shortRange = (from, to) => {
   const trim = (value) =>
     `${value.slice(5).replaceAll('-', '.')}(${weekday(value)})`;
   return `${trim(from)}~${trim(to)}`;
+};
+
+// 설문 카드 배경색 순서 — 설문 결과 화면과 워케이션 등록의 "기존 설문 재사용" 확인
+// 모달이 같은 순서를 쓴다
+// 두 화면이 같은 배열을 참조하니 얼려서 한쪽이 실수로 고치는 걸 막는다
+export const SURVEY_CARD_TONES = Object.freeze([
+  'bg-blue-50',
+  'bg-emerald-50',
+  'bg-amber-50',
+  'bg-violet-50',
+]);
+
+// 문항에서 선택한 보기 이름만 골라 이어 붙인다. 선택한 게 없으면 '-'
+export const selectedOptionsText = (question) => {
+  const selected = new Set(question?.selectedOptionIds ?? []);
+  const names = (question?.options ?? [])
+    .filter((option) => selected.has(option.optionId))
+    .map((option) => option.optionName);
+  return names.length > 0 ? names.join(' · ') : '-';
 };
 
 // reservation-check 응답의 { room, office } 를 문장으로 풀어 쓴다

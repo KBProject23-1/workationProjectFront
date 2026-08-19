@@ -20,11 +20,11 @@
           v-for="(question, index) in result.questions"
           :key="question.questionId"
           class="rounded-xl px-4 py-4"
-          :class="CARD_TONES[index % CARD_TONES.length]"
+          :class="SURVEY_CARD_TONES[index % SURVEY_CARD_TONES.length]"
         >
           <p class="text-xs text-slate-500">{{ question.question }}</p>
           <p class="mt-1.5 text-sm font-bold text-slate-900">
-            {{ selectedTextOf(question) }}
+            {{ selectedOptionsText(question) }}
           </p>
         </div>
       </div>
@@ -71,14 +71,7 @@ import { useSurveyStore } from '@/stores/surveyStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
-
-// 시안이 문항마다 다른 배경색을 쓴다
-const CARD_TONES = [
-  'bg-blue-50',
-  'bg-emerald-50',
-  'bg-amber-50',
-  'bg-violet-50',
-];
+import { SURVEY_CARD_TONES, selectedOptionsText } from '@/components/workation/format';
 
 const router = useRouter();
 const surveyStore = useSurveyStore();
@@ -96,15 +89,6 @@ onMounted(async () => {
     loading.value = false;
   }
 });
-
-// 선택한 선택지 이름만 골라 줄바꿈 없이 이어 준다
-const selectedTextOf = (question) => {
-  const selected = new Set(question.selectedOptionIds ?? []);
-  const names = (question.options ?? [])
-    .filter((option) => selected.has(option.optionId))
-    .map((option) => option.optionName);
-  return names.length > 0 ? names.join(' · ') : '-';
-};
 
 const goEdit = () => {
   router.push('/account/me/survey/edit');

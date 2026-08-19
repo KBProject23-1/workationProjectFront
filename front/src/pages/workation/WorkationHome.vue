@@ -34,7 +34,7 @@
 
     <LoadingScreen v-if="loading" title="워케이션 정보를 불러오고 있어요" :fullscreen="false" />
 
-    <BaseErrorState v-else-if="errorMessage" :title="errorMessage" @retry="workationStore.fetchCurrent" />
+    <BaseErrorState v-else-if="pageError" :title="pageError" @retry="loadHome" />
 
     <template v-else-if="current">
       <WorkationProgressCard
@@ -182,7 +182,10 @@ const scheduleStore = useScheduleStore();
 const { showError } = useErrorToast();
 // 지난 워케이션 지출을 법인 / 업무 중 무엇으로 부를지 정한다
 const { ensureCards } = useBudgetTypeLabel();
-const { current, error: errorMessage } = storeToRefs(workationStore);
+const { current } = storeToRefs(workationStore);
+// workationStore.error 는 지역목록/최근기록 조회처럼 홈에서 "실패해도 나머지는 보여줄" 부가
+// 호출들과 공유된다. 페이지 전체를 에러 화면으로 덮을지는 fetchCurrent 직후 값만 보고 정한다
+const pageError = ref(null);
 
 const loading = ref(true);
 const confirmOpen = ref(false);
@@ -255,17 +258,25 @@ const loadEmptyHome = async () => {
   ]);
 };
 
-onMounted(async () => {
+const loadHome = async () => {
+  loading.value = true;
   await workationStore.fetchCurrent();
+  pageError.value = workationStore.error;
 
-  if (workationStore.hasActive) {
-    await loadSetupState();
-  } else {
-    await loadEmptyHome();
+  // fetchCurrent 자체가 실패했으면 나머지 화면을 채울 근거가 없다.
+  // 여기서 멈춰야 재시도 때마다 예산·설문·지역목록 등을 헛되이 다시 받지 않는다
+  if (!pageError.value) {
+    if (workationStore.hasActive) {
+      await loadSetupState();
+    } else {
+      await loadEmptyHome();
+    }
   }
 
   loading.value = false;
-});
+};
+
+onMounted(loadHome);
 
 // 설문과 예산 배분 중 하나라도 안 끝났으면 미완으로 본다
 const surveyDone = computed(() => surveyStore.hasAnswered);
@@ -377,6 +388,15 @@ const checkBeforeDelete = async () => {
 
     confirmOpen.value = false;
 
+    // 삭제 전엔 진행 중 워케이션이 있어 loadSetupState 만 돌았을 뿐, 빈 홈 화면 자료
+    // (찜한 장소·인기 장소·지역·최근 기록)는 아직 한 번도 받은 적이 없다.
+    // current 가 반응형으로 null 이 되며 화면은 바로 빈 홈으로 바뀌므로 여기서 채워 둔다
+    if (!workationStore.hasActive) {
+      loading.value = true;
+      await loadEmptyHome();
+      loading.value = false;
+    }
+
     // 아직 이용하지 않은 예약이 남아 있으면 예약 내역으로 안내한다
     const upcoming = reservationCheck.value?.upcoming;
     if (upcoming && upcoming.room + upcoming.office > 0) {
@@ -390,7 +410,14 @@ const checkBeforeDelete = async () => {
     if (errorCode === 'WORKATION_NOT_FOUND') {
       clearWorkationStores();
       await workationStore.fetchCurrent();
+      pageError.value = workationStore.error;
       showError(error, '이미 삭제된 워케이션입니다.');
+
+      if (!pageError.value && !workationStore.hasActive) {
+        loading.value = true;
+        await loadEmptyHome();
+        loading.value = false;
+      }
       return;
     }
 

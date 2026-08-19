@@ -10,9 +10,9 @@
     <LoadingScreen v-if="loading" title="정산기록을 불러오고 있어요" :fullscreen="false" />
 
     <BaseErrorState
-      v-else-if="errorMessage"
-      :title="errorMessage"
-      @retry="workationStore.fetchRecords(0, PAGE_SIZE)"
+      v-else-if="pageError"
+      :title="pageError"
+      @retry="loadRecords"
     />
 
     <template v-else-if="records.length > 0">
@@ -75,51 +75,53 @@ import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
-import { dotDate, won } from '@/components/workation/format';
+import { dotDate, won, daysBetween } from '@/components/workation/format';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
+import { useErrorToast } from '@/composables/useErrorToast';
 
 const PAGE_SIZE = 10;
 
 const router = useRouter();
 const workationStore = useWorkationStore();
-const {
-  records,
-  totalElements,
-  error: errorMessage,
-} = storeToRefs(workationStore);
+const { records, totalElements } = storeToRefs(workationStore);
+const { showError } = useErrorToast();
 
 // 법인카드 보유 여부에 따라 법인 / 업무로 갈린다
 const { workLabel, ensureCards } = useBudgetTypeLabel();
 
 const loading = ref(true);
 const loadingMore = ref(false);
+// workationStore.error 는 더보기 실패 같은 부가 호출과도 공유되니, 페이지 전체를
+// 에러 화면으로 덮을지는 최초 목록 조회 직후 값만 따로 스냅샷 떠서 정한다
+const pageError = ref(null);
 
 const hasMore = computed(() => workationStore.hasMoreRecords);
 
-// 목록 응답에는 totalDays 가 없어 기간으로 센다. 시작일과 종료일을 모두 포함한다
-const dayCount = (record) => {
-  if (!record.startDate || !record.endDate) return 0;
-  const start = new Date(`${record.startDate}T00:00:00`);
-  const end = new Date(`${record.endDate}T00:00:00`);
-  return Math.round((end - start) / 86400000) + 1;
+// 목록 응답에는 totalDays 가 없어 기간으로 센다
+const dayCount = (record) => daysBetween(record.startDate, record.endDate);
+
+const loadRecords = async () => {
+  loading.value = true;
+  await Promise.all([workationStore.fetchRecords(0, PAGE_SIZE), ensureCards()]);
+  pageError.value = workationStore.error;
+  loading.value = false;
 };
 
-onMounted(async () => {
-  await Promise.all([workationStore.fetchRecords(0, PAGE_SIZE), ensureCards()]);
-  loading.value = false;
-});
+onMounted(loadRecords);
 
-// 이어 붙이는 방식이라 이미 받은 목록은 다시 요청하지 않는다
+// 이어 붙이는 방식이라 이미 받은 목록은 다시 요청하지 않는다.
+// 더보기 실패는 이미 보여준 목록을 지우지 않고 토스트로만 알린다
 const loadMore = async () => {
   if (loadingMore.value || !hasMore.value) return;
 
   loadingMore.value = true;
-  await workationStore.fetchRecords(workationStore.page + 1, PAGE_SIZE, {
+  const ok = await workationStore.fetchRecords(workationStore.page + 1, PAGE_SIZE, {
     append: true,
   });
+  if (!ok) showError(null, '기록을 더 불러오지 못했어요. 다시 시도해 주세요.');
   loadingMore.value = false;
 };
 
