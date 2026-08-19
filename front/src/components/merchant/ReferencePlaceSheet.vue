@@ -37,6 +37,27 @@
         </p>
 
         <template v-else>
+          <button
+            type="button"
+            class="flex w-full items-center justify-between gap-3 border-b border-slate-100 py-3 text-left"
+            @click="$emit('select', null)"
+          >
+            <span class="min-w-0 flex-1">
+              <span class="block truncate text-[14px] font-bold text-slate-800">
+                이 지역 전체
+              </span>
+              <span class="block text-[11px] text-slate-400">
+                기준 장소 없이 지역 안에서 찾아요
+              </span>
+            </span>
+
+            <Check
+              v-if="!selectedId"
+              :size="18"
+              class="shrink-0 text-blue-600"
+            />
+          </button>
+
           <!-- 검색어가 없을 때는 후보 목록을 그대로 보여준다 -->
           <button
             v-for="place in visiblePlaces"
@@ -67,8 +88,11 @@
             />
           </button>
 
-          <p v-if="visiblePlaces.length === 0" class="py-10 text-center text-[13px] text-slate-400">
-            {{ keyword ? '검색 결과가 없어요' : '고를 수 있는 장소가 없어요' }}
+          <p
+            v-if="keyword && visiblePlaces.length === 0"
+            class="py-10 text-center text-[13px] text-slate-400"
+          >
+            검색 결과가 없어요
           </p>
         </template>
       </div>

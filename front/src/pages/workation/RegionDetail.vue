@@ -1,20 +1,14 @@
 <template>
   <div class="min-h-screen bg-white pb-8">
-    <header class="relative flex items-center justify-center px-5 pt-4">
-      <button
-        type="button"
-        class="absolute left-3 flex h-11 w-11 items-center justify-center text-slate-900"
-        aria-label="뒤로 가기"
-        @click="goBack"
-      >
-        <ChevronLeft class="h-7 w-7" />
-      </button>
-      <h1 class="text-base font-bold text-slate-900">{{ regionName }}</h1>
-    </header>
+    <div class="px-5 pt-4">
+      <BaseHeader :title="displayName" @back="goBack" />
+    </div>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
-      불러오는 중...
-    </p>
+    <LoadingScreen
+      v-if="loading"
+      title="지역 정보를 불러오고 있어요"
+      :fullscreen="false"
+    />
 
     <template v-else-if="program">
       <div class="relative mt-3 h-[190px]">
@@ -142,9 +136,13 @@
           {{ DISCLAIMER }}
         </p>
 
-        <Button class="mt-6 h-12 w-full rounded-xl text-base" @click="goCreate">
+        <BaseButton
+          variant="default"
+          class="mt-6 h-12 w-full rounded-xl text-base"
+          @click="goCreate"
+        >
           {{ withRo(displayName) }} 워케이션 등록하기
-        </Button>
+        </BaseButton>
       </div>
     </template>
 
@@ -164,8 +162,10 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ChevronLeft, ExternalLink } from '@lucide/vue';
-import { Button } from '@/components/ui/button';
+import { ExternalLink } from '@lucide/vue';
+import BaseButton from '@/components/common/BaseButton.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import { useWorkationStore } from '@/stores/workationStore';
 import { fetchPopularPlaces } from '@/components/workation/popularPlaces';
 import MerchantMiniCard from '@/components/workation/MerchantMiniCard.vue';

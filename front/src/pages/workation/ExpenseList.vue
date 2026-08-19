@@ -1,15 +1,11 @@
 <template>
-  <div class="min-h-screen bg-white px-5 pt-4 pb-8">
-    <header class="relative mb-4 flex items-center justify-center">
-      <button
-        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-        aria-label="뒤로 가기"
-        @click="goBack"
-      >
-        <ChevronLeft class="h-7 w-7" />
-      </button>
-      <h1 class="text-base font-bold text-slate-900">지출 내역</h1>
-    </header>
+  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
+    <div class="mb-4">
+      <BaseHeader
+        title="지출 내역"
+        @back="goBack"
+      />
+    </div>
 
     <div class="grid grid-cols-3 rounded-xl bg-blue-50 p-1">
       <button
@@ -120,16 +116,9 @@
       다시 눌러 주세요
     </p>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
-      불러오는 중...
-    </p>
+    <LoadingScreen v-if="loading" title="사용내역을 불러오고 있어요" :fullscreen="false" />
 
-    <p
-      v-else-if="expenses.length === 0"
-      class="py-20 text-center text-sm text-slate-400"
-    >
-      조건에 맞는 지출이 없어요
-    </p>
+    <BaseEmptyState v-else-if="expenses.length === 0" title="조건에 맞는 지출이 없어요" />
 
     <div v-else class="mt-2 space-y-2">
       <div
@@ -189,34 +178,36 @@
 
     <!-- 선택 모드에서는 확정 버튼만 남긴다. 두 버튼이 나란히 있으면 헷갈린다 -->
     <template v-if="selectMode">
-      <Button
+      <BaseButton
+        variant="default"
         class="mt-8 h-12 w-full rounded-xl text-base"
         :disabled="selectedIds.length === 0 || confirming"
         @click="confirmSelected"
       >
         {{ confirming ? '처리 중...' : `${selectedIds.length}건 확인 완료` }}
-      </Button>
+      </BaseButton>
 
       <p class="mt-2 text-center text-xs text-slate-400">
         고른 지출을 지금 카테고리 그대로 확정해요
       </p>
     </template>
 
-    <Button
+    <BaseButton
       v-else
+      variant="default"
       class="mt-8 h-12 w-full rounded-xl text-base"
       @click="goCreate"
     >
       지출 내역 추가하기
-    </Button>
+    </BaseButton>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Check, ChevronLeft } from '@lucide/vue';
-import { Button } from '@/components/ui/button';
+import { Check } from '@lucide/vue';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { storeToRefs } from 'pinia';
 import { useExpenseStore } from '@/stores/expenseStore';
 import { useBudgetStore } from '@/stores/budgetStore';
@@ -225,6 +216,9 @@ import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import { won } from '@/components/workation/format';
 import BudgetUsageCard from '@/components/workation/BudgetUsageCard.vue';
 import ExpenseListItem from '@/components/workation/ExpenseListItem.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 
 const TAB_VALUES = [null, 'WORK', 'PERSONAL'];
 

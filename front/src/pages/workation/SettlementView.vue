@@ -1,29 +1,23 @@
 <template>
-  <div class="min-h-screen bg-white px-5 pt-4 pb-8">
-    <header class="relative mb-4 flex items-center justify-center">
-      <button
-        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-        aria-label="뒤로 가기"
-        @click="goBack"
+  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
+    <div class="mb-4">
+      <BaseHeader
+        :title="settled ? '지난 워케이션 상세' : '정산 내역 보기'"
+        @back="goBack"
       >
-        <ChevronLeft class="h-7 w-7" />
-      </button>
-      <h1 class="text-base font-bold text-slate-900">
-        {{ settled ? '지난 워케이션 상세' : '정산 내역 보기' }}
-      </h1>
-      <button
-        v-if="settled"
-        class="absolute right-0 text-slate-400"
-        aria-label="기록 삭제"
-        @click="removeOpen = true"
-      >
-        <Trash2 class="h-5 w-5" />
-      </button>
-    </header>
+        <template v-if="settled" #right>
+          <button
+            class="text-slate-400"
+            aria-label="기록 삭제"
+            @click="removeOpen = true"
+          >
+            <Trash2 class="h-5 w-5" />
+          </button>
+        </template>
+      </BaseHeader>
+    </div>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
-      불러오는 중...
-    </p>
+    <LoadingScreen v-if="loading" title="정산 정보를 불러오고 있어요" :fullscreen="false" />
 
     <template v-else-if="workation">
       <!-- 정산이 끝난 워케이션은 기록 카드 형태로 보여준다 -->
@@ -158,31 +152,32 @@
 
       <!-- 회사 제출용 문서라 법인 내역에서만 내려받는다 -->
       <div v-if="isWork" class="mt-5 grid grid-cols-2 gap-2">
-        <Button
+        <BaseButton
           variant="outline"
           class="h-11 rounded-xl text-sm"
           :disabled="downloading"
           @click="downloadExcel"
         >
           세부내역 Excel 저장
-        </Button>
-        <Button
+        </BaseButton>
+        <BaseButton
           variant="outline"
           class="h-11 rounded-xl text-sm"
           :disabled="downloading"
           @click="downloadPdf"
         >
           증빙자료 PDF 저장
-        </Button>
+        </BaseButton>
       </div>
 
-      <Button
+      <BaseButton
         v-if="!settled"
+        variant="default"
         class="mt-4 h-12 w-full rounded-xl text-base"
         @click="confirmOpen = true"
       >
         워케이션 완료 처리
-      </Button>
+      </BaseButton>
     </template>
 
     <BaseConfirmModal
@@ -230,9 +225,11 @@
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { ChevronLeft, Trash2 } from '@lucide/vue';
-import { Button } from '@/components/ui/button';
+import { Trash2 } from '@lucide/vue';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { useBudgetStore } from '@/stores/budgetStore';
+import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import { useExpenseStore } from '@/stores/expenseStore';
 import { useScheduleStore } from '@/stores/scheduleStore';
 import { useSettlementStore } from '@/stores/settlementStore';

@@ -11,7 +11,6 @@ import { toast } from 'vue-sonner';
 import {
   AlertTriangle,
   Check,
-  ChevronLeft,
   Eye,
   EyeOff,
 } from '@lucide/vue';
@@ -20,6 +19,7 @@ import { useWalletStore } from '@/stores/walletStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { setPinRegistered } from '@/utils/pinRegistry';
 import BaseInput from '@/components/common/BaseInput.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import {
   Dialog,
   DialogContent,
@@ -28,7 +28,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -116,17 +116,12 @@ async function handleWithdraw() {
 <template>
   <main class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
     <!-- 헤더 -->
-    <header class="relative mb-6 flex items-center justify-center">
-      <button
-        type="button"
-        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-        aria-label="뒤로 가기"
-        @click="goBack"
-      >
-        <ChevronLeft class="h-7 w-7" />
-      </button>
-      <h1 class="text-base font-bold text-slate-900">회원 탈퇴</h1>
-    </header>
+    <div class="mb-6">
+      <BaseHeader
+        title="회원 탈퇴"
+        @back="goBack"
+      />
+    </div>
 
     <!-- ① 탈퇴 경고 안내 -->
     <section class="rounded-xl border border-red-200 bg-red-50 p-4">
@@ -290,7 +285,7 @@ async function handleWithdraw() {
 
     <!-- ⑦ 회원 탈퇴 버튼 — 위험 작업이므로 danger 스타일 (일반 버튼과 시각적으로 구분) -->
     <div class="pt-8 text-center">
-      <Button
+      <BaseButton
         type="button"
         variant="destructive"
         :disabled="!canWithdraw"
@@ -298,7 +293,7 @@ async function handleWithdraw() {
         @click="openConfirm"
       >
         회원 탈퇴
-      </Button>
+      </BaseButton>
     </div>
 
     <!-- ⑧ 최종 탈퇴 확인 모달 — 명시적 확인 후에만 API 호출 -->
@@ -321,7 +316,7 @@ async function handleWithdraw() {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter class="flex-row gap-2 sm:justify-center">
-          <Button
+          <BaseButton
             type="button"
             variant="outline"
             class="flex-1"
@@ -329,8 +324,8 @@ async function handleWithdraw() {
             @click="isConfirmOpen = false"
           >
             취소
-          </Button>
-          <Button
+          </BaseButton>
+          <BaseButton
             type="button"
             variant="destructive"
             class="flex-1"
@@ -338,7 +333,7 @@ async function handleWithdraw() {
             @click="handleWithdraw"
           >
             {{ isWithdrawing ? '탈퇴 처리 중...' : '탈퇴하기' }}
-          </Button>
+          </BaseButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

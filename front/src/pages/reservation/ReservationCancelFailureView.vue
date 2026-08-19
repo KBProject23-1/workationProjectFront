@@ -1,8 +1,10 @@
 <script setup>
 import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ChevronLeft, X } from '@lucide/vue';
+import { X } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import ReservationCancellationSummary from '@/components/reservation/ReservationCancellationSummary.vue';
 import { useReservationStore } from '@/stores/reservationStore';
 
@@ -34,17 +36,13 @@ onMounted(fetchDetail);
 
 <template>
   <div class="flex min-h-screen w-full flex-col bg-white">
-    <header class="relative flex h-14 shrink-0 items-center justify-center px-4">
-      <button
-        type="button"
-        class="absolute left-3 rounded-full p-1 text-slate-700 active:bg-slate-100"
-        aria-label="취소 내역으로 이동"
-        @click="goToCancellationList"
-      >
-        <ChevronLeft :size="24" :stroke-width="1.8" />
-      </button>
-      <h1 class="text-[19px] font-extrabold text-slate-900">예약 취소 실패</h1>
-    </header>
+    <div class="px-5 pt-4">
+      <BaseHeader
+        title="예약 취소 실패"
+        back-label="취소 내역으로 이동"
+        @back="goToCancellationList"
+      />
+    </div>
 
     <main
       v-if="reservationStore.isDetailLoading"
@@ -57,19 +55,11 @@ onMounted(fetchDetail);
       v-else-if="reservationStore.detailError || !detail"
       class="flex flex-1 flex-col items-center justify-center px-6 pb-24 text-center"
     >
-      <p class="text-[15px] font-semibold text-slate-600">
-        예약 정보를 불러오지 못했어요
-      </p>
-      <p class="mt-2 text-[12px] text-slate-400">
-        {{ reservationStore.detailError }}
-      </p>
-      <button
-        type="button"
-        class="mt-5 rounded-lg border border-slate-300 px-4 py-2 text-[14px] font-semibold text-slate-700"
-        @click="fetchDetail"
-      >
-        다시 시도
-      </button>
+      <BaseErrorState
+        title="예약 정보를 불러오지 못했어요"
+        :description="reservationStore.detailError"
+        @retry="fetchDetail"
+      />
     </main>
 
     <template v-else>

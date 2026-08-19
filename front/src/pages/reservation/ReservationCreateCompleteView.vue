@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Check, ChevronRight } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import { useReservationStore } from '@/stores/reservationStore';
 
 const route = useRoute();
@@ -78,7 +79,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="mx-auto flex min-h-screen w-full max-w-[402px] flex-col bg-white text-slate-900">
+  <div class="flex min-h-screen w-full flex-col bg-white text-slate-900">
     <header class="flex h-16 shrink-0 items-center justify-center px-4">
       <h1 class="text-[19px] font-extrabold">예약 완료</h1>
     </header>
@@ -91,11 +92,11 @@ onMounted(() => {
     </main>
 
     <main v-else-if="reservationStore.detailError && !reservation" class="flex flex-1 flex-col items-center justify-center px-6 text-center">
-      <p class="text-[15px] font-bold text-slate-700">완료된 예약 정보를 불러오지 못했어요.</p>
-      <p class="mt-2 text-[12px] text-slate-400">{{ reservationStore.detailError }}</p>
-      <button type="button" class="mt-5 rounded-lg border border-slate-300 px-4 py-2 text-[14px] font-bold text-slate-700" @click="fetchReservation">
-        다시 시도
-      </button>
+      <BaseErrorState
+        title="완료된 예약 정보를 불러오지 못했어요."
+        :description="reservationStore.detailError"
+        @retry="fetchReservation"
+      />
     </main>
 
     <template v-else-if="reservation">

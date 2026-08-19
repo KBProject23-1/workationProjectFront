@@ -7,9 +7,10 @@
 // - '다음' 클릭 시 동의한 약관 ID 목록을 AuthStore 에 보관한 뒤 본인인증 화면(/signup/verify)으로 이동한다.
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { Check, ChevronLeft } from '@lucide/vue';
+import { Check } from '@lucide/vue';
 import { useAuthStore } from '@/stores/authStore';
 import { getTerms } from '@/api/auth';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import {
   Dialog,
   DialogScrollContent,
@@ -94,17 +95,12 @@ onMounted(fetchTerms);
 <template>
   <div class="flex flex-col h-dvh bg-white overflow-hidden">
     <!-- 헤더 -->
-    <header class="shrink-0 flex items-center gap-1 px-2 pt-2">
-      <button
-        type="button"
-        aria-label="뒤로 가기"
-        class="flex h-10 w-10 items-center justify-center rounded-full text-[#0B3155] transition-colors hover:bg-[#F5F8FC] active:scale-95"
-        @click="goBack"
-      >
-        <ChevronLeft :size="24" :stroke-width="2.5" />
-      </button>
-      <h1 class="text-[17px] font-bold tracking-tight text-[#191F28]">약관동의</h1>
-    </header>
+    <div class="shrink-0 px-5 pt-4">
+      <BaseHeader
+        title="약관동의"
+        @back="goBack"
+      />
+    </div>
 
     <!-- 본문 -->
     <main class="flex-1 min-h-0 overflow-y-auto px-6 pt-4 pb-6">

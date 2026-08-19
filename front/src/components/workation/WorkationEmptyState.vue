@@ -19,12 +19,13 @@
         </template>
       </p>
 
-      <Button
+      <BaseButton
+        variant="default"
         class="mt-6 h-12 w-full rounded-xl text-base"
         @click="$emit('register')"
       >
         워케이션 등록하기
-      </Button>
+      </BaseButton>
     </div>
 
     <!-- 처음인 사용자에게만 흐름을 설명한다. 두 번째부터는 이미 안다 -->
@@ -154,7 +155,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
 import RegionCard from '@/components/workation/RegionCard.vue';
 import MerchantMiniCard from '@/components/workation/MerchantMiniCard.vue';
 import SwipeRow from '@/components/workation/SwipeRow.vue';

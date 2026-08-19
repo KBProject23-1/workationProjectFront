@@ -8,11 +8,12 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
-import { ChevronLeft, Eye, EyeOff } from '@lucide/vue';
+import { Eye, EyeOff } from '@lucide/vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import BaseInput from '@/components/common/BaseInput.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -109,17 +110,12 @@ async function handleChangePassword() {
 <template>
   <main class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
     <!-- 헤더 -->
-    <header class="relative mb-6 flex items-center justify-center">
-      <button
-        type="button"
-        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-        aria-label="뒤로 가기"
-        @click="goBack"
-      >
-        <ChevronLeft class="h-7 w-7" />
-      </button>
-      <h1 class="text-base font-bold text-slate-900">비밀번호 변경</h1>
-    </header>
+    <div class="mb-6">
+      <BaseHeader
+        title="비밀번호 변경"
+        @back="goBack"
+      />
+    </div>
 
     <!-- 안내 문구 -->
     <p class="text-[13px] font-medium leading-relaxed text-slate-500">

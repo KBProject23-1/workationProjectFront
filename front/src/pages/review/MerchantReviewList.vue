@@ -5,6 +5,10 @@ import { useRoute, useRouter } from 'vue-router';
 import ReviewListItem from '@/components/review/ReviewListItem.vue';
 import ReviewPagination from '@/components/review/ReviewPagination.vue';
 import { useReviewStore } from '@/stores/reviewStore';
+import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -29,22 +33,22 @@ function moveToReviewDetail(reviewId) {
 
 <template>
   <main class="review-page">
-    <header class="page-header">
-      <button type="button" aria-label="뒤로 가기" @click="router.back()">
-        ‹
-      </button>
-      <h1>{{ merchantName || '서핑 체험 강릉' }}</h1>
-      <span aria-hidden="true"></span>
-    </header>
+    <div class="-mx-[23px] px-5 pt-4 mb-4">
+      <BaseHeader
+        :title="merchantName || '서핑 체험 강릉'"
+        title-class="max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap text-[18px] font-bold text-gray-900"
+        @back="router.back()"
+      />
+    </div>
 
     <section class="review-section" aria-labelledby="review-summary">
       <p id="review-summary" class="review-summary">
         리뷰 {{ reviewCount }}개 · 최신순
       </p>
 
-      <p v-if="isLoading" class="status-message">리뷰를 불러오고 있어요.</p>
-      <p v-else-if="error" class="status-message">{{ error }}</p>
-      <p v-else-if="reviews.length === 0" class="status-message">등록된 리뷰가 없습니다.</p>
+      <LoadingScreen v-if="isLoading" title="리뷰를 불러오고 있어요" :fullscreen="false" />
+      <BaseErrorState v-else-if="error" :title="error" @retry="reviewStore.fetchMerchantReviews(merchantId)" />
+      <BaseEmptyState v-else-if="reviews.length === 0" title="등록된 리뷰가 없습니다." />
 
       <div v-else class="review-list">
         <ReviewListItem
@@ -64,11 +68,8 @@ function moveToReviewDetail(reviewId) {
 
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
-.review-page { width:min(402px,100%); min-height:871px; display:flex; flex-direction:column; margin:0 auto; padding:0 23px 28px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
+.review-page { min-height:871px; display:flex; flex-direction:column; padding:0 23px 28px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
 button { font:inherit; }
-.page-header { position:relative; height:50px; display:flex; align-items:center; justify-content:center; }
-.page-header button { position:absolute; left:4px; width:36px; height:32px; padding:0; color:#172033; border:0; background:transparent; font-size:40px; line-height:1; cursor:pointer; }
-.page-header h1 { max-width:280px; margin:0; overflow:hidden; text-align:center; font-size:18px; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
 .review-section { padding-top:17px; }
 .review-summary { margin:0 5px 14px; color:#8997aa; font-size:12px; }
 .review-list { display:flex; flex-direction:column; align-items:center; gap:10px; }

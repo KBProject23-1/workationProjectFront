@@ -8,11 +8,12 @@
 //   '로그인하기' → 로그인 화면(/login)으로 이동해 이메일/비밀번호로 다시 로그인한다.
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { ChevronLeft, Check, AlertCircle } from '@lucide/vue';
+import { Check, AlertCircle } from '@lucide/vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import BaseInput from '@/components/common/BaseInput.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -178,17 +179,12 @@ function goBack() {
 <template>
   <div class="flex flex-col h-dvh bg-white overflow-hidden">
     <!-- 헤더 -->
-    <header class="shrink-0 flex items-center gap-1 px-2 pt-2">
-      <button
-        type="button"
-        aria-label="뒤로 가기"
-        class="flex h-10 w-10 items-center justify-center rounded-full text-[#0B3155] transition-colors hover:bg-[#F5F8FC] active:scale-95"
-        @click="goBack"
-      >
-        <ChevronLeft :size="24" :stroke-width="2.5" />
-      </button>
-      <h1 class="text-[17px] font-bold tracking-tight text-[#191F28]">회원가입</h1>
-    </header>
+    <div class="shrink-0 px-5 pt-4">
+      <BaseHeader
+        title="회원가입"
+        @back="goBack"
+      />
+    </div>
 
     <!-- 본문 -->
     <main class="flex-1 min-h-0 overflow-y-auto px-6 pt-4 pb-6">

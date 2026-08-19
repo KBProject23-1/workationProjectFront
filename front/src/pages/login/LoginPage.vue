@@ -14,10 +14,11 @@
 // - 아이디 찾기 → /find-id 화면 이동 (PASS 본인인증 기반) / 비밀번호 찾기 → 아직 미구현 안내 토스트
 import { ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { ChevronLeft, Mail, Phone, Eye, EyeOff } from '@lucide/vue';
+import { Mail, Phone, Eye, EyeOff } from '@lucide/vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useAccountStore } from '@/stores/accountStore';
 import { useErrorToast } from '@/composables/useErrorToast';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import { getDeviceId } from '@/utils/device';
 import { setPinRegistered } from '@/utils/pinRegistry';
 import BaseInput from '@/components/common/BaseInput.vue';
@@ -211,19 +212,12 @@ function goBack() {
 <template>
   <div class="flex flex-col h-dvh bg-white overflow-hidden">
     <!-- 헤더 -->
-    <header class="shrink-0 flex items-center gap-1 px-2 pt-2">
-      <button
-        type="button"
-        aria-label="뒤로 가기"
-        class="flex h-10 w-10 items-center justify-center rounded-full text-[#0B3155] transition-colors hover:bg-[#F5F8FC] active:scale-95"
-        @click="goBack"
-      >
-        <ChevronLeft :size="24" :stroke-width="2.5" />
-      </button>
-      <h1 class="text-[17px] font-bold tracking-tight text-[#191F28]">
-        로그인
-      </h1>
-    </header>
+    <div class="shrink-0 px-5 pt-4">
+      <BaseHeader
+        title="로그인"
+        @back="goBack"
+      />
+    </div>
 
     <!-- 본문 -->
     <main class="flex-1 min-h-0 overflow-y-auto px-6 pt-5 pb-6">

@@ -1,12 +1,10 @@
 <template>
-  <div class="min-h-screen bg-white px-5 pt-4 pb-8">
+  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
     <header class="relative mb-4 flex items-center justify-center">
       <h1 class="text-base font-bold text-slate-900">워케이션 완료</h1>
     </header>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
-      불러오는 중...
-    </p>
+    <LoadingScreen v-if="loading" title="정산 정보를 불러오고 있어요" :fullscreen="false" />
 
     <template v-else>
       <section class="mt-6 rounded-2xl bg-blue-50 px-5 py-8 text-center">
@@ -66,8 +64,8 @@
         </dl>
       </section>
 
-      <Button class="mt-8 h-12 w-full rounded-xl text-base" @click="goHome"
-        >확인</Button
+      <BaseButton variant="default" class="mt-8 h-12 w-full rounded-xl text-base" @click="goHome"
+        >확인</BaseButton
       >
     </template>
   </div>
@@ -76,9 +74,10 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { storeToRefs } from 'pinia';
 import { useSettlementStore } from '@/stores/settlementStore';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { won } from '@/components/workation/format';
 

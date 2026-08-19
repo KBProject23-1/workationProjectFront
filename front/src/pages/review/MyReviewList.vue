@@ -5,6 +5,10 @@ import { useRouter } from 'vue-router';
 import MyReviewListItem from '@/components/review/MyReviewListItem.vue';
 import ReviewPagination from '@/components/review/ReviewPagination.vue';
 import { useReviewStore } from '@/stores/reviewStore';
+import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 
 const categories = [
   { value: 'ALL', label: '전체' },
@@ -44,12 +48,12 @@ function moveToReviewDetail(reviewId) {
 
 <template>
   <main class="my-review-page">
-    <header class="page-header">
-      <button type="button" aria-label="뒤로 가기" @click="router.back()">
-        ‹
-      </button>
-      <h1>내 리뷰</h1><span aria-hidden="true"></span>
-    </header>
+    <div class="-mx-[23px] px-5 pt-4 mb-4">
+      <BaseHeader
+        title="내 리뷰"
+        @back="router.back()"
+      />
+    </div>
 
     <nav class="category-tabs" aria-label="리뷰 카테고리">
       <button
@@ -64,9 +68,9 @@ function moveToReviewDetail(reviewId) {
       </button>
     </nav>
 
-    <p v-if="isMyReviewsLoading" class="status-message">리뷰를 불러오고 있어요.</p>
-    <p v-else-if="myReviewsError" class="status-message">{{ myReviewsError }}</p>
-    <p v-else-if="myReviews.length === 0" class="status-message">작성한 리뷰가 없습니다.</p>
+    <LoadingScreen v-if="isMyReviewsLoading" title="리뷰를 불러오고 있어요" :fullscreen="false" />
+    <BaseErrorState v-else-if="myReviewsError" :title="myReviewsError" @retry="reviewStore.fetchMyReviews()" />
+    <BaseEmptyState v-else-if="myReviews.length === 0" title="작성한 리뷰가 없습니다." />
 
     <section v-else class="review-list" aria-label="내 리뷰 목록">
       <MyReviewListItem
@@ -90,11 +94,8 @@ function moveToReviewDetail(reviewId) {
 
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
-.my-review-page { width:min(402px,100%); min-height:871px; display:flex; flex-direction:column; margin:0 auto; padding:0 23px 36px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
+.my-review-page { min-height:871px; display:flex; flex-direction:column; padding:0 23px 36px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
 button { font:inherit; }
-.page-header { position:relative; height:50px; display:flex; align-items:center; justify-content:center; }
-.page-header button { position:absolute; left:4px; width:36px; height:32px; padding:0; color:#172033; border:0; background:transparent; font-size:40px; line-height:1; cursor:pointer; }
-.page-header h1 { margin:0; text-align:center; font-size:18px; font-weight:800; }
 .category-tabs { display:grid; grid-template-columns:53px 72px 96px 54px 54px; justify-content:space-between; gap:4px; margin:0 5px 17px; }
 .category-tabs button { height:36px; padding:0 5px; color:#64748b; border:1px solid #dce5ef; border-radius:19px; background:#fff; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
 .category-tabs button.active { color:#fff; border-color:#3087ed; background:#3087ed; }

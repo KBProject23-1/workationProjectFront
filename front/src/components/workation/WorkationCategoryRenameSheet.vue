@@ -46,21 +46,22 @@
       </p>
 
       <div class="mt-6 flex gap-2">
-        <Button
+        <BaseButton
           variant="outline"
           class="h-11 flex-1 rounded-xl text-sm"
           :disabled="saving"
           @click="reset"
         >
           기본값으로
-        </Button>
-        <Button
+        </BaseButton>
+        <BaseButton
+          variant="default"
           class="h-11 flex-1 rounded-xl text-sm"
           :disabled="saving"
           @click="save"
         >
           {{ saving ? '저장 중...' : '저장' }}
-        </Button>
+        </BaseButton>
       </div>
     </div>
   </div>
@@ -69,7 +70,7 @@
 <script setup>
 import { ref } from 'vue';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { useCategoryStore } from '@/stores/categoryStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 

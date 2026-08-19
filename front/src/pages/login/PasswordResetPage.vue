@@ -25,7 +25,6 @@ import { useRouter } from 'vue-router';
 import {
   Check,
   CheckCircle2,
-  ChevronLeft,
   Clock,
   Eye,
   EyeOff,
@@ -33,6 +32,7 @@ import {
   Phone,
   XCircle,
 } from '@lucide/vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import { useErrorToast } from '@/composables/useErrorToast';
 import {
   usePasswordReset,
@@ -508,17 +508,12 @@ const showHeader = computed(
 
   <div v-else class="flex h-dvh flex-col overflow-hidden bg-white">
     <!-- 헤더 -->
-    <header v-if="showHeader" class="flex shrink-0 items-center gap-1 px-2 pt-2">
-      <button
-        type="button"
-        aria-label="뒤로 가기"
-        class="flex h-10 w-10 items-center justify-center rounded-full text-[#0B3155] transition-colors hover:bg-[#F5F8FC] active:scale-95"
-        @click="goBack"
-      >
-        <ChevronLeft :size="24" :stroke-width="2.5" />
-      </button>
-      <h1 class="text-[17px] font-bold tracking-tight text-[#191F28]">비밀번호 재설정</h1>
-    </header>
+    <div v-if="showHeader" class="shrink-0 px-5 pt-4">
+      <BaseHeader
+        title="비밀번호 재설정"
+        @back="goBack"
+      />
+    </div>
 
     <!-- 진행 단계 표시 -->
     <div v-if="showChrome && showStepper" class="shrink-0 px-6 pt-4">
