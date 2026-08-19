@@ -222,11 +222,14 @@ const loadMerchants = async () => {
 };
 
 onMounted(async () => {
-  // 홈에서 넘어오면 이미 받아 둔 상태다. 새로고침으로 바로 들어온 경우만 받는다
-  if (workationStore.regions.length === 0) {
-    await workationStore.fetchRegions().catch(() => {});
-  }
-  await loadMerchants();
+  // 지역 목록과 인기 장소는 서로 의존하지 않으니 동시에 받는다.
+  // 홈에서 넘어오면 지역 목록은 이미 받아 둔 상태다. 새로고침으로 바로 들어온 경우만 받는다
+  await Promise.all([
+    workationStore.regions.length === 0
+      ? workationStore.fetchRegions().catch(() => {})
+      : Promise.resolve(),
+    loadMerchants(),
+  ]);
   loading.value = false;
 });
 

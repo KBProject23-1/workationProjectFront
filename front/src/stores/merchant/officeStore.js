@@ -1,6 +1,7 @@
 import { acceptHMRUpdate, defineStore } from 'pinia';
 import { getOfficeDetail } from '@/api/merchants';
 import { createBookmark, deleteBookmark, getBookmarks } from '@/api/bookmark';
+import { daysBetween } from '@/components/workation/format';
 
 const formatDate = (date) => {
   const year = date.getFullYear();
@@ -43,9 +44,7 @@ export const useOfficeStore = defineStore('office', {
     selectedProduct: (state) => state.office?.products?.find(
       (product) => product.productId === state.selectedProductId,
     ) ?? null,
-    usageDayCount: (state) => Math.floor(
-      (new Date(state.endDate) - new Date(state.startDate)) / 86400000,
-    ) + 1,
+    usageDayCount: (state) => daysBetween(state.startDate, state.endDate),
     totalPrice() {
       const multiplier = this.selectedProduct?.productDetailType === 'OFFICE_SEAT'
         ? this.guestCount

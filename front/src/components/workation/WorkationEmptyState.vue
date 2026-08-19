@@ -163,7 +163,7 @@ import workitLogo from '@/assets/images/splash-logo.png';
 import RegionCard from '@/components/workation/RegionCard.vue';
 import MerchantMiniCard from '@/components/workation/MerchantMiniCard.vue';
 import SwipeRow from '@/components/workation/SwipeRow.vue';
-import { dotDate, won } from '@/components/workation/format';
+import { dotDate, won, daysBetween } from '@/components/workation/format';
 import {
   orderedRegions,
   programOf,
@@ -203,11 +203,7 @@ const regionCards = computed(() =>
   })),
 );
 
-const lastRecordDays = computed(() => {
-  const record = props.lastRecord;
-  if (!record?.startDate || !record?.endDate) return 0;
-  const start = new Date(`${record.startDate}T00:00:00`);
-  const end = new Date(`${record.endDate}T00:00:00`);
-  return Math.round((end - start) / 86400000) + 1;
-});
+const lastRecordDays = computed(() =>
+  daysBetween(props.lastRecord?.startDate, props.lastRecord?.endDate),
+);
 </script>
