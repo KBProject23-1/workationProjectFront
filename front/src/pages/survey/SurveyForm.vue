@@ -25,9 +25,7 @@
 
     <LoadingScreen v-if="loading" title="설문을 불러오고 있어요" :fullscreen="false" />
 
-    <p v-else-if="errorMessage" class="py-20 text-center text-sm text-red-500">
-      {{ errorMessage }}
-    </p>
+    <BaseErrorState v-else-if="errorMessage" :title="errorMessage" @retry="surveyStore.fetchQuestions" />
 
     <BaseEmptyState v-else-if="questions.length === 0" title="등록된 설문 문항이 없어요" />
 
@@ -85,6 +83,7 @@ import { useWorkationStore } from '@/stores/workationStore';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import { useErrorToast } from '@/composables/useErrorToast';
 import SurveyQuestionBlock from '@/components/survey/SurveyQuestionBlock.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
