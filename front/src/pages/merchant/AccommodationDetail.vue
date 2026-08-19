@@ -19,6 +19,7 @@ const { accommodation, checkIn, checkOut, roomCount, guestCount, selectedProduct
 const { showError } = useErrorToast();
 const dateModalMode = ref('');
 const isOccupancyModalOpen = ref(false);
+const heroImageLoadFailed = ref(false);
 
 function displayDate(value) {
   const date = new Date(`${value}T00:00:00`);
@@ -27,6 +28,7 @@ function displayDate(value) {
 }
 
 async function fetchAccommodation() {
+  heroImageLoadFailed.value = false;
   await accommodationStore.fetchAccommodation(Number(route.params.merchantId));
 }
 
@@ -107,9 +109,18 @@ onMounted(async () => {
     />
 
     <template v-if="!isLoading && !error">
-    <section class="hero-image" aria-label="객실 대표 이미지">
-      <div class="hero-window"><span></span></div>
-      <div class="hero-bed"><span></span></div>
+    <section class="hero-image">
+      <img
+        v-if="accommodation.thumbnailUrl && !heroImageLoadFailed"
+        class="hero-thumbnail"
+        :src="accommodation.thumbnailUrl"
+        :alt="`${accommodation.name} 대표 이미지`"
+        @error="heroImageLoadFailed = true"
+      />
+      <div v-else class="hero-fallback" role="img" aria-label="숙소 기본 이미지">
+        <div class="hero-window"><span></span></div>
+        <div class="hero-bed"><span></span></div>
+      </div>
     </section>
 
     <section class="merchant-section">
@@ -185,6 +196,8 @@ onMounted(async () => {
 .detail-page { min-height:min(871px,100vh); padding-bottom:16px; color:#111827; background:#fff; font-family:'SUIT Variable','SUIT',sans-serif; }
 button { font:inherit; }
 .hero-image { position:relative; height:175px; margin:0 16px; overflow:hidden; border-radius:22px; background:#b4d3fb; }
+.hero-thumbnail,.hero-fallback { width:100%; height:100%; display:block; }.hero-thumbnail { object-fit:cover; }
+.hero-fallback { position:relative; }
 .hero-window { position:absolute; top:27px; left:26px; right:26px; height:104px; overflow:hidden; border-radius:11px; background:#edf4fd; }
 .hero-window::after { content:''; position:absolute; left:-15px; right:-15px; bottom:-14px; height:55px; border-radius:50% 50% 0 0; background:#b6d3f5; }.hero-window span { position:absolute; top:0; bottom:0; left:50%; width:4px; background:#c5dcf8; }.hero-window span::after { content:''; position:absolute; top:12px; left:98px; width:24px; height:24px; border-radius:50%; background:#ffd057; }
 .hero-bed { position:absolute; left:72px; bottom:30px; width:113px; height:38px; border-radius:6px; background:#9b8980; }.hero-bed span { position:absolute; top:-11px; left:11px; right:11px; height:16px; border-radius:6px; background:#f2dfcf; }

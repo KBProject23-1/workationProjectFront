@@ -76,13 +76,9 @@ const merchantCategoryByProductType = {
   MEETING_ROOM: 'OFFICE',
 };
 
-// 직접 URL 진입 시에도 예약 목록으로 돌아갈 수 있는 뒤로 가기 처리
+// 예약 상세에서 예약/이용 완료 목록 탭으로 이동 처리
 function goBack() {
-  if (window.history.length > 1) {
-    router.back();
-    return;
-  }
-  router.push('/reservations');
+  router.push({ name: 'ReservationList', query: { tab: 'reservation' } });
 }
 
 function fetchDetail() {

@@ -1,10 +1,18 @@
 <script setup>
-defineProps({
+import { ref, watch } from 'vue';
+
+const props = defineProps({
   product: { type: Object, required: true },
   selected: { type: Boolean, default: false },
 });
 
 defineEmits(['select']);
+
+const imageLoadFailed = ref(false);
+
+watch(() => props.product.thumbnailUrl, () => {
+  imageLoadFailed.value = false;
+});
 </script>
 
 <template>
@@ -15,9 +23,18 @@ defineEmits(['select']);
     :aria-pressed="selected"
     @click="$emit('select', product.productId)"
   >
-    <div class="room-image" aria-hidden="true">
-      <div class="room-window"></div>
-      <div class="room-bed"><span></span></div>
+    <div class="room-image">
+      <img
+        v-if="product.thumbnailUrl && !imageLoadFailed"
+        class="room-thumbnail"
+        :src="product.thumbnailUrl"
+        :alt="`${product.productName} 대표 이미지`"
+        @error="imageLoadFailed = true"
+      />
+      <div v-else class="room-fallback" aria-hidden="true">
+        <div class="room-window"></div>
+        <div class="room-bed"><span></span></div>
+      </div>
     </div>
     <div class="room-info">
       <strong>{{ product.productName }}</strong>
@@ -33,6 +50,8 @@ defineEmits(['select']);
 .room-card { width:100%; display:flex; gap:16px; padding:12px; text-align:left; color:#111827; border:1.5px solid #dbe3ee; border-radius:18px; background:#fff; box-shadow:0 2px 5px rgb(17 24 39 / 5%); cursor:pointer; }
 .room-card.selected { border-color:#3087ed; box-shadow:0 0 0 1px #3087ed; }
 .room-image { position:relative; width:100px; height:96px; flex:none; overflow:hidden; border-radius:14px; background:#b9d7ff; }
+.room-thumbnail,.room-fallback { width:100%; height:100%; display:block; }.room-thumbnail { object-fit:cover; }
+.room-fallback { position:relative; }
 .room-window { position:absolute; top:12px; left:10px; right:10px; height:43px; border-radius:9px; background:#eef5ff; }
 .room-bed { position:absolute; left:22px; right:18px; bottom:17px; height:21px; border-radius:5px; background:#9c887e; }
 .room-bed span { position:absolute; top:-9px; left:8px; right:8px; height:11px; border-radius:5px; background:#f2dfcf; }
