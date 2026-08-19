@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white px-5 pt-4 pb-8">
+  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
     <div class="mb-4">
       <BaseHeader
         title="사용내역 상세"
@@ -7,7 +7,7 @@
       />
     </div>
 
-    <LoadingScreen v-if="loading" title="사용내역을 불러오고 있어요" />
+    <LoadingScreen v-if="loading" title="사용내역을 불러오고 있어요" :fullscreen="false" />
 
     <template v-else-if="detail">
       <div class="flex items-start justify-between">

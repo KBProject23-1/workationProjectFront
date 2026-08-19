@@ -100,8 +100,14 @@ onMounted(async () => {
     </div>
 
     <LoadingScreen v-if="isLoading" title="공유오피스 정보를 불러오고 있어요" />
-    <BaseErrorState v-else-if="error" :title="error" @retry="fetchOffice" />
+    <BaseErrorState
+      v-else-if="error"
+      :title="error"
+      title-class="text-[14px] text-[#e05252]"
+      @retry="fetchOffice"
+    />
 
+    <template v-if="!isLoading && !error">
     <section class="hero-image" aria-label="공유오피스 대표 이미지">
       <div class="office-wall"><i></i><i></i><i></i></div>
       <div class="office-desk"><span></span><span></span></div>
@@ -165,6 +171,7 @@ onMounted(async () => {
       <div><small>총 결제 금액</small><strong>{{ totalPrice.toLocaleString() }}원</strong></div>
       <button type="button" :disabled="!selectedProductId" @click="goToReservationCreate">예약하기</button>
     </section>
+    </template>
 
     <ReservationDateModal
       v-if="dateModalMode"

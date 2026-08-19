@@ -6,12 +6,16 @@ import { LoaderCircle } from '@lucide/vue';
 defineProps({
   title: { type: String, default: '불러오고 있어요' },
   description: { type: String, default: '잠시만 기다려 주세요' },
+  // 페이지 단독 로딩 화면일 때만 min-h-screen 을 쓴다. 이미 헤더가 떠 있는 페이지에
+  // 얹으면 화면 두 개 높이가 되어 버려서, 그런 곳은 fullscreen=false 로 남은 공간만 채운다.
+  fullscreen: { type: Boolean, default: true },
 });
 </script>
 
 <template>
   <div
-    class="flex flex-col items-center justify-center w-full min-h-screen px-5 py-5 bg-white text-center"
+    class="flex flex-col items-center justify-center w-full px-5 py-5 bg-white text-center"
+    :class="fullscreen ? 'min-h-screen' : 'flex-1'"
   >
     <div
       class="w-16 h-16 rounded-3xl bg-blue-50 border border-blue-100 flex items-center justify-center mb-6 shadow-xs text-blue-600"

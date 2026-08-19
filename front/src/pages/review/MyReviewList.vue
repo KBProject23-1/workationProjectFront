@@ -8,6 +8,7 @@ import { useReviewStore } from '@/stores/reviewStore';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 
 const categories = [
   { value: 'ALL', label: '전체' },
@@ -67,8 +68,8 @@ function moveToReviewDetail(reviewId) {
       </button>
     </nav>
 
-    <LoadingScreen v-if="isMyReviewsLoading" title="리뷰를 불러오고 있어요" />
-    <p v-else-if="myReviewsError" class="status-message">{{ myReviewsError }}</p>
+    <LoadingScreen v-if="isMyReviewsLoading" title="리뷰를 불러오고 있어요" :fullscreen="false" />
+    <BaseErrorState v-else-if="myReviewsError" :title="myReviewsError" @retry="reviewStore.fetchMyReviews()" />
     <BaseEmptyState v-else-if="myReviews.length === 0" title="작성한 리뷰가 없습니다." />
 
     <section v-else class="review-list" aria-label="내 리뷰 목록">

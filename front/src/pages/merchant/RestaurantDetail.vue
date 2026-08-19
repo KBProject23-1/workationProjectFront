@@ -58,7 +58,12 @@ async function toggleBookmark() {
     </div>
 
     <LoadingScreen v-if="isLoading" title="음식점 정보를 불러오고 있어요" />
-    <BaseErrorState v-else-if="error" :title="error" @retry="fetchRestaurant" />
+    <BaseErrorState
+      v-else-if="error"
+      :title="error"
+      title-class="text-[14px] text-[#e05252]"
+      @retry="fetchRestaurant"
+    />
 
     <section
       v-if="!isLoading && !error"

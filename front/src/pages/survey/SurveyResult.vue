@@ -7,7 +7,7 @@
       />
     </div>
 
-    <LoadingScreen v-if="loading" title="설문 결과를 불러오고 있어요" />
+    <LoadingScreen v-if="loading" title="설문 결과를 불러오고 있어요" :fullscreen="false" />
 
     <template v-else-if="result">
       <h2 class="mt-2 text-lg font-bold text-slate-900">내가 선택한 응답</h2>

@@ -241,9 +241,12 @@
         <div v-for="n in 3" :key="n" class="h-28 animate-pulse rounded-xl bg-slate-100" />
       </div>
 
-      <div v-else-if="error" class="py-10">
-        <BaseErrorState :title="error" @retry="merchantStore.fetchMerchants" />
-      </div>
+      <BaseErrorState
+        v-else-if="error"
+        class="py-10"
+        :title="error"
+        @retry="merchantStore.fetchMerchants"
+      />
 
       <template v-else>
         <div class="flex flex-col gap-3">

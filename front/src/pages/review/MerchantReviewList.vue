@@ -8,6 +8,7 @@ import { useReviewStore } from '@/stores/reviewStore';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -45,8 +46,8 @@ function moveToReviewDetail(reviewId) {
         리뷰 {{ reviewCount }}개 · 최신순
       </p>
 
-      <LoadingScreen v-if="isLoading" title="리뷰를 불러오고 있어요" />
-      <p v-else-if="error" class="status-message">{{ error }}</p>
+      <LoadingScreen v-if="isLoading" title="리뷰를 불러오고 있어요" :fullscreen="false" />
+      <BaseErrorState v-else-if="error" :title="error" @retry="reviewStore.fetchMerchantReviews(merchantId)" />
       <BaseEmptyState v-else-if="reviews.length === 0" title="등록된 리뷰가 없습니다." />
 
       <div v-else class="review-list">

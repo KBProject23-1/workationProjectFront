@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white px-5 pt-4 pb-8">
+  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
     <div class="mb-4">
       <BaseHeader
         :title="settled ? '지난 워케이션 상세' : '정산 내역 보기'"
@@ -17,7 +17,7 @@
       </BaseHeader>
     </div>
 
-    <LoadingScreen v-if="loading" title="정산 정보를 불러오고 있어요" />
+    <LoadingScreen v-if="loading" title="정산 정보를 불러오고 있어요" :fullscreen="false" />
 
     <template v-else-if="workation">
       <!-- 정산이 끝난 워케이션은 기록 카드 형태로 보여준다 -->

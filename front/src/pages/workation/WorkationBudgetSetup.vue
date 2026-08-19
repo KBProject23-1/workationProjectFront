@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white px-5 pt-4 pb-8">
+  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
     <div class="mb-4">
       <BaseHeader
         title="예산 세부 금액 설정"
@@ -33,7 +33,7 @@
       </button>
     </div>
 
-    <LoadingScreen v-if="loading" title="예산 정보를 불러오고 있어요" />
+    <LoadingScreen v-if="loading" title="예산 정보를 불러오고 있어요" :fullscreen="false" />
 
     <template v-else>
       <div

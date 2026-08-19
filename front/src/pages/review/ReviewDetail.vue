@@ -8,6 +8,7 @@ import AtmosphereTagSelector from '@/components/review/AtmosphereTagSelector.vue
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -58,7 +59,7 @@ async function confirmDelete() {
     </div>
 
     <LoadingScreen v-if="isDetailLoading" title="리뷰를 불러오고 있어요" />
-    <p v-else-if="detailError" class="status-message">{{ detailError }}</p>
+    <BaseErrorState v-else-if="detailError" :title="detailError" @retry="reviewStore.fetchReviewDetails(reviewId)" />
 
     <div v-else-if="reviewDetail" class="review-content">
       <section class="merchant-summary" aria-label="가맹점 정보">

@@ -23,7 +23,7 @@
       답변을 바탕으로 숙소와 공유오피스를 추천해 드려요
     </p>
 
-    <LoadingScreen v-if="loading" title="설문을 불러오고 있어요" />
+    <LoadingScreen v-if="loading" title="설문을 불러오고 있어요" :fullscreen="false" />
 
     <p v-else-if="errorMessage" class="py-20 text-center text-sm text-red-500">
       {{ errorMessage }}

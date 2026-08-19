@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white px-5 pt-4 pb-8">
+  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
     <div class="mb-4">
       <BaseHeader
         title="워케이션 정산기록"
@@ -7,11 +7,13 @@
       />
     </div>
 
-    <LoadingScreen v-if="loading" title="정산기록을 불러오고 있어요" />
+    <LoadingScreen v-if="loading" title="정산기록을 불러오고 있어요" :fullscreen="false" />
 
-    <p v-else-if="errorMessage" class="py-20 text-center text-sm text-red-500">
-      {{ errorMessage }}
-    </p>
+    <BaseErrorState
+      v-else-if="errorMessage"
+      :title="errorMessage"
+      @retry="workationStore.fetchRecords(0, PAGE_SIZE)"
+    />
 
     <template v-else-if="records.length > 0">
       <p class="mb-3 text-xs text-slate-400">
@@ -59,12 +61,11 @@
       </button>
     </template>
 
-    <div v-else class="py-20 text-center">
-      <p class="text-sm text-slate-400">아직 정산을 마친 워케이션이 없어요</p>
-      <p class="mt-1 text-xs text-slate-400">
-        워케이션을 마치면 여기에 기록이 쌓여요
-      </p>
-    </div>
+    <BaseEmptyState
+      v-else
+      title="아직 정산을 마친 워케이션이 없어요"
+      description="워케이션을 마치면 여기에 기록이 쌓여요"
+    />
   </div>
 </template>
 
@@ -77,6 +78,8 @@ import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import { dotDate, won } from '@/components/workation/format';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 
 const PAGE_SIZE = 10;
 

@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-white px-5 pt-4 pb-8">
+  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
     <header class="relative mb-4 flex items-center justify-center">
       <h1 class="text-base font-bold text-slate-900">워케이션 완료</h1>
     </header>
 
-    <LoadingScreen v-if="loading" title="정산 정보를 불러오고 있어요" />
+    <LoadingScreen v-if="loading" title="정산 정보를 불러오고 있어요" :fullscreen="false" />
 
     <template v-else>
       <section class="mt-6 rounded-2xl bg-blue-50 px-5 py-8 text-center">

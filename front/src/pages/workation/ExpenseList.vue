@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white px-5 pt-4 pb-8">
+  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
     <div class="mb-4">
       <BaseHeader
         title="지출 내역"
@@ -116,14 +116,9 @@
       다시 눌러 주세요
     </p>
 
-    <LoadingScreen v-if="loading" title="사용내역을 불러오고 있어요" />
+    <LoadingScreen v-if="loading" title="사용내역을 불러오고 있어요" :fullscreen="false" />
 
-    <p
-      v-else-if="expenses.length === 0"
-      class="py-20 text-center text-sm text-slate-400"
-    >
-      조건에 맞는 지출이 없어요
-    </p>
+    <BaseEmptyState v-else-if="expenses.length === 0" title="조건에 맞는 지출이 없어요" />
 
     <div v-else class="mt-2 space-y-2">
       <div
@@ -223,6 +218,7 @@ import BudgetUsageCard from '@/components/workation/BudgetUsageCard.vue';
 import ExpenseListItem from '@/components/workation/ExpenseListItem.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 
 const TAB_VALUES = [null, 'WORK', 'PERSONAL'];
 
