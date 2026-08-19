@@ -114,7 +114,7 @@ function goToLogin() {
 
   <div v-else class="flex h-dvh flex-col overflow-hidden bg-white">
     <!-- 헤더 -->
-    <div v-if="showHeader" class="shrink-0 px-2 pt-2">
+    <div v-if="showHeader" class="shrink-0 px-5 pt-4">
       <BaseHeader
         title="아이디 찾기"
         @back="goBack"

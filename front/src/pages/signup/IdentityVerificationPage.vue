@@ -136,7 +136,7 @@ function continueToSignup() {
 
   <div v-else class="flex h-dvh flex-col overflow-hidden bg-white">
     <!-- 헤더 -->
-    <div v-if="showHeader" class="shrink-0 px-2 pt-2">
+    <div v-if="showHeader" class="shrink-0 px-5 pt-4">
       <BaseHeader
         title="본인인증"
         @back="goBack"

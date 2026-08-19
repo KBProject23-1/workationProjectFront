@@ -47,10 +47,12 @@ async function submitReview(form) {
 
 <template>
   <main class="form-page">
-    <BaseHeader
-      :title="title"
-      @back="goBack"
-    />
+    <div class="-mx-[29px] px-5 pt-4 mb-4">
+      <BaseHeader
+        :title="title"
+        @back="goBack"
+      />
+    </div>
     <p v-if="reviewSaveError" class="error-message">{{ reviewSaveError }}</p>
     <ReviewForm
       v-if="reviewFormMerchant"

@@ -90,7 +90,7 @@ onMounted(async () => {
 
 <template>
   <main class="office-page">
-    <div class="px-4">
+    <div class="px-5 pt-4 mb-4">
       <BaseHeader
         title="공유오피스 상세"
         @back="$router.back()"

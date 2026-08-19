@@ -68,7 +68,7 @@ onMounted(() => {
 
 <template>
   <main
-    class="flex flex-col items-center w-full min-h-screen px-5 pt-6 pb-8 bg-white"
+    class="flex flex-col items-center w-full min-h-screen px-5 pt-4 pb-8 bg-white"
   >
     <div class="w-full mb-4">
       <BaseHeader

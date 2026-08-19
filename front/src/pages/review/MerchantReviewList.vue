@@ -30,11 +30,13 @@ function moveToReviewDetail(reviewId) {
 
 <template>
   <main class="review-page">
-    <BaseHeader
-      :title="merchantName || '서핑 체험 강릉'"
-      title-class="max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap text-[18px] font-bold text-gray-900"
-      @back="router.back()"
-    />
+    <div class="-mx-[23px] px-5 pt-4 mb-4">
+      <BaseHeader
+        :title="merchantName || '서핑 체험 강릉'"
+        title-class="max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap text-[18px] font-bold text-gray-900"
+        @back="router.back()"
+      />
+    </div>
 
     <section class="review-section" aria-labelledby="review-summary">
       <p id="review-summary" class="review-summary">

@@ -49,10 +49,12 @@ async function confirmDelete() {
 
 <template>
   <main class="detail-page">
-    <BaseHeader
-      title="리뷰 상세보기"
-      @back="router.back()"
-    />
+    <div class="-mx-[29px] px-5 pt-4 mb-4">
+      <BaseHeader
+        title="리뷰 상세보기"
+        @back="router.back()"
+      />
+    </div>
 
     <p v-if="isDetailLoading" class="status-message">리뷰를 불러오고 있어요.</p>
     <p v-else-if="detailError" class="status-message">{{ detailError }}</p>

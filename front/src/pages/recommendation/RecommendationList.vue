@@ -170,10 +170,12 @@ function moveNext() {
 
 <template>
   <main v-if="category" class="recommendation-list-page">
-    <BaseHeader
-      :title="category.pageTitle"
-      @back="goBack"
-    />
+    <div class="-mx-[26px] px-5 pt-4 mb-4">
+      <BaseHeader
+        :title="category.pageTitle"
+        @back="goBack"
+      />
+    </div>
 
     <nav v-if="isRestaurant" class="meal-tabs" aria-label="식사 시간대">
       <button
@@ -260,10 +262,8 @@ function moveNext() {
 <style scoped>
 .recommendation-list-page {
   width: 100%;
-  max-width: 402px;
   min-height: 100dvh;
-  margin: 0 auto;
-  padding: 50px 26px 30px;
+  padding: 0 26px 30px;
   background: #ffffff;
   color: #12213b;
   font-family: 'SUIT', 'Pretendard Variable', sans-serif;
@@ -352,10 +352,6 @@ function moveNext() {
 }
 
 @media (max-height: 820px) {
-  .recommendation-list-page {
-    padding-top: 36px;
-  }
-
   .result-card {
     min-height: 96px;
   }

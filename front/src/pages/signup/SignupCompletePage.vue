@@ -39,7 +39,7 @@ function goNext() {
 <template>
   <div class="flex flex-col h-dvh bg-white overflow-hidden">
     <!-- 헤더 -->
-    <div class="shrink-0 px-2 pt-2">
+    <div class="shrink-0 px-5 pt-4">
       <BaseHeader
         title="회원가입"
         @back="goBack"

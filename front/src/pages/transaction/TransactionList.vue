@@ -67,7 +67,7 @@ onUnmounted(() => {
 
 <template>
   <main class="flex flex-col items-center w-full min-h-screen bg-white">
-    <div class="sticky top-0 z-10 w-full bg-white px-5 pt-6 pb-3">
+    <div class="sticky top-0 z-10 w-full bg-white px-5 pt-4 pb-3">
       <div class="w-full mb-4">
         <BaseHeader
           title="거래내역"

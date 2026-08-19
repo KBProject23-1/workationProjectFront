@@ -89,7 +89,7 @@ onMounted(async () => {
 
 <template>
   <main class="detail-page">
-    <div class="px-4">
+    <div class="px-5 pt-4 mb-4">
       <BaseHeader
         title="숙소 상세"
         @back="$router.back()"

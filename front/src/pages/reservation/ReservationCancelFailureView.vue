@@ -35,7 +35,7 @@ onMounted(fetchDetail);
 
 <template>
   <div class="flex min-h-screen w-full flex-col bg-white">
-    <div class="px-4">
+    <div class="px-5 pt-4">
       <BaseHeader
         title="예약 취소 실패"
         back-label="취소 내역으로 이동"

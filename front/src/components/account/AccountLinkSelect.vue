@@ -36,7 +36,7 @@ function handleBack() {
 </script>
 
 <template>
-  <div class="flex flex-col w-full min-h-screen px-5 py-5 bg-white text-left">
+  <div class="flex flex-col w-full min-h-screen px-5 pt-4 pb-5 bg-white text-left">
     <div class="mb-6">
       <BaseHeader title="계좌 선택" @back="handleBack" />
     </div>

@@ -48,7 +48,7 @@ async function toggleBookmark() {
 
 <template>
   <main class="restaurant-page">
-    <div class="px-4">
+    <div class="px-5 pt-4 mb-4">
       <BaseHeader
         title="음식점 상세보기"
         @back="$router.back()"

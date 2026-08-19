@@ -61,7 +61,7 @@ onUnmounted(() => {
 
 <template>
   <div
-    class="flex flex-col items-center w-full min-h-screen px-5 py-5 bg-gray-50 text-center"
+    class="flex flex-col items-center w-full min-h-screen px-5 pt-4 pb-5 bg-gray-50 text-center"
   >
     <!-- 상단 헤더 -->
     <div class="w-full mb-6">

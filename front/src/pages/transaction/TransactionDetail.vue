@@ -95,7 +95,7 @@ onMounted(loadDetail);
 
 <template>
   <main
-    class="flex flex-col items-center w-full min-h-screen px-5 py-5 bg-white text-left"
+    class="flex flex-col items-center w-full min-h-screen px-5 pt-4 pb-5 bg-white text-left"
   >
     <div class="w-full mb-6">
       <BaseHeader title="거래 상세" @back="router.back()" />

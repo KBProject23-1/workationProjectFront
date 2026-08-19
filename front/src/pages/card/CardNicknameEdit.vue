@@ -47,7 +47,7 @@ onMounted(() => {
 
 <template>
   <main
-    class="flex flex-col items-center w-full min-h-screen px-5 py-5 bg-white"
+    class="flex flex-col items-center w-full min-h-screen px-5 pt-4 pb-5 bg-white"
   >
     <div class="w-full mb-6">
       <BaseHeader title="카드 별칭 설정" @back="router.back()" />
