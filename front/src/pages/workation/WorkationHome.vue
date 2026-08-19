@@ -388,6 +388,15 @@ const checkBeforeDelete = async () => {
 
     confirmOpen.value = false;
 
+    // 삭제 전엔 진행 중 워케이션이 있어 loadSetupState 만 돌았을 뿐, 빈 홈 화면 자료
+    // (찜한 장소·인기 장소·지역·최근 기록)는 아직 한 번도 받은 적이 없다.
+    // current 가 반응형으로 null 이 되며 화면은 바로 빈 홈으로 바뀌므로 여기서 채워 둔다
+    if (!workationStore.hasActive) {
+      loading.value = true;
+      await loadEmptyHome();
+      loading.value = false;
+    }
+
     // 아직 이용하지 않은 예약이 남아 있으면 예약 내역으로 안내한다
     const upcoming = reservationCheck.value?.upcoming;
     if (upcoming && upcoming.room + upcoming.office > 0) {
@@ -403,6 +412,12 @@ const checkBeforeDelete = async () => {
       await workationStore.fetchCurrent();
       pageError.value = workationStore.error;
       showError(error, '이미 삭제된 워케이션입니다.');
+
+      if (!pageError.value && !workationStore.hasActive) {
+        loading.value = true;
+        await loadEmptyHome();
+        loading.value = false;
+      }
       return;
     }
 
