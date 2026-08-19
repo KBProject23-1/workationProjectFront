@@ -37,8 +37,9 @@ function handleOpenChange(open) {
     >
       <DialogHeader :class="['text-center', headerClass]">
         <DialogTitle class="whitespace-pre-line">{{ title }}</DialogTitle>
-        <DialogDescription>{{ message }}</DialogDescription>
+        <DialogDescription class="whitespace-pre-line">{{ message }}</DialogDescription>
       </DialogHeader>
+      <slot />
       <DialogFooter class="flex-row gap-2 sm:justify-center">
         <Button
           v-if="!hideCancel"
