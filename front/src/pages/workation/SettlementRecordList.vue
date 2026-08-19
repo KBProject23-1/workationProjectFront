@@ -7,9 +7,7 @@
       />
     </div>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
-      불러오는 중...
-    </p>
+    <LoadingScreen v-if="loading" title="정산기록을 불러오고 있어요" />
 
     <p v-else-if="errorMessage" class="py-20 text-center text-sm text-red-500">
       {{ errorMessage }}
@@ -78,6 +76,7 @@ import { useWorkationStore } from '@/stores/workationStore';
 import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import { dotDate, won } from '@/components/workation/format';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 
 const PAGE_SIZE = 10;
 

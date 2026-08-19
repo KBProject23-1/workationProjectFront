@@ -7,9 +7,7 @@
       />
     </div>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
-      불러오는 중...
-    </p>
+    <LoadingScreen v-if="loading" title="사용내역을 불러오고 있어요" />
 
     <template v-else-if="detail">
       <div class="flex items-start justify-between">
@@ -188,6 +186,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { ChevronDown } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import { storeToRefs } from 'pinia';
 import { useExpenseStore } from '@/stores/expenseStore';
 import { useCategoryStore } from '@/stores/categoryStore';

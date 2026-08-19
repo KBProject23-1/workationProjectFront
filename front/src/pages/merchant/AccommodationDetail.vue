@@ -7,6 +7,7 @@ import ReservationDateModal from '@/components/reservation/ReservationDateModal.
 import ReservationOccupancyModal from '@/components/reservation/ReservationOccupancyModal.vue';
 import AccommodationProductCard from '@/components/merchant/AccommodationProductCard.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import { useAccommodationStore } from '@/stores/merchant/accommodationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 
@@ -96,7 +97,7 @@ onMounted(async () => {
       />
     </div>
 
-    <p v-if="isLoading" class="status-message">숙소 정보를 불러오고 있습니다.</p>
+    <LoadingScreen v-if="isLoading" title="숙소 정보를 불러오고 있어요" />
     <div v-else-if="error" class="status-message error">
       <p>{{ error }}</p>
       <button type="button" @click="fetchAccommodation">다시 시도</button>

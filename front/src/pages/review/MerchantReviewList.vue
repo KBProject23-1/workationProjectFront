@@ -6,6 +6,7 @@ import ReviewListItem from '@/components/review/ReviewListItem.vue';
 import ReviewPagination from '@/components/review/ReviewPagination.vue';
 import { useReviewStore } from '@/stores/reviewStore';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 
 const route = useRoute();
@@ -44,7 +45,7 @@ function moveToReviewDetail(reviewId) {
         리뷰 {{ reviewCount }}개 · 최신순
       </p>
 
-      <p v-if="isLoading" class="status-message">리뷰를 불러오고 있어요.</p>
+      <LoadingScreen v-if="isLoading" title="리뷰를 불러오고 있어요" />
       <p v-else-if="error" class="status-message">{{ error }}</p>
       <BaseEmptyState v-else-if="reviews.length === 0" title="등록된 리뷰가 없습니다." />
 

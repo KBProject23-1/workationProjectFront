@@ -32,9 +32,7 @@
       </div>
     </header>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
-      불러오는 중...
-    </p>
+    <LoadingScreen v-if="loading" title="워케이션 정보를 불러오고 있어요" />
 
     <p v-else-if="errorMessage" class="py-20 text-center text-sm text-red-500">
       {{ errorMessage }}
@@ -149,6 +147,7 @@ import { useWorkationStore } from '@/stores/workationStore';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useExpenseStore } from '@/stores/expenseStore';
 import { useSettlementStore } from '@/stores/settlementStore';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import { useSurveyStore } from '@/stores/surveyStore';
 import {
   useScheduleStore,

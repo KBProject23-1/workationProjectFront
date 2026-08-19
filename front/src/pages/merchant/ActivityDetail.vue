@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router';
 import { Heart, MapPin } from '@lucide/vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import MerchantReviewCard from '@/components/merchant/MerchantReviewCard.vue';
 import ScheduleRegistrationPanel from '@/components/schedule/ScheduleRegistrationPanel.vue';
 import { useScheduleRegistration } from '@/composables/useScheduleRegistration';
@@ -55,7 +56,7 @@ async function toggleBookmark() {
       />
     </div>
 
-    <p v-if="isLoading" class="status-message">여가 정보를 불러오고 있습니다.</p>
+    <LoadingScreen v-if="isLoading" title="여가 정보를 불러오고 있어요" />
     <div v-else-if="error" class="status-message error">
       <p>{{ error }}</p>
       <button type="button" @click="fetchActivity">다시 시도</button>

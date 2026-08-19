@@ -7,9 +7,7 @@
       />
     </div>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
-      불러오는 중...
-    </p>
+    <LoadingScreen v-if="loading" title="설문 결과를 불러오고 있어요" />
 
     <template v-else-if="result">
       <h2 class="mt-2 text-lg font-bold text-slate-900">내가 선택한 응답</h2>
@@ -72,6 +70,7 @@ import BaseButton from '@/components/common/BaseButton.vue';
 import { useSurveyStore } from '@/stores/surveyStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 
 // 시안이 문항마다 다른 배경색을 쓴다
 const CARD_TONES = [

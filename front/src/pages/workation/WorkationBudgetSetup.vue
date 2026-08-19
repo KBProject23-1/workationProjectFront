@@ -33,9 +33,7 @@
       </button>
     </div>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
-      불러오는 중...
-    </p>
+    <LoadingScreen v-if="loading" title="예산 정보를 불러오고 있어요" />
 
     <template v-else>
       <div
@@ -161,6 +159,7 @@ import { useBudgetStore } from '@/stores/budgetStore';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useCategoryStore } from '@/stores/categoryStore';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import { won } from '@/components/workation/format';

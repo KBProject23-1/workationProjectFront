@@ -23,9 +23,7 @@
       답변을 바탕으로 숙소와 공유오피스를 추천해 드려요
     </p>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
-      불러오는 중...
-    </p>
+    <LoadingScreen v-if="loading" title="설문을 불러오고 있어요" />
 
     <p v-else-if="errorMessage" class="py-20 text-center text-sm text-red-500">
       {{ errorMessage }}
@@ -85,6 +83,7 @@ import BaseButton from '@/components/common/BaseButton.vue';
 import { useSurveyStore } from '@/stores/surveyStore';
 import { useWorkationStore } from '@/stores/workationStore';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 import { useErrorToast } from '@/composables/useErrorToast';
 import SurveyQuestionBlock from '@/components/survey/SurveyQuestionBlock.vue';

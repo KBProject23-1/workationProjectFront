@@ -116,9 +116,7 @@
       다시 눌러 주세요
     </p>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
-      불러오는 중...
-    </p>
+    <LoadingScreen v-if="loading" title="사용내역을 불러오고 있어요" />
 
     <p
       v-else-if="expenses.length === 0"
@@ -224,6 +222,7 @@ import { won } from '@/components/workation/format';
 import BudgetUsageCard from '@/components/workation/BudgetUsageCard.vue';
 import ExpenseListItem from '@/components/workation/ExpenseListItem.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 
 const TAB_VALUES = [null, 'WORK', 'PERSONAL'];
 

@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { Heart, MapPin, Phone } from '@lucide/vue';
 import OfficeProductCard from '@/components/merchant/OfficeProductCard.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationGuestModal from '@/components/reservation/ReservationGuestModal.vue';
 import ReservationSpaceModal from '@/components/reservation/ReservationSpaceModal.vue';
@@ -97,7 +98,7 @@ onMounted(async () => {
       />
     </div>
 
-    <p v-if="isLoading" class="status-message">공유오피스 정보를 불러오고 있습니다.</p>
+    <LoadingScreen v-if="isLoading" title="공유오피스 정보를 불러오고 있어요" />
     <div v-else-if="error" class="status-message error">
       <p>{{ error }}</p>
       <button type="button" @click="fetchOffice">다시 시도</button>

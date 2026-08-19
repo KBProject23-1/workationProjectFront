@@ -17,9 +17,7 @@
       </BaseHeader>
     </div>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
-      불러오는 중...
-    </p>
+    <LoadingScreen v-if="loading" title="정산 정보를 불러오고 있어요" />
 
     <template v-else-if="workation">
       <!-- 정산이 끝난 워케이션은 기록 카드 형태로 보여준다 -->
@@ -231,6 +229,7 @@ import { Trash2 } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import { useBudgetStore } from '@/stores/budgetStore';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import { useExpenseStore } from '@/stores/expenseStore';
 import { useScheduleStore } from '@/stores/scheduleStore';
 import { useSettlementStore } from '@/stores/settlementStore';
