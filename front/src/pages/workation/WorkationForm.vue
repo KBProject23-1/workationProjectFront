@@ -169,12 +169,27 @@
     <BaseConfirmModal
       :visible="surveyReuseOpen"
       title="기존 설문을 바탕으로 추천해 드릴게요"
-      message="지난번에 고른 워케이션 취향을 그대로 사용해요. 취향이 바뀌었다면 지금 수정할 수 있어요."
+      :message="'지난번에 고른 워케이션 취향을 그대로 사용해요.\n취향이 바뀌었다면 지금 수정할 수 있어요.'"
       confirm-label="이대로 진행"
       cancel-label="설문 수정하기"
+      content-class="max-h-[90dvh] max-w-sm overflow-y-auto"
       @confirm="goBudgetSetup"
       @cancel="goSurveyEdit"
-    />
+    >
+      <section class="space-y-3" aria-label="내가 선택한 설문 응답">
+        <div
+          v-for="(answer, index) in surveyAnswers"
+          :key="answer.questionId"
+          class="rounded-xl px-4 py-3.5"
+          :class="SURVEY_CARD_TONES[index % SURVEY_CARD_TONES.length]"
+        >
+          <p class="text-xs leading-5 text-slate-500">{{ answer.question }}</p>
+          <p class="mt-1 text-sm font-bold leading-5 text-slate-900">
+            {{ answer.selectedText }}
+          </p>
+        </div>
+      </section>
+    </BaseConfirmModal>
 
     <!-- 기간이 바뀌면 예약이 어긋난다. 무엇이 걸리는지에 따라 안내가 갈린다 -->
     <BaseConfirmModal
@@ -212,6 +227,29 @@ const workationStore = useWorkationStore();
 const { showError } = useErrorToast();
 const { hasCorporateCard, workLabel, ensureCards } = useBudgetTypeLabel();
 const surveyStore = useSurveyStore();
+
+// 설문 결과 화면과 같은 색 순서로 기존 응답을 보여준다
+const SURVEY_CARD_TONES = [
+  'bg-blue-50',
+  'bg-emerald-50',
+  'bg-amber-50',
+  'bg-violet-50',
+];
+
+const surveyAnswers = computed(() =>
+  (surveyStore.result?.questions ?? []).map((question) => {
+    const selectedOptionIds = new Set(question.selectedOptionIds ?? []);
+    const selectedOptionNames = (question.options ?? [])
+      .filter((option) => selectedOptionIds.has(option.optionId))
+      .map((option) => option.optionName);
+
+    return {
+      questionId: question.questionId,
+      question: question.question,
+      selectedText: selectedOptionNames.join(' · ') || '-',
+    };
+  }),
+);
 
 // 설문은 사용자당 1회다. 이미 답했으면 등록이 2단계로 줄어든다
 const surveyDone = computed(() => surveyStore.hasAnswered);
