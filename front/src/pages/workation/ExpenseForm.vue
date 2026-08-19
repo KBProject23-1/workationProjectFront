@@ -39,23 +39,28 @@
         hint="필수"
         :error-message="errors.cardId"
       >
-        <select
-          v-model="form.cardId"
-          class="border-input h-9 w-full rounded-md border bg-transparent px-3 text-base md:text-sm"
-          :class="form.cardId ? 'text-slate-900' : 'text-slate-300'"
-        >
-          <option :value="null" disabled class="text-slate-300">
-            카드를 선택해 주세요
-          </option>
-          <option
-            v-for="card in workCards"
-            :key="card.cardId"
-            :value="card.cardId"
-            class="text-slate-900"
-          >
-            {{ card.cardName }} {{ card.maskedNumber }}
-          </option>
-        </select>
+        <Select v-model="form.cardId">
+          <SelectTrigger as-child>
+            <button
+              type="button"
+              class="border-input flex h-9 w-full items-center justify-between rounded-md border bg-transparent px-3 text-base md:text-sm"
+            >
+              <span :class="form.cardId ? 'text-slate-900' : 'text-slate-300'">
+                {{ selectedCardLabel }}
+              </span>
+              <ChevronDown :size="16" class="text-slate-400" />
+            </button>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem
+              v-for="card in workCards"
+              :key="card.cardId"
+              :value="card.cardId"
+            >
+              {{ card.cardName }} {{ card.maskedNumber }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
         <p class="mt-1.5 text-xs text-slate-400">{{ cardHint }}</p>
       </WorkationFormField>
 
@@ -97,23 +102,30 @@
         label="카테고리"
         :error-message="errors.expenseCategoryId"
       >
-        <select
-          v-model="form.expenseCategoryId"
-          class="border-input h-9 w-full rounded-md border bg-transparent px-3 text-base md:text-sm"
-          :class="form.expenseCategoryId ? 'text-slate-900' : 'text-slate-300'"
-        >
-          <option :value="null" disabled class="text-slate-300">
-            카테고리를 선택해 주세요
-          </option>
-          <option
-            v-for="category in categories"
-            :key="category.id"
-            :value="category.id"
-            class="text-slate-900"
-          >
-            {{ category.name }}
-          </option>
-        </select>
+        <Select v-model="form.expenseCategoryId">
+          <SelectTrigger as-child>
+            <button
+              type="button"
+              class="border-input flex h-9 w-full items-center justify-between rounded-md border bg-transparent px-3 text-base md:text-sm"
+            >
+              <span
+                :class="form.expenseCategoryId ? 'text-slate-900' : 'text-slate-300'"
+              >
+                {{ selectedCategoryLabel }}
+              </span>
+              <ChevronDown :size="16" class="text-slate-400" />
+            </button>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem
+              v-for="category in categories"
+              :key="category.id"
+              :value="category.id"
+            >
+              {{ category.name }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </WorkationFormField>
 
       <WorkationFormField label="메모" hint="선택">
@@ -140,6 +152,12 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem } from '@/components/ui/select';
+// shadcn 래퍼의 SelectTrigger는 as-child든 아니든 ChevronDown을 슬롯 옆에 같이 렌더링해서
+// 완전 커스텀 트리거를 asChild로 쓸 땐 그 아이콘이 병합 안 되고 형제 요소로 남는다.
+// 여기선 커스텀 버튼만 렌더링하는 Reka UI 원본 SelectTrigger를 직접 쓴다.
+import { SelectTrigger } from 'reka-ui';
+import { ChevronDown } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import { useExpenseStore } from '@/stores/expenseStore';
 import { useBudgetStore } from '@/stores/budgetStore';
@@ -215,9 +233,21 @@ const cardHint = computed(() =>
     : '개인카드로 결제한 건을 회사에 청구할 수 있어요',
 );
 
+const selectedCardLabel = computed(() => {
+  const card = workCards.value.find((c) => c.cardId === form.cardId);
+  return card ? `${card.cardName} ${card.maskedNumber}` : '카드를 선택해 주세요';
+});
+
 // 예산에 배정한 카테고리만 고를 수 있다. 배정하지 않은 카테고리는 집계할 곳이 없다
 const assignedCategories = reactive({ WORK: [], PERSONAL: [] });
 const categories = computed(() => assignedCategories[form.budgetType]);
+
+const selectedCategoryLabel = computed(() => {
+  const category = categories.value.find(
+    (c) => c.id === form.expenseCategoryId,
+  );
+  return category ? category.name : '카테고리를 선택해 주세요';
+});
 
 const toDigits = (value) => String(value ?? '').replace(/[^\d]/g, '');
 const amountText = computed(() =>

@@ -41,24 +41,29 @@
         :hint="isEdit ? '지역은 변경할 수 없어요' : ''"
         :error-message="errors.regionId"
       >
-        <select
-          v-model="form.regionId"
-          :disabled="isEdit"
-          class="border-input h-9 w-full rounded-md border bg-transparent px-3 text-base md:text-sm disabled:bg-slate-50 disabled:text-slate-400"
-          :class="form.regionId ? 'text-slate-900' : 'text-slate-300'"
-        >
-          <option :value="null" disabled class="text-slate-300">
-            지역을 선택해 주세요
-          </option>
-          <option
-            v-for="region in sortedRegions"
-            :key="region.id"
-            :value="region.id"
-            class="text-slate-900"
-          >
-            {{ region.name }}
-          </option>
-        </select>
+        <Select v-model="form.regionId" :disabled="isEdit">
+          <SelectTrigger as-child>
+            <button
+              type="button"
+              :disabled="isEdit"
+              class="border-input flex h-9 w-full items-center justify-between rounded-md border bg-transparent px-3 text-base disabled:bg-slate-50 disabled:text-slate-400 md:text-sm"
+            >
+              <span :class="form.regionId ? 'text-slate-900' : 'text-slate-300'">
+                {{ selectedRegionName }}
+              </span>
+              <ChevronDown :size="16" class="text-slate-400" />
+            </button>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem
+              v-for="region in sortedRegions"
+              :key="region.id"
+              :value="region.id"
+            >
+              {{ region.name }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </WorkationFormField>
 
       <!--
@@ -209,6 +214,12 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem } from '@/components/ui/select';
+// shadcn 래퍼의 SelectTrigger는 as-child든 아니든 ChevronDown을 슬롯 옆에 같이 렌더링해서
+// 완전 커스텀 트리거를 asChild로 쓸 땐 그 아이콘이 병합 안 되고 형제 요소로 남는다.
+// 여기선 커스텀 버튼만 렌더링하는 Reka UI 원본 SelectTrigger를 직접 쓴다.
+import { SelectTrigger } from 'reka-ui';
+import { ChevronDown } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useWorkationStore } from '@/stores/workationStore';
@@ -345,6 +356,12 @@ const submitLabel = computed(() => {
 });
 
 const sortedRegions = computed(() => workationStore.sortedRegions);
+
+const selectedRegionName = computed(
+  () =>
+    sortedRegions.value.find((region) => region.id === form.regionId)
+      ?.name ?? '지역을 선택해 주세요',
+);
 
 const form = reactive({
   title: '',
