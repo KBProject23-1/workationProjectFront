@@ -8,6 +8,7 @@ import { toast } from 'vue-sonner';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import TransactionReceiptModal from '@/components/transaction/TransactionReceiptModal.vue';
 import { formatDateTime } from '@/utils/date';
 import { getStatusMeta, isInactiveStatus } from '@/utils/transactionStatus';
@@ -114,20 +115,12 @@ onMounted(loadDetail);
       v-else-if="loadError"
       class="w-full flex-1 flex flex-col items-center justify-center text-center"
     >
-      <p class="text-[15px] font-semibold text-gray-600">
-        거래 정보를 불러오지 못했어요
-      </p>
-      <p class="mt-2 text-[12px] text-gray-500">
-        {{ isValidId ? '잠시 후 다시 시도해주세요' : '올바르지 않은 거래예요' }}
-      </p>
-      <button
-        v-if="isValidId"
-        type="button"
-        class="mt-5 rounded-lg border border-gray-300 px-4 py-2 text-[14px] font-semibold text-gray-700 active:scale-95 transition-transform"
-        @click="loadDetail"
-      >
-        다시 시도
-      </button>
+      <BaseErrorState
+        title="거래 정보를 불러오지 못했어요"
+        :description="isValidId ? '잠시 후 다시 시도해주세요' : '올바르지 않은 거래예요'"
+        :show-retry="isValidId"
+        @retry="loadDetail"
+      />
     </div>
 
     <template v-else-if="detail">

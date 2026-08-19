@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import ReservationCancellationSummary from '@/components/reservation/ReservationCancellationSummary.vue';
 import { useReservationStore } from '@/stores/reservationStore';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -82,19 +83,11 @@ onMounted(fetchCancellationDetail);
       v-else-if="reservationStore.cancellationDetailError"
       class="flex flex-1 flex-col items-center justify-center px-6 pb-24 text-center"
     >
-      <p class="text-[15px] font-semibold text-slate-600">
-        취소 상세 정보를 불러오지 못했어요
-      </p>
-      <p class="mt-2 text-[12px] text-slate-400">
-        {{ reservationStore.cancellationDetailError }}
-      </p>
-      <button
-        type="button"
-        class="mt-5 rounded-lg border border-slate-300 px-4 py-2 text-[14px] font-semibold text-slate-700"
-        @click="fetchCancellationDetail"
-      >
-        다시 시도
-      </button>
+      <BaseErrorState
+        title="취소 상세 정보를 불러오지 못했어요"
+        :description="reservationStore.cancellationDetailError"
+        @retry="fetchCancellationDetail"
+      />
     </main>
 
     <main v-else-if="cancellation" class="flex-1 px-4 pb-8">

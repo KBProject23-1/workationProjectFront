@@ -8,6 +8,7 @@ import ReservationOccupancyModal from '@/components/reservation/ReservationOccup
 import AccommodationProductCard from '@/components/merchant/AccommodationProductCard.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import { useAccommodationStore } from '@/stores/merchant/accommodationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 
@@ -98,10 +99,7 @@ onMounted(async () => {
     </div>
 
     <LoadingScreen v-if="isLoading" title="숙소 정보를 불러오고 있어요" />
-    <div v-else-if="error" class="status-message error">
-      <p>{{ error }}</p>
-      <button type="button" @click="fetchAccommodation">다시 시도</button>
-    </div>
+    <BaseErrorState v-else-if="error" :title="error" @retry="fetchAccommodation" />
 
     <section class="hero-image" aria-label="객실 대표 이미지">
       <div class="hero-window"><span></span></div>
@@ -178,7 +176,6 @@ onMounted(async () => {
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
 .detail-page { min-height:min(871px,100vh); padding-bottom:16px; color:#111827; background:#fff; font-family:'SUIT Variable','SUIT',sans-serif; }
-.status-message { padding:24px 16px; margin:0; text-align:center; color:#8a96a5; font-size:14px; }.status-message.error { color:#e05252; }.status-message.error p { margin:0 0 12px; }.status-message.error button { height:40px; padding:0 20px; color:#3087ed; border:1.5px solid #3087ed; border-radius:12px; background:#fff; font-weight:800; }
 button { font:inherit; }
 .hero-image { position:relative; height:175px; margin:0 16px; overflow:hidden; border-radius:22px; background:#b4d3fb; }
 .hero-window { position:absolute; top:27px; left:26px; right:26px; height:104px; overflow:hidden; border-radius:11px; background:#edf4fd; }

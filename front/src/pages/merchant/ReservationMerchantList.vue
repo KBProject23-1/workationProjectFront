@@ -241,15 +241,8 @@
         <div v-for="n in 3" :key="n" class="h-28 animate-pulse rounded-xl bg-slate-100" />
       </div>
 
-      <div v-else-if="error" class="py-10 text-center">
-        <p class="text-[14px] text-slate-500">{{ error }}</p>
-        <button
-          type="button"
-          class="mt-4 rounded-lg border border-slate-300 px-4 py-2 text-[14px] font-semibold text-slate-700"
-          @click="merchantStore.fetchMerchants"
-        >
-          다시 시도
-        </button>
+      <div v-else-if="error" class="py-10">
+        <BaseErrorState :title="error" @retry="merchantStore.fetchMerchants" />
       </div>
 
       <template v-else>
@@ -317,6 +310,7 @@ import { storeToRefs } from 'pinia';
 import { ChevronDown } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationGuestModal from '@/components/reservation/ReservationGuestModal.vue';

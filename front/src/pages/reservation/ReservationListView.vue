@@ -5,6 +5,7 @@ import { useReservationStore } from '@/stores/reservationStore';
 import ReservationListItem from '@/components/reservation/ReservationListItem.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -133,16 +134,7 @@ onUnmounted(() => {
         v-else-if="reservationStore.error"
         class="flex flex-1 flex-col items-center justify-center px-6 pb-24 text-center"
       >
-        <p class="text-[14px] font-medium text-slate-500">
-          {{ activeTab.errorMessage }}
-        </p>
-        <button
-          type="button"
-          class="mt-4 rounded-lg border border-slate-300 px-4 py-2 text-[14px] font-semibold text-slate-700"
-          @click="retryFetch"
-        >
-          다시 시도
-        </button>
+        <BaseErrorState :title="activeTab.errorMessage" @retry="retryFetch" />
       </div>
 
       <div

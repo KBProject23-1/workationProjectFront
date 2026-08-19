@@ -17,17 +17,11 @@
       v-else-if="errorMessage"
       class="flex flex-1 flex-col items-center justify-center px-6 pb-24 text-center"
     >
-      <p class="text-[15px] font-semibold text-slate-600">
-        일정 정보를 불러오지 못했어요
-      </p>
-      <p class="mt-2 text-[12px] text-slate-400">{{ errorMessage }}</p>
-      <button
-        type="button"
-        class="mt-5 rounded-lg border border-slate-300 px-4 py-2 text-[14px] font-semibold text-slate-700"
-        @click="load"
-      >
-        다시 시도
-      </button>
+      <BaseErrorState
+        title="일정 정보를 불러오지 못했어요"
+        :description="errorMessage"
+        @retry="load"
+      />
     </main>
 
     <template v-else-if="detail">
@@ -180,6 +174,7 @@ import {
 } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import { useScheduleStore } from '@/stores/scheduleStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { getSchedules } from '@/api/schedule';

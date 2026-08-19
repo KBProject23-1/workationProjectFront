@@ -9,6 +9,7 @@ import TransactionSummary from '@/components/transaction/TransactionSummary.vue'
 import TransactionFilterModal from '@/components/transaction/TransactionFilterModal.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 
 const router = useRouter();
 const transactionStore = useTransactionStore();
@@ -113,17 +114,11 @@ onUnmounted(() => {
         "
         class="flex flex-1 flex-col items-center justify-center py-20 text-center"
       >
-        <p class="text-[14px] font-semibold text-gray-600">
-          거래내역을 불러오지 못했어요
-        </p>
-        <p class="mt-2 text-[12px] text-gray-500">잠시 후 다시 시도해주세요</p>
-        <button
-          type="button"
-          class="mt-5 rounded-lg border border-gray-300 px-4 py-2 text-[14px] font-semibold text-gray-700 active:scale-95 transition-transform"
-          @click="retryFetch"
-        >
-          다시 시도
-        </button>
+        <BaseErrorState
+          title="거래내역을 불러오지 못했어요"
+          description="잠시 후 다시 시도해주세요"
+          @retry="retryFetch"
+        />
       </div>
 
       <!-- 목록 -->

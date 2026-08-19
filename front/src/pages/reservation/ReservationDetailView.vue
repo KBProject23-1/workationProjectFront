@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import { useReservationStore } from '@/stores/reservationStore';
 
 const route = useRoute();
@@ -146,19 +147,11 @@ onMounted(fetchDetail);
       v-else-if="reservationStore.detailError"
       class="flex flex-1 flex-col items-center justify-center px-6 pb-24 text-center"
     >
-      <p class="text-[15px] font-semibold text-slate-600">
-        예약 상세 정보를 불러오지 못했어요
-      </p>
-      <p class="mt-2 text-[12px] text-slate-400">
-        {{ reservationStore.detailError }}
-      </p>
-      <button
-        type="button"
-        class="mt-5 rounded-lg border border-slate-300 px-4 py-2 text-[14px] font-semibold text-slate-700"
-        @click="fetchDetail"
-      >
-        다시 시도
-      </button>
+      <BaseErrorState
+        title="예약 상세 정보를 불러오지 못했어요"
+        :description="reservationStore.detailError"
+        @retry="fetchDetail"
+      />
     </main>
 
     <template v-else-if="detail">

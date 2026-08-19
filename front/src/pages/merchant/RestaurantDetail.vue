@@ -6,6 +6,7 @@ import { Heart, MapPin } from '@lucide/vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import MerchantReviewCard from '@/components/merchant/MerchantReviewCard.vue';
 import ScheduleRegistrationPanel from '@/components/schedule/ScheduleRegistrationPanel.vue';
 import { useScheduleRegistration } from '@/composables/useScheduleRegistration';
@@ -57,10 +58,7 @@ async function toggleBookmark() {
     </div>
 
     <LoadingScreen v-if="isLoading" title="음식점 정보를 불러오고 있어요" />
-    <div v-else-if="error" class="status-message error">
-      <p>{{ error }}</p>
-      <button type="button" @click="fetchRestaurant">다시 시도</button>
-    </div>
+    <BaseErrorState v-else-if="error" :title="error" @retry="fetchRestaurant" />
 
     <section
       v-if="!isLoading && !error"
@@ -137,7 +135,6 @@ async function toggleBookmark() {
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
 .restaurant-page { min-height:min(871px,100vh); padding-bottom:22px; color:#111827; background:#fff; font-family:'SUIT Variable','SUIT',sans-serif; } button { font:inherit; }
-.status-message { padding:24px 16px; margin:0; text-align:center; color:#8a96a5; font-size:14px; }.status-message.error { color:#e05252; }.status-message.error p { margin:0 0 12px; }.status-message.error button { height:40px; padding:0 20px; color:#3087ed; border:1.5px solid #3087ed; border-radius:12px; background:#fff; font-weight:800; }
 .hero-image { position:relative; height:175px; margin:0 16px 16px; overflow:hidden; border-radius:22px; background:#b4d3fb; }.restaurant-window { position:absolute; top:27px; left:26px; right:26px; height:104px; overflow:hidden; border-radius:11px; background:#edf4fd; }.restaurant-window::after { content:''; position:absolute; left:-15px; right:-15px; bottom:-14px; height:55px; border-radius:50% 50% 0 0; background:#b6d3f5; }.restaurant-window i { position:absolute; top:12px; right:39px; z-index:1; width:24px; height:24px; border-radius:50%; background:#ffd057; }.pasta { position:absolute; left:65px; bottom:64px; z-index:2; width:100px; height:35px; border:5px solid #df9854; border-radius:50%; background:#e7a654; }.pasta span,.pasta b,.pasta em { position:absolute; width:8px; height:8px; border-radius:50%; }.pasta span { top:7px; left:21px; background:#77ae67; }.pasta b { top:13px; left:45px; background:#e95d54; }.pasta em { top:4px; right:20px; background:#69ae67; }.table-item { position:absolute; right:106px; bottom:72px; width:58px; height:33px; border:9px solid #88776d; border-radius:7px; background:#e7ddd1; }
 .hero-image > img { width:100%; height:100%; object-fit:cover; }
 .bookmark-button:disabled { cursor:wait; opacity:.55; }
