@@ -21,6 +21,7 @@ const { showError } = useErrorToast();
 const dateModalMode = ref('');
 const isSpaceModalOpen = ref(false);
 const isGuestModalOpen = ref(false);
+const heroImageLoadFailed = ref(false);
 const selectedProductTypeLabel = computed(() => ({
   OFFICE_SEAT: '좌석',
   MEETING_ROOM: '회의실',
@@ -32,6 +33,7 @@ function displayDate(value) {
 }
 
 async function fetchOffice() {
+  heroImageLoadFailed.value = false;
   await officeStore.fetchOffice(Number(route.params.merchantId));
 }
 
@@ -108,9 +110,18 @@ onMounted(async () => {
     />
 
     <template v-if="!isLoading && !error">
-    <section class="hero-image" aria-label="공유오피스 대표 이미지">
-      <div class="office-wall"><i></i><i></i><i></i></div>
-      <div class="office-desk"><span></span><span></span></div>
+    <section class="hero-image">
+      <img
+        v-if="office.thumbnailUrl && !heroImageLoadFailed"
+        class="hero-thumbnail"
+        :src="office.thumbnailUrl"
+        :alt="`${office.name} 대표 이미지`"
+        @error="heroImageLoadFailed = true"
+      />
+      <div v-else class="hero-fallback" role="img" aria-label="공유오피스 기본 이미지">
+        <div class="office-wall"><i></i><i></i><i></i></div>
+        <div class="office-desk"><span></span><span></span></div>
+      </div>
     </section>
 
     <section class="merchant-section">
@@ -197,6 +208,8 @@ onMounted(async () => {
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
 .office-page { min-height:min(871px,100vh); padding-bottom:16px; color:#111827; background:#fff; font-family:'SUIT Variable','SUIT',sans-serif; } button { font:inherit; }
 .hero-image { position:relative; height:175px; margin:0 16px; overflow:hidden; border-radius:22px; background:#b4d3fb; }.office-wall { position:absolute; top:27px; left:25px; right:25px; height:105px; display:flex; align-items:flex-start; justify-content:space-around; padding-top:12px; border-radius:12px; background:#eef5ff; }.office-wall i { width:78px; height:52px; border-radius:6px; background:#dfedff; }.office-wall i:nth-child(2)::after { content:''; display:block; width:25px; height:25px; margin:9px auto; border-radius:50%; background:#ffd057; }.office-desk { position:absolute; left:58px; right:58px; bottom:43px; height:17px; border-radius:10px; background:#987f72; }.office-desk::before,.office-desk::after { content:''; position:absolute; top:16px; width:14px; height:29px; border-radius:6px; background:#856d62; }.office-desk::before { left:15px; }.office-desk::after { right:15px; }.office-desk span { position:absolute; bottom:14px; width:49px; height:12px; border-radius:7px; background:#e9b964; }.office-desk span:first-child { left:31px; }.office-desk span:last-child { right:31px; }
+.hero-thumbnail,.hero-fallback { width:100%; height:100%; display:block; }.hero-thumbnail { object-fit:cover; }
+.hero-fallback { position:relative; }
 .merchant-section { position:relative; padding:10px 17px 8px; }.merchant-section h2 { margin:0 42px 8px 0; font-size:22px; }.merchant-section p { margin:0; }.bookmark-button { position:absolute; top:17px; right:18px; padding:0; color:#88a0bf; border:0; background:transparent; cursor:pointer; transition:color .16s ease,transform .16s ease; }.bookmark-button:hover { color:#3087ed; transform:scale(1.1); }.bookmark-button.bookmarked { color:#3087ed; }.bookmark-button:disabled { cursor:wait; opacity:.55; }.address { display:flex; align-items:center; gap:4px; color:#8592a2; font-size:12px; }.rating-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; }.rating { font-size:16px; font-weight:800; }.rating span { color:#ff8a00; }.rating b { color:#7b8794; }.review-button { flex:none; padding:5px 10px; border:1px solid #3087ed; border-radius:999px; color:#3087ed; background:#fff; font-size:12px; font-weight:800; }
 .office-info { margin:4px 16px 13px; padding:12px 14px; border:1.5px solid #dbe3ee; border-radius:16px; background:#f8fbff; }.office-info strong { font-size:12px; }.office-info p { margin:5px 0 8px; color:#7b8794; font-size:12px; }.office-info div { display:flex; align-items:center; gap:6px; color:#7b8794; font-size:12px; }
 h3 { margin:0 0 10px; font-size:16px; }.condition-section,.usage-section,.product-section { padding:0 16px; }.conditions { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }.conditions button,.conditions > div { height:75px; display:flex; flex-direction:column; justify-content:center; padding:9px 12px; text-align:left; color:#111827; border:1.5px solid #dbe3ee; border-radius:16px; background:#fff; }.conditions small { margin-bottom:9px; color:#8a96a5; font-size:12px; white-space:nowrap; }.conditions strong { font-size:16px; white-space:nowrap; }
