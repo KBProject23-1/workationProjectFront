@@ -2,7 +2,8 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import QRCode from 'qrcode';
-import { ChevronLeft, RotateCw, QrCode as QrIcon } from '@lucide/vue';
+import { RotateCw, QrCode as QrIcon } from '@lucide/vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 
 const router = useRouter();
 const qrCodeUrl = ref('');
@@ -60,20 +61,11 @@ onUnmounted(() => {
 
 <template>
   <div
-    class="flex flex-col items-center w-full min-h-screen px-5 py-5 bg-gray-50 text-center"
+    class="flex flex-col items-center w-full min-h-screen px-5 pt-4 pb-5 bg-gray-50 text-center"
   >
     <!-- 상단 헤더 -->
-    <div class="w-full flex items-center justify-between mb-6">
-      <button
-        type="button"
-        class="p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-200/60 transition-colors"
-        @click="router.back()"
-      >
-        <ChevronLeft :size="24" />
-      </button>
-      <h1 class="text-[18px] font-bold text-gray-900">결제 QR</h1>
-      <!-- 좌우 대칭용 더미 영역: 뒤로가기 버튼의 실제 점유 폭(아이콘 24px + padding 8px - 음수 마진 4px = 28px)과 맞춤 -->
-      <div class="w-[28px]"></div>
+    <div class="w-full mb-6">
+      <BaseHeader title="결제 QR" @back="router.back()" />
     </div>
 
     <!-- 안내 텍스트 -->

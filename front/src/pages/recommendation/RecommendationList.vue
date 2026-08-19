@@ -1,7 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ChevronLeft } from '@lucide/vue';
 import { useRecommendationStore } from '@/stores/recommendationStore';
 import {
   MEAL_TYPES,
@@ -10,7 +9,9 @@ import {
 import RecommendationListItem from '@/components/recommendation/RecommendationListItem.vue';
 import RecommendationReferenceModal from '@/components/recommendation/RecommendationReferenceModal.vue';
 import { useErrorToast } from '@/composables/useErrorToast';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -170,13 +171,12 @@ function moveNext() {
 
 <template>
   <main v-if="category" class="recommendation-list-page">
-    <header class="list-header">
-      <button type="button" aria-label="뒤로 가기" @click="goBack">
-        <ChevronLeft :size="32" />
-      </button>
-      <h1>{{ category.pageTitle }}</h1>
-      <span></span>
-    </header>
+    <div class="-mx-[26px] px-5 pt-4 mb-4">
+      <BaseHeader
+        :title="category.pageTitle"
+        @back="goBack"
+      />
+    </div>
 
     <nav v-if="isRestaurant" class="meal-tabs" aria-label="식사 시간대">
       <button
@@ -202,12 +202,10 @@ function moveNext() {
       >
         {{ category.title }} 추천을 불러오고 있습니다.
       </p>
-      <p
+      <BaseEmptyState
         v-else-if="!recommendationItems.length"
-        class="result-status"
-      >
-        추천할 수 있는 {{ category.title }}이(가) 없습니다.
-      </p>
+        :title="`추천할 수 있는 ${category.title}이(가) 없습니다.`"
+      />
       <RecommendationListItem
         v-for="(item, index) in recommendationItems"
         :key="item.merchantId"
@@ -240,13 +238,14 @@ function moveNext() {
       </button>
     </section>
 
-    <Button
+    <BaseButton
       v-if="recommendationStore.mode === 'flow'"
+      variant="default"
       class="mt-5 h-12 w-full rounded-xl text-base"
       @click="moveNext"
     >
       {{ isLastCategory ? '추천 완료' : '다음 추천 보기' }}
-    </Button>
+    </BaseButton>
 
     <RecommendationReferenceModal
       :open="isReferenceModalOpen"
@@ -262,37 +261,11 @@ function moveNext() {
 <style scoped>
 .recommendation-list-page {
   width: 100%;
-  max-width: 402px;
   min-height: 100dvh;
-  margin: 0 auto;
-  padding: 50px 26px 30px;
+  padding: 0 26px 30px;
   background: #ffffff;
   color: #12213b;
   font-family: 'SUIT', 'Pretendard Variable', sans-serif;
-}
-
-.list-header {
-  display: grid;
-  grid-template-columns: 40px 1fr 40px;
-  align-items: center;
-  height: 50px;
-}
-
-.list-header button {
-  display: flex;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #0c1118;
-}
-
-.list-header h1 {
-  margin: 0;
-  color: #0c1118;
-  font-size: 22px;
-  font-weight: 800;
-  text-align: center;
-  letter-spacing: -0.5px;
 }
 
 .meal-tabs {
@@ -378,10 +351,6 @@ function moveNext() {
 }
 
 @media (max-height: 820px) {
-  .recommendation-list-page {
-    padding-top: 36px;
-  }
-
   .result-card {
     min-height: 96px;
   }

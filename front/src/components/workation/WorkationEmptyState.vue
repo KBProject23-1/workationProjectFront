@@ -10,17 +10,18 @@
       자동으로 관리해 드려요
     </p>
 
-    <Button
+    <BaseButton
+      variant="default"
       class="mt-6 h-12 w-full rounded-xl text-base"
       @click="$emit('register')"
     >
       워케이션 등록하기
-    </Button>
+    </BaseButton>
   </div>
 </template>
 
 <script setup>
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
 
 defineEmits(['register']);
 </script>

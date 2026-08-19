@@ -1,15 +1,11 @@
 <template>
   <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
-    <header class="relative mb-4 flex items-center justify-center">
-      <button
-        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-        aria-label="뒤로 가기"
-        @click="goBack"
-      >
-        <ChevronLeft class="h-7 w-7" />
-      </button>
-      <h1 class="text-base font-bold text-slate-900">나의 워케이션 스타일</h1>
-    </header>
+    <div class="mb-4">
+      <BaseHeader
+        title="나의 워케이션 스타일"
+        @back="goBack"
+      />
+    </div>
 
     <!--
       첫 등록에서만 단계를 센다.
@@ -27,20 +23,13 @@
       답변을 바탕으로 숙소와 공유오피스를 추천해 드려요
     </p>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
-      불러오는 중...
-    </p>
+    <LoadingScreen v-if="loading" title="설문을 불러오고 있어요" :fullscreen="false" />
 
     <p v-else-if="errorMessage" class="py-20 text-center text-sm text-red-500">
       {{ errorMessage }}
     </p>
 
-    <p
-      v-else-if="questions.length === 0"
-      class="py-20 text-center text-sm text-slate-400"
-    >
-      등록된 설문 문항이 없어요
-    </p>
+    <BaseEmptyState v-else-if="questions.length === 0" title="등록된 설문 문항이 없어요" />
 
     <!-- 문항 4개를 한 화면에 모두 놓고 스크롤로 내려본다 -->
     <div v-else class="mt-6 flex-1 space-y-10">
@@ -58,14 +47,15 @@
       </div>
     </div>
 
-    <Button
+    <BaseButton
       v-if="!loading && questions.length > 0"
+      variant="default"
       class="mt-8 h-12 w-full rounded-xl text-base"
       :disabled="submitting"
       @click="submit"
     >
       {{ submitLabel }}
-    </Button>
+    </BaseButton>
 
     <p
       v-if="unansweredCount > 0 && !loading"
@@ -89,10 +79,12 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { ChevronLeft } from '@lucide/vue';
-import { Button } from '@/components/ui/button';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { useSurveyStore } from '@/stores/surveyStore';
 import { useWorkationStore } from '@/stores/workationStore';
+import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 import { useErrorToast } from '@/composables/useErrorToast';
 import SurveyQuestionBlock from '@/components/survey/SurveyQuestionBlock.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';

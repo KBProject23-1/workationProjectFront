@@ -1,9 +1,10 @@
 <script setup>
 import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ChevronLeft } from '@lucide/vue';
 import ReservationCancellationSummary from '@/components/reservation/ReservationCancellationSummary.vue';
 import { useReservationStore } from '@/stores/reservationStore';
+import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -60,17 +61,13 @@ onMounted(fetchCancellationDetail);
 
 <template>
   <div class="flex min-h-screen w-full flex-col bg-white">
-    <header class="relative flex h-14 shrink-0 items-center justify-center px-4">
-      <button
-        type="button"
-        class="absolute left-3 rounded-full p-1 text-slate-700 active:bg-slate-100"
-        aria-label="취소 내역으로 돌아가기"
-        @click="goToCancellationList"
-      >
-        <ChevronLeft :size="24" :stroke-width="1.8" />
-      </button>
-      <h1 class="text-[19px] font-extrabold text-slate-900">예약 내역 상세</h1>
-    </header>
+    <div class="px-5 pt-4">
+      <BaseHeader
+        title="예약 내역 상세"
+        back-label="취소 내역으로 돌아가기"
+        @back="goToCancellationList"
+      />
+    </div>
 
     <main
       v-if="reservationStore.isCancellationDetailLoading"
@@ -86,19 +83,11 @@ onMounted(fetchCancellationDetail);
       v-else-if="reservationStore.cancellationDetailError"
       class="flex flex-1 flex-col items-center justify-center px-6 pb-24 text-center"
     >
-      <p class="text-[15px] font-semibold text-slate-600">
-        취소 상세 정보를 불러오지 못했어요
-      </p>
-      <p class="mt-2 text-[12px] text-slate-400">
-        {{ reservationStore.cancellationDetailError }}
-      </p>
-      <button
-        type="button"
-        class="mt-5 rounded-lg border border-slate-300 px-4 py-2 text-[14px] font-semibold text-slate-700"
-        @click="fetchCancellationDetail"
-      >
-        다시 시도
-      </button>
+      <BaseErrorState
+        title="취소 상세 정보를 불러오지 못했어요"
+        :description="reservationStore.cancellationDetailError"
+        @retry="fetchCancellationDetail"
+      />
     </main>
 
     <main v-else-if="cancellation" class="flex-1 px-4 pb-8">

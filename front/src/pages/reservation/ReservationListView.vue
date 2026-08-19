@@ -1,9 +1,11 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ChevronLeft } from '@lucide/vue';
 import { useReservationStore } from '@/stores/reservationStore';
 import ReservationListItem from '@/components/reservation/ReservationListItem.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -89,16 +91,11 @@ onUnmounted(() => {
 <template>
   <div class="flex min-h-screen w-full flex-col bg-white pb-8">
     <header class="sticky top-0 z-10 bg-white">
-      <div class="relative flex h-14 items-center justify-center px-4">
-        <button
-          type="button"
-          class="absolute left-3 rounded-full p-1 text-slate-700 active:bg-slate-100"
-          aria-label="뒤로 가기"
-          @click="goBack"
-        >
-          <ChevronLeft :size="24" :stroke-width="1.8" />
-        </button>
-        <h1 class="text-[20px] font-extrabold text-slate-900">예약 내역</h1>
+      <div class="px-5 pt-4">
+        <BaseHeader
+          title="예약 내역"
+          @back="goBack"
+        />
       </div>
 
       <div class="grid h-[50px] grid-cols-2 border-b border-slate-200 px-4">
@@ -137,23 +134,14 @@ onUnmounted(() => {
         v-else-if="reservationStore.error"
         class="flex flex-1 flex-col items-center justify-center px-6 pb-24 text-center"
       >
-        <p class="text-[14px] font-medium text-slate-500">
-          {{ activeTab.errorMessage }}
-        </p>
-        <button
-          type="button"
-          class="mt-4 rounded-lg border border-slate-300 px-4 py-2 text-[14px] font-semibold text-slate-700"
-          @click="retryFetch"
-        >
-          다시 시도
-        </button>
+        <BaseErrorState :title="activeTab.errorMessage" @retry="retryFetch" />
       </div>
 
       <div
         v-else-if="reservationStore.reservations.length === 0"
-        class="flex flex-1 items-center justify-center pb-24 text-[14px] text-slate-400"
+        class="flex flex-1 items-center justify-center pb-24"
       >
-        {{ activeTab.emptyMessage }}
+        <BaseEmptyState :title="activeTab.emptyMessage" />
       </div>
 
       <template v-else>

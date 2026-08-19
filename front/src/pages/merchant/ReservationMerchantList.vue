@@ -1,16 +1,11 @@
 <template>
   <div class="flex min-h-screen w-full flex-col bg-white">
-    <header class="relative flex h-14 shrink-0 items-center justify-center px-4">
-      <button
-        type="button"
-        class="absolute left-3 rounded-full p-1 text-slate-700 active:bg-slate-100"
-        aria-label="뒤로 가기"
-        @click="goBack"
-      >
-        <ChevronLeft :size="24" :stroke-width="1.8" />
-      </button>
-      <h1 class="text-[19px] font-extrabold text-slate-900">예약 · 추천</h1>
-    </header>
+    <div class="px-5 pt-4">
+      <BaseHeader
+        title="예약 · 추천"
+        @back="goBack"
+      />
+    </div>
 
     <main class="px-4 pb-4">
       <!-- 예약 유형. 탭마다 아래 필터가 통째로 바뀐다 -->
@@ -246,16 +241,12 @@
         <div v-for="n in 3" :key="n" class="h-28 animate-pulse rounded-xl bg-slate-100" />
       </div>
 
-      <div v-else-if="error" class="py-10 text-center">
-        <p class="text-[14px] text-slate-500">{{ error }}</p>
-        <button
-          type="button"
-          class="mt-4 rounded-lg border border-slate-300 px-4 py-2 text-[14px] font-semibold text-slate-700"
-          @click="merchantStore.fetchMerchants"
-        >
-          다시 시도
-        </button>
-      </div>
+      <BaseErrorState
+        v-else-if="error"
+        class="py-10"
+        :title="error"
+        @retry="merchantStore.fetchMerchants"
+      />
 
       <template v-else>
         <div class="flex flex-col gap-3">
@@ -268,9 +259,7 @@
           />
         </div>
 
-        <p v-if="merchants.length === 0" class="py-12 text-center text-[14px] text-slate-400">
-          조건에 맞는 검색 결과가 없습니다.
-        </p>
+        <BaseEmptyState v-if="merchants.length === 0" title="조건에 맞는 검색 결과가 없습니다." />
 
         <button
           v-if="hasNext"
@@ -321,8 +310,11 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { ChevronDown, ChevronLeft } from '@lucide/vue';
+import { ChevronDown } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationGuestModal from '@/components/reservation/ReservationGuestModal.vue';
 import ReservationOccupancyModal from '@/components/reservation/ReservationOccupancyModal.vue';

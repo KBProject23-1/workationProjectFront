@@ -6,6 +6,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { useReviewStore } from '@/stores/reviewStore';
 import AtmosphereTagSelector from '@/components/review/AtmosphereTagSelector.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -48,15 +51,15 @@ async function confirmDelete() {
 
 <template>
   <main class="detail-page">
-    <header class="page-header">
-      <button type="button" aria-label="뒤로 가기" @click="router.back()">
-        ‹
-      </button>
-      <h1>리뷰 상세보기</h1><span aria-hidden="true"></span>
-    </header>
+    <div class="-mx-[29px] px-5 pt-4 mb-4">
+      <BaseHeader
+        title="리뷰 상세보기"
+        @back="router.back()"
+      />
+    </div>
 
-    <p v-if="isDetailLoading" class="status-message">리뷰를 불러오고 있어요.</p>
-    <p v-else-if="detailError" class="status-message">{{ detailError }}</p>
+    <LoadingScreen v-if="isDetailLoading" title="리뷰를 불러오고 있어요" />
+    <BaseErrorState v-else-if="detailError" :title="detailError" @retry="reviewStore.fetchReviewDetails(reviewId)" />
 
     <div v-else-if="reviewDetail" class="review-content">
       <section class="merchant-summary" aria-label="가맹점 정보">
@@ -126,11 +129,8 @@ async function confirmDelete() {
 
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
-.detail-page { width:min(402px,100%); min-height:871px; margin:0 auto; padding:0 29px 50px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
+.detail-page { min-height:871px; padding:0 29px 50px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
 button { font:inherit; }
-.page-header { position:relative; height:50px; display:flex; align-items:center; justify-content:center; }
-.page-header button { position:absolute; left:0; width:36px; height:32px; padding:0; color:#172033; border:0; background:transparent; font-size:40px; line-height:1; cursor:pointer; }
-.page-header h1 { margin:0; text-align:center; font-size:18px; font-weight:800; }
 .review-content { display:flex; flex-direction:column; }
 .merchant-summary { display:flex; align-items:flex-start; gap:14px; }
 .room-image { position:relative; width:96px; height:94px; flex:none; overflow:hidden; border-radius:8px; background:#b99573; }

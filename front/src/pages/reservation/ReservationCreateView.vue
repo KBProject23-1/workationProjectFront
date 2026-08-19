@@ -2,9 +2,10 @@
 import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { ChevronLeft, ChevronRight, CreditCard, WalletCards } from '@lucide/vue';
+import { ChevronRight, CreditCard, WalletCards } from '@lucide/vue';
 import { toast } from 'vue-sonner';
 import BaseButton from '@/components/common/BaseButton.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
 import ReservationPaymentMethodModal from '@/components/reservation/ReservationPaymentMethodModal.vue';
 import ReservationPinModal from '@/components/reservation/ReservationPinModal.vue';
 import { useAccommodationStore } from '@/stores/merchant/accommodationStore';
@@ -275,16 +276,12 @@ onMounted(initialize);
 </script>
 
 <template>
-  <div class="mx-auto flex min-h-screen w-full max-w-[402px] flex-col bg-white text-slate-900">
-    <header class="flex h-16 shrink-0 items-center px-3">
-      <button type="button" class="rounded-full p-2 active:bg-slate-100" aria-label="뒤로 가기" @click="router.back()">
-        <ChevronLeft :size="26" />
-      </button>
-    </header>
+  <div class="flex min-h-screen w-full flex-col bg-white text-slate-900">
+    <div class="px-5 pt-4">
+      <BaseHeader title="예약 정보 확인" @back="router.back()" />
+    </div>
 
     <main class="flex-1 px-4 pb-5">
-      <h1 class="mb-6 text-[24px] font-extrabold">예약 정보 확인</h1>
-
       <div v-if="isInitializing" class="space-y-4">
         <div class="h-24 animate-pulse rounded-xl bg-slate-100"></div>
         <div class="h-56 animate-pulse rounded-xl bg-slate-100"></div>

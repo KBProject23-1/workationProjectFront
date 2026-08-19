@@ -3,10 +3,13 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { useCardStore } from '@/stores/cardStore';
-import { ChevronLeft, SlidersHorizontal } from '@lucide/vue';
+import { SlidersHorizontal } from '@lucide/vue';
 import TransactionListItem from '@/components/transaction/TransactionListItem.vue';
 import TransactionSummary from '@/components/transaction/TransactionSummary.vue';
 import TransactionFilterModal from '@/components/transaction/TransactionFilterModal.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
+import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
+import BaseErrorState from '@/components/common/BaseErrorState.vue';
 
 const router = useRouter();
 const transactionStore = useTransactionStore();
@@ -66,17 +69,18 @@ onUnmounted(() => {
 
 <template>
   <main class="flex flex-col items-center w-full min-h-screen bg-white">
-    <div class="sticky top-0 z-10 w-full bg-white px-5 pt-6 pb-3">
-      <div class="w-full flex items-center justify-between mb-4">
-        <div class="flex items-center">
-          <button type="button" aria-label="뒤로 가기" @click="goToWallet">
-            <ChevronLeft :size="24" />
-          </button>
-          <h1 class="text-xl font-bold ml-2">거래내역</h1>
-        </div>
-        <button type="button" aria-label="필터" @click="isFilterOpen = true">
-          <SlidersHorizontal :size="20" class="text-gray-500" />
-        </button>
+    <div class="sticky top-0 z-10 w-full bg-white px-5 pt-4 pb-3">
+      <div class="w-full mb-4">
+        <BaseHeader
+          title="거래내역"
+          @back="goToWallet"
+        >
+          <template #right>
+            <button type="button" aria-label="필터" @click="isFilterOpen = true">
+              <SlidersHorizontal :size="20" class="text-gray-500" />
+            </button>
+          </template>
+        </BaseHeader>
       </div>
 
       <TransactionSummary
@@ -110,17 +114,11 @@ onUnmounted(() => {
         "
         class="flex flex-1 flex-col items-center justify-center py-20 text-center"
       >
-        <p class="text-[14px] font-semibold text-gray-600">
-          거래내역을 불러오지 못했어요
-        </p>
-        <p class="mt-2 text-[12px] text-gray-500">잠시 후 다시 시도해주세요</p>
-        <button
-          type="button"
-          class="mt-5 rounded-lg border border-gray-300 px-4 py-2 text-[14px] font-semibold text-gray-700 active:scale-95 transition-transform"
-          @click="retryFetch"
-        >
-          다시 시도
-        </button>
+        <BaseErrorState
+          title="거래내역을 불러오지 못했어요"
+          description="잠시 후 다시 시도해주세요"
+          @retry="retryFetch"
+        />
       </div>
 
       <!-- 목록 -->
@@ -131,12 +129,10 @@ onUnmounted(() => {
           :transaction="transaction"
           @select="goToDetail"
         />
-        <p
+        <BaseEmptyState
           v-if="transactionStore.transactions.length === 0"
-          class="text-[14px] text-gray-500 text-center mt-8"
-        >
-          이번 달 거래내역이 없어요
-        </p>
+          title="이번 달 거래내역이 없어요"
+        />
       </template>
 
       <!-- sentinel 은 항상 렌더해 옵저버 부착이 깨지지 않도록 유지 -->

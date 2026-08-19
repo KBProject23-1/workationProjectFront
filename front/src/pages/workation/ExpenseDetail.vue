@@ -1,19 +1,13 @@
 <template>
-  <div class="min-h-screen bg-white px-5 pt-4 pb-8">
-    <header class="relative mb-4 flex items-center justify-center">
-      <button
-        class="absolute left-0 -ml-2 flex h-11 w-11 items-center justify-center text-slate-900"
-        aria-label="뒤로 가기"
-        @click="goBack"
-      >
-        <ChevronLeft class="h-7 w-7" />
-      </button>
-      <h1 class="text-base font-bold text-slate-900">사용내역 상세</h1>
-    </header>
+  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
+    <div class="mb-4">
+      <BaseHeader
+        title="사용내역 상세"
+        @back="goBack"
+      />
+    </div>
 
-    <p v-if="loading" class="py-20 text-center text-sm text-slate-400">
-      불러오는 중...
-    </p>
+    <LoadingScreen v-if="loading" title="사용내역을 불러오고 있어요" :fullscreen="false" />
 
     <template v-else-if="detail">
       <div class="flex items-start justify-between">
@@ -113,14 +107,15 @@
         이게 없으면 카테고리를 바꾸지 않는 한 확정할 방법이 없어
         뒤로 나가도 계속 "확인 필요" 로 남는다.
       -->
-      <Button
+      <BaseButton
         v-if="showConfirm"
+        variant="default"
         class="mt-8 h-12 w-full rounded-xl text-base"
         :disabled="confirming"
         @click="confirmAndClose"
       >
         {{ confirming ? '처리 중...' : '확인 완료' }}
-      </Button>
+      </BaseButton>
 
       <p v-if="showConfirm" class="mt-2 text-center text-xs text-slate-400">
         {{
@@ -132,21 +127,21 @@
 
       <!-- 수기 등록 건만 금액·일시를 고칠 수 있다 -->
       <div v-if="isManual" class="mt-4 flex gap-2">
-        <Button
+        <BaseButton
           variant="outline"
           class="h-12 flex-1 rounded-xl text-base text-red-500 hover:text-red-600"
           :disabled="removing"
           @click="confirmOpen = true"
         >
           삭제하기
-        </Button>
-        <Button
+        </BaseButton>
+        <BaseButton
           variant="outline"
           class="h-12 flex-1 rounded-xl text-base"
           @click="goEdit"
         >
           수정하기
-        </Button>
+        </BaseButton>
       </div>
 
       <p
@@ -188,8 +183,10 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ChevronDown, ChevronLeft } from '@lucide/vue';
-import { Button } from '@/components/ui/button';
+import { ChevronDown } from '@lucide/vue';
+import BaseButton from '@/components/common/BaseButton.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
+import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import { storeToRefs } from 'pinia';
 import { useExpenseStore } from '@/stores/expenseStore';
 import { useCategoryStore } from '@/stores/categoryStore';
