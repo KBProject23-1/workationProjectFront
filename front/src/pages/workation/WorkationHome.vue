@@ -111,9 +111,17 @@
       </div>
     </template>
 
-    <WorkationEmptyState v-else @register="goCreate" />
-
-<!-- 지난 워케이션 정산기록은 내 정보 > 워케이션 정산기록 보기 에서 본다 -->
+    <WorkationEmptyState
+      v-else
+      :regions="sortedRegions"
+      :merchants="popularMerchants"
+      :bookmarks="bookmarks"
+      :last-record="lastRecord"
+      @register="goCreate"
+      @region="goRegionDetail"
+      @records="goRecords"
+      @record-detail="goRecordDetail"
+    />
 
     <!-- ① 삭제 확인 -->
     <BaseConfirmModal
@@ -155,7 +163,10 @@ import {
   DEFAULT_DAYS,
   EXPANDED_DAYS,
 } from '@/stores/scheduleStore';
+import { getBookmarks } from '@/api/bookmark';
+import { fetchPopularPlaces } from '@/components/workation/popularPlaces';
 import { reservationSummaryText } from '@/components/workation/format';
+import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import WorkationProgressCard from '@/components/workation/WorkationProgressCard.vue';
 import WorkationScheduler from '@/components/workation/WorkationScheduler.vue';
 import UncheckedExpenseAlert from '@/components/workation/UncheckedExpenseAlert.vue';
@@ -171,6 +182,8 @@ const settlementStore = useSettlementStore();
 const surveyStore = useSurveyStore();
 const scheduleStore = useScheduleStore();
 const { showError } = useErrorToast();
+// 지난 워케이션 지출을 법인 / 업무 중 무엇으로 부를지 정한다
+const { ensureCards } = useBudgetTypeLabel();
 const { current, error: errorMessage } = storeToRefs(workationStore);
 
 const loading = ref(true);
@@ -217,10 +230,42 @@ const goScheduleItem = (item) => {
   );
 };
 
+// 진행 중 워케이션이 없을 때만 쓰는 자료.
+// 있을 때는 화면에 나오지 않으므로 아예 받지 않는다
+const popularMerchants = ref([]);
+const bookmarks = ref([]);
+
+const sortedRegions = computed(() => workationStore.sortedRegions);
+
+// 가장 최근에 정산을 마친 워케이션 하나. 이 값의 유무로 처음인지 재방문인지 가른다
+const lastRecord = computed(() => workationStore.records[0] ?? null);
+
+const loadEmptyHome = async () => {
+  // 하나가 실패해도 나머지는 보여준다
+  await Promise.all([
+    workationStore.fetchRegions().catch(() => {}),
+    workationStore.fetchRecords(0, 1),
+    ensureCards().catch(() => {}),
+    fetchPopularPlaces({ size: 10 }).then((places) => {
+      popularMerchants.value = places;
+    }),
+    getBookmarks({ size: '10' })
+      .then(({ data }) => {
+        bookmarks.value = data?.content ?? [];
+      })
+      .catch(() => {}),
+  ]);
+};
+
 onMounted(async () => {
-  // 정산기록은 홈에서 보여주지 않으므로 여기서 받지 않는다
   await workationStore.fetchCurrent();
-  await loadSetupState();
+
+  if (workationStore.hasActive) {
+    await loadSetupState();
+  } else {
+    await loadEmptyHome();
+  }
+
   loading.value = false;
 });
 
@@ -278,6 +323,20 @@ const goProfile = () => {
 
 const goCreate = () => {
   router.push('/workation/create');
+};
+
+// 지자체 지원 제도 안내. 여기서 등록 화면으로 이어진다
+const goRegionDetail = (regionId) => {
+  router.push(`/workation/regions/${regionId}`);
+};
+
+const goRecords = () => {
+  router.push('/workation/records');
+};
+
+// 정산을 마친 워케이션의 상세는 정산 화면이다. 목록에서 들어가는 곳과 같다
+const goRecordDetail = (workationId) => {
+  router.push(`/workation/${workationId}/settlement`);
 };
 
 const goEdit = () => {

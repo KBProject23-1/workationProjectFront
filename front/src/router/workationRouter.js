@@ -16,6 +16,13 @@ export default [
     name: 'SettlementRecordList',
     component: () => import('@/pages/workation/SettlementRecordList.vue'),
   },
+  // 지자체 워케이션 지원 제도 안내.
+  // 고정 경로라 :workationId 를 쓰는 라우트들보다 위에 둔다
+  {
+    path: '/workation/regions/:regionId',
+    name: 'RegionDetail',
+    component: () => import('@/pages/workation/RegionDetail.vue'),
+  },
   {
     path: '/workation/:workationId/edit',
     name: 'WorkationEdit',

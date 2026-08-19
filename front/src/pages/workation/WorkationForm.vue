@@ -367,6 +367,17 @@ const errors = reactive({
 const loadRegions = async () => {
   try {
     await workationStore.fetchRegions();
+
+    // 지역 상세에서 넘어오면 그 지역을 골라 둔 채로 연다.
+    // 목록을 받은 뒤에 맞춰야 없는 지역 번호가 들어와도 걸러진다
+    const preset = Number(route.query.regionId);
+    if (
+      !isEdit &&
+      preset &&
+      workationStore.regions.some((region) => region.id === preset)
+    ) {
+      form.regionId = preset;
+    }
   } catch (error) {
     showError(error, '지역 목록을 불러오지 못했습니다.');
   }

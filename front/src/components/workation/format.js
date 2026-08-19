@@ -4,6 +4,19 @@ export const won = (value) => {
   return Number(value).toLocaleString('ko-KR') + '원';
 };
 
+// 좁은 카드에 넣으려고 만원 단위로 줄여 쓴다.
+// 95000 -> 9.5만원, 8000 -> 8,000원
+export const shortWon = (value) => {
+  if (value === null || value === undefined) return '';
+  const amount = Number(value);
+  if (Number.isNaN(amount)) return '';
+  if (amount < 10000) return `${amount.toLocaleString('ko-KR')}원`;
+
+  const man = amount / 10000;
+  const text = Number.isInteger(man) ? String(man) : man.toFixed(1);
+  return `${text}만원`;
+};
+
 // 2026-07-01 -> 2026.07.01
 export const dotDate = (value) => {
   if (!value) return '';
