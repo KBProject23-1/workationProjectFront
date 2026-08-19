@@ -18,7 +18,7 @@
           {{
             showAll
               ? '개인 지출 전체예요. 청구할 것만 골라 주세요'
-              : '숙박비·교통비·통신비는 보통 회사가 부담해요'
+              : '업무 중 쓴 식비·교통비는 회사가 부담하기도 해요'
           }}
         </p>
       </div>
@@ -95,8 +95,17 @@ import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import { dotDate, won } from './format';
 
 // 실비 정산이 되는 항목. 개인카드로 냈어도 회사가 부담하는 게 일반적이다.
-// 식비는 회사 정책에 따라 갈려서 기본 추천에 넣지 않는다. 전체 보기에서 고를 수 있다
-const CLAIMABLE_CODES = ['ACCOMMODATION', 'TRANSPORTATION', 'COMMUNICATION'];
+//
+// 식비는 회사 정책에 따라 갈리지만 추천에 넣는다.
+// 숙소·공유오피스 결제가 유입 단계에서 이미 업무로 분류되면서
+// 개인에 남는 것이 대부분 식비와 여가비뿐이라, 식비를 빼면 추천이 통째로 빈다.
+// 여가비는 업무로 볼 여지가 없어 전체 보기에서만 고른다
+const CLAIMABLE_CODES = [
+  'ACCOMMODATION',
+  'TRANSPORTATION',
+  'COMMUNICATION',
+  'FOOD',
+];
 
 const props = defineProps({
   workationId: { type: [String, Number], required: true },
@@ -143,6 +152,12 @@ const load = async () => {
       size: 100,
     });
     rows.value = [...list];
+
+    // 추천이 하나도 없는데 개인 지출은 있으면 빈 목록만 보인다.
+    // 그때는 전체를 펼쳐 고를 수 있게 한다
+    if (rows.value.length > 0 && recommended.value.length === 0) {
+      showAll.value = true;
+    }
   } catch (error) {
     showError(error, '개인 지출을 불러오지 못했습니다.');
   }
