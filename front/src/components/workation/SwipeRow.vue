@@ -29,8 +29,10 @@ const onWheel = (event) => {
   const max = element.scrollWidth - element.clientWidth;
   if (max <= 0) return;
 
-  const next = element.scrollLeft + event.deltaY;
-  if (next < 0 || next > max) return;
+  // 한 번에 굴린 양이 남은 거리보다 크면 끝까지 붙인다.
+  // 그냥 무시하면 마지막 카드에 영영 닿지 못한다
+  const next = Math.min(Math.max(element.scrollLeft + event.deltaY, 0), max);
+  if (next === element.scrollLeft) return;
 
   event.preventDefault();
   element.scrollLeft = next;

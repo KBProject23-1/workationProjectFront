@@ -33,7 +33,6 @@ const PROGRAMS = {
     summary: [
       '섬 곳곳에 오피스와 숙소가 흩어져 있습니다.',
       '한 달 단위로 길게 잡기 좋습니다.',
-      '결제 내역이 그대로 지원금 증빙이 됩니다.',
     ],
     highlights: [
       { label: '지원 한도', value: '1박 최대 5만원 · 총 30만원' },
@@ -41,14 +40,14 @@ const PROGRAMS = {
       { label: '정산 기준', value: '숙박일이 아닌 오피스 이용일' },
     ],
     notes: [
-      '먼저 본인 비용으로 결제하고, 이용을 마친 뒤 지출 증빙과 근무 기록을 제출합니다.',
+      '먼저 본인 비용으로 결제하고, 이용을 마친 뒤 지출 및 정산 기록을 제출합니다.',
       '숙박했더라도 그날 오피스 이용 기록이 없으면 해당 일자는 정산에서 빠집니다.',
       '지정 앱을 통한 출퇴근 기록이 필요합니다.',
     ],
     siteName: '제주워케이션',
     siteOwner: '제주특별자치도',
     linkLabel: '제주워케이션에서 상세보기',
-    url: 'https://www.jeju.go.kr/workation/',
+    url: 'https://www.jeju.go.kr/workation/Supportproject/info.htm',
   },
 
   강릉: {
@@ -61,7 +60,6 @@ const PROGRAMS = {
     summary: [
       'KTX 로 두 시간이면 닿습니다.',
       '바다와 붙은 숙소가 많습니다.',
-      '결제만 WorkIt 으로 하면 지출이 나뉘어 쌓입니다.',
     ],
     highlights: [
       { label: '혜택', value: '주중 2박 이상 숙박 할인' },
@@ -89,7 +87,6 @@ const PROGRAMS = {
     summary: [
       '지하철로 다니는 도시형 워케이션입니다.',
       '공유오피스와 카페가 많습니다.',
-      '업무공간이 무상이라 임차료 예산을 줄일 수 있습니다.',
     ],
     highlights: [
       { label: '지원 한도', value: '1박 5만원 · 1인 최대 50만원' },
@@ -117,7 +114,6 @@ const PROGRAMS = {
     summary: [
       '1박 2일부터 신청할 수 있습니다.',
       '워케이션이 처음이라면 여기부터입니다.',
-      '짧아도 예산과 지출은 그대로 기록됩니다.',
     ],
     highlights: [
       { label: '지원 한도', value: '1박당 최대 10만원' },
@@ -146,8 +142,12 @@ export const orderedRegions = (regions) =>
     .filter((region) => Boolean(PROGRAMS[region.name]))
     .sort((a, b) => ORDER.indexOf(a.name) - ORDER.indexOf(b.name));
 
-export const DISCLAIMER =
-  '지원 조건과 금액은 지자체 공고에 따라 달라질 수 있습니다. 신청 전 공식 사이트에서 확인해 주세요.';
+// 두 문장을 붙여 두면 줄바꿈 위치가 화면 폭에 따라 제멋대로다.
+// 문장마다 줄을 나눠 항상 같은 자리에서 끊어지게 한다
+export const DISCLAIMER = [
+  '지원 조건과 금액은 지자체 공고에 따라 달라질 수 있습니다.',
+  '신청 전 공식 사이트에서 확인해 주세요.',
+];
 
 export const programOf = (regionName) => PROGRAMS[regionName] ?? null;
 

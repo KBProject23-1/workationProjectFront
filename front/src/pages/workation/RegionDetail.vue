@@ -70,28 +70,6 @@
         </div>
 
         <h2 class="mt-6 mb-2 text-sm font-bold text-slate-900">
-          {{ displayName }}에서 인기 있는 곳
-        </h2>
-
-        <SwipeRow v-if="merchants.length > 0">
-          <MerchantMiniCard
-            v-for="merchant in merchants"
-            :key="merchant.merchantId"
-            :name="merchant.name"
-            :thumbnail-url="merchant.thumbnailUrl"
-            :rating="merchant.rating"
-            :price="merchant.price"
-          />
-        </SwipeRow>
-
-        <p
-          v-else
-          class="rounded-xl border border-dashed border-slate-200 py-6 text-center text-xs text-slate-400"
-        >
-          곧 추천 장소를 보여드릴게요
-        </p>
-
-        <h2 class="mt-6 mb-2 text-sm font-bold text-slate-900">
           알아두면 좋아요
         </h2>
         <ul class="space-y-1.5">
@@ -116,9 +94,12 @@
           <p class="text-xs font-bold text-blue-700">
             WorkIt 으로 결제하면 증빙이 쌓여요
           </p>
+          <!-- 두 문장을 붙여 두면 줄바꿈 자리가 화면 폭에 따라 달라진다 -->
           <p class="mt-1 text-xs leading-relaxed text-blue-600/80">
-            지출이 업종별로 자동 분류되고 법인과 개인이 나뉘어 기록됩니다. 정산
-            내역서를 그대로 내려받아 제출할 수 있어요.
+            지출이 업종별로 자동 분류되고 법인과 개인이 나뉘어 기록됩니다.
+          </p>
+          <p class="mt-0.5 text-xs leading-relaxed text-blue-600/80">
+            정산 내역서를 그대로 내려받아 제출할 수 있어요.
           </p>
         </div>
 
@@ -132,8 +113,37 @@
           <ExternalLink class="h-4 w-4" />
         </a>
 
-        <p class="mt-2.5 text-[11px] leading-relaxed text-slate-400">
-          {{ DISCLAIMER }}
+        <div class="mt-2.5 space-y-0.5">
+          <p
+            v-for="line in DISCLAIMER"
+            :key="line"
+            class="text-[11px] leading-relaxed text-slate-400"
+          >
+            {{ line }}
+          </p>
+        </div>
+
+        <!-- 등록 버튼 바로 위에 둔다. 어떤 곳에 가게 되는지 보고 바로 누르게 한다 -->
+        <h2 class="mt-6 mb-2 text-sm font-bold text-slate-900">
+          {{ displayName }}에서 인기 있는 곳
+        </h2>
+
+        <SwipeRow v-if="merchants.length > 0">
+          <MerchantMiniCard
+            v-for="merchant in merchants"
+            :key="merchant.merchantId"
+            :name="merchant.name"
+            :thumbnail-url="merchant.thumbnailUrl"
+            :rating="merchant.rating"
+            :price="merchant.price"
+          />
+        </SwipeRow>
+
+        <p
+          v-else
+          class="rounded-xl border border-dashed border-slate-200 py-6 text-center text-xs text-slate-400"
+        >
+          곧 추천 장소를 보여드릴게요
         </p>
 
         <BaseButton
