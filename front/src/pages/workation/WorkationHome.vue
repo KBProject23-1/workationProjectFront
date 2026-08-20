@@ -33,11 +33,21 @@
           </button>
           <button
             type="button"
-            class="flex h-[34px] w-[34px] items-center justify-center rounded-xl bg-white/15 text-white transition-colors active:bg-white/25"
+            class="relative flex h-[34px] w-[34px] items-center justify-center rounded-xl bg-white/15 text-white transition-colors active:bg-white/25"
             aria-label="알림"
             @click="goNotifications"
           >
             <Bell :size="18" />
+            <span
+              v-if="notificationStore.unreadCount > 0"
+              class="text-caption bg-danger absolute -top-1 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 font-bold text-white"
+            >
+              {{
+                notificationStore.unreadCount > 99
+                  ? '99+'
+                  : notificationStore.unreadCount
+              }}
+            </span>
           </button>
           <button
             type="button"
@@ -192,7 +202,6 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { toast } from 'vue-sonner';
 import {
   Bell,
   FileSpreadsheet,
@@ -201,6 +210,7 @@ import {
   Wallet,
 } from '@lucide/vue';
 import { useAuthStore } from '@/stores/authStore';
+import { useNotificationStore } from '@/stores/notificationStore';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useExpenseStore } from '@/stores/expenseStore';
@@ -232,6 +242,7 @@ const expenseStore = useExpenseStore();
 const settlementStore = useSettlementStore();
 const surveyStore = useSurveyStore();
 const scheduleStore = useScheduleStore();
+const notificationStore = useNotificationStore();
 const { showError } = useErrorToast();
 const authStore = useAuthStore();
 
@@ -370,6 +381,10 @@ const loadEmptyHome = async () => {
 
 const loadHome = async () => {
   loading.value = true;
+
+  // 안 읽은 알림 개수는 배지에만 쓰인다. 기다리지 않고 뒤에서 받는다
+  notificationStore.fetchUnreadCount();
+
   await workationStore.fetchCurrent();
   pageError.value = workationStore.error;
 
@@ -430,9 +445,8 @@ const goPay = () => {
   router.push('/wallet');
 };
 
-// 알림 화면은 아직 준비 전이라 안내 토스트만 노출
 const goNotifications = () => {
-  toast('알림 기능은 준비 중이에요');
+  router.push('/notifications');
 };
 
 // 프로필 → 내 정보 조회 화면

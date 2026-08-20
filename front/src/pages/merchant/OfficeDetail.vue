@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { Heart, MapPin, Phone, Star } from '@lucide/vue';
+import { Building2, Heart, MapPin, Phone, Star } from '@lucide/vue';
 import OfficeProductCard from '@/components/merchant/OfficeProductCard.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
@@ -159,6 +159,16 @@ onMounted(async () => {
               :alt="`${office.name} 대표 이미지`"
               @error="heroImageLoadFailed = true"
             />
+
+            <!-- 사진이 없거나 링크가 끊긴 경우 -->
+            <div
+              v-else
+              class="text-brand/40 flex h-full w-full items-center justify-center"
+              role="img"
+              aria-label="공유오피스 기본 이미지"
+            >
+              <Building2 :size="48" />
+            </div>
 
             <button
               type="button"

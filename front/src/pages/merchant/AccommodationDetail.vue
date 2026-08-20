@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { Heart, MapPin, Phone, Star } from '@lucide/vue';
+import { Bed, Heart, MapPin, Phone, Star } from '@lucide/vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationOccupancyModal from '@/components/reservation/ReservationOccupancyModal.vue';
 import AccommodationProductCard from '@/components/merchant/AccommodationProductCard.vue';
@@ -154,6 +154,16 @@ onMounted(async () => {
               :alt="`${accommodation.name} 대표 이미지`"
               @error="heroImageLoadFailed = true"
             />
+
+            <!-- 사진이 없거나 링크가 끊긴 경우 -->
+            <div
+              v-else
+              class="text-brand/40 flex h-full w-full items-center justify-center"
+              role="img"
+              aria-label="숙소 기본 이미지"
+            >
+              <Bed :size="48" />
+            </div>
 
             <button
               type="button"
