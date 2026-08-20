@@ -68,8 +68,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <main class="flex flex-col items-center w-full min-h-screen bg-white">
-    <div class="sticky top-0 z-10 w-full bg-white px-5 pt-4 pb-3">
+  <main class="flex flex-col items-center w-full min-h-screen bg-canvas">
+    <div class="sticky top-0 z-10 w-full bg-canvas px-5 pt-4 pb-3">
       <div class="w-full mb-4">
         <BaseHeader
           title="거래내역"
@@ -77,7 +77,7 @@ onUnmounted(() => {
         >
           <template #right>
             <button type="button" aria-label="필터" @click="isFilterOpen = true">
-              <SlidersHorizontal :size="20" class="text-gray-500" />
+              <SlidersHorizontal :size="20" class="text-ink-sub" />
             </button>
           </template>
         </BaseHeader>
@@ -103,7 +103,7 @@ onUnmounted(() => {
         <div
           v-for="i in 5"
           :key="i"
-          class="h-[72px] animate-pulse rounded-xl bg-gray-100"
+          class="h-[72px] animate-pulse rounded-card bg-canvas"
         ></div>
       </div>
 
@@ -139,7 +139,7 @@ onUnmounted(() => {
       <div ref="sentinel" class="h-4"></div>
       <p
         v-if="transactionStore.isLoadingMore"
-        class="text-[13px] text-gray-500 text-center py-4"
+        class="text-body-sm text-ink-sub text-center py-4"
       >
         불러오는 중...
       </p>

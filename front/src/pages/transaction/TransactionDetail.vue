@@ -96,7 +96,7 @@ onMounted(loadDetail);
 
 <template>
   <main
-    class="flex flex-col items-center w-full min-h-screen px-5 pt-4 pb-5 bg-white text-left"
+    class="flex flex-col items-center w-full min-h-screen px-5 pt-4 pb-5 bg-canvas text-left"
   >
     <div class="w-full mb-6">
       <BaseHeader title="거래 상세" @back="router.back()" />
@@ -104,10 +104,10 @@ onMounted(loadDetail);
 
     <!-- 로딩 스켈레톤 -->
     <div v-if="loading" class="w-full flex-1">
-      <div class="h-6 w-24 animate-pulse rounded bg-gray-100"></div>
-      <div class="mt-2 h-8 w-40 animate-pulse rounded bg-gray-100"></div>
-      <div class="mt-3 h-10 w-48 animate-pulse rounded bg-gray-100"></div>
-      <div class="mt-6 h-40 w-full animate-pulse rounded-2xl bg-gray-100"></div>
+      <div class="h-6 w-24 animate-pulse rounded bg-canvas"></div>
+      <div class="mt-2 h-8 w-40 animate-pulse rounded bg-canvas"></div>
+      <div class="mt-3 h-10 w-48 animate-pulse rounded bg-canvas"></div>
+      <div class="mt-6 h-40 w-full animate-pulse rounded-sheet bg-canvas"></div>
     </div>
 
     <!-- 에러 -->
@@ -126,28 +126,28 @@ onMounted(loadDetail);
     <template v-else-if="detail">
       <div class="w-full text-left mb-6">
         <div class="flex items-center gap-2 mb-1">
-          <span class="text-[13px] font-semibold text-gray-500">
+          <span class="text-body-sm font-semibold text-ink-sub">
             {{ detail.categoryAssigned || '기타' }}
           </span>
           <span
             v-if="detail.status !== 'PAID'"
-            class="text-[11px] font-bold px-1.5 py-0.5 rounded-md"
+            class="text-caption font-bold px-1.5 py-0.5 rounded-chip"
             :class="statusMeta.badgeClass"
           >
             {{ statusMeta.label }}
           </span>
         </div>
-        <p class="text-[20px] font-bold text-gray-900 mb-2 truncate">
+        <p class="text-heading font-bold text-ink mb-2 truncate">
           {{ detail.merchantName }}
         </p>
         <p
-          class="text-[32px] font-extrabold tracking-tight"
+          class="text-[32px] font-bold tracking-tight"
           :class="
             isInactive
-              ? 'text-gray-500 line-through'
+              ? 'text-ink-sub line-through'
               : isDeposit
-                ? 'text-blue-600'
-                : 'text-gray-900'
+                ? 'text-brand'
+                : 'text-ink'
           "
         >
           {{ signedAmount }}
@@ -155,34 +155,34 @@ onMounted(loadDetail);
       </div>
 
       <div
-        class="w-full rounded-2xl bg-gray-50/80 p-5 mb-4 border border-gray-100 space-y-3.5"
+        class="w-full rounded-sheet bg-canvas/80 p-5 mb-4 border border-line space-y-3.5"
       >
-        <div class="flex justify-between items-center text-[13px]">
-          <span class="text-gray-500 font-medium">거래 일시</span>
-          <span class="font-semibold text-gray-800">{{
+        <div class="flex justify-between items-center text-body-sm">
+          <span class="text-ink-sub font-medium">거래 일시</span>
+          <span class="font-semibold text-ink">{{
             formatDateTime(detail.approvedAt)
           }}</span>
         </div>
 
-        <div class="flex justify-between items-center text-[13px]">
-          <span class="text-gray-500 font-medium">결제 수단</span>
-          <span class="font-semibold text-gray-800">{{
+        <div class="flex justify-between items-center text-body-sm">
+          <span class="text-ink-sub font-medium">결제 수단</span>
+          <span class="font-semibold text-ink">{{
             detail.paymentSourceType === 'CARD' ? '카드 결제' : '지갑 결제'
           }}</span>
         </div>
 
-        <div class="flex justify-between items-center text-[13px]">
-          <span class="text-gray-500 font-medium">승인 번호</span>
-          <span class="font-semibold text-gray-800 font-mono">{{
+        <div class="flex justify-between items-center text-body-sm">
+          <span class="text-ink-sub font-medium">승인 번호</span>
+          <span class="font-semibold text-ink font-mono">{{
             detail.approvedNumber
           }}</span>
         </div>
 
         <div
-          class="flex justify-between items-center text-[13px] pt-3 border-t border-gray-200/60"
+          class="flex justify-between items-center text-body-sm pt-3 border-t border-line/60"
         >
-          <span class="text-gray-500 font-medium">거래 상태</span>
-          <span class="font-bold text-[13px]" :class="statusMeta.textClass">
+          <span class="text-ink-sub font-medium">거래 상태</span>
+          <span class="font-bold text-body-sm" :class="statusMeta.textClass">
             {{ statusMeta.label }}
           </span>
         </div>
@@ -192,14 +192,14 @@ onMounted(loadDetail);
         <div v-if="detail.reviewDeadline" class="mb-3 flex w-full gap-3">
           <BaseButton
             :disabled="!canWriteOrEditReview"
-            class="min-w-0 flex-1 rounded-2xl py-3.5 text-[15px] font-bold disabled:bg-gray-200 disabled:text-gray-400"
+            class="min-w-0 flex-1 disabled:bg-gray-200 disabled:text-ink-mute"
             @click="goToReview"
           >
             {{ reviewButtonLabel }}
           </BaseButton>
           <BaseButton
             v-if="detail.reviewId"
-            class="min-w-0 flex-1 rounded-2xl border border-[#3087ed] bg-white py-3.5 text-[15px] font-bold text-[#3087ed] hover:bg-blue-50"
+            class="min-w-0 flex-1 text-[#3087ed]"
             @click="isReviewDeleteConfirmOpen = true"
           >
             리뷰 삭제하기
@@ -209,7 +209,7 @@ onMounted(loadDetail);
           v-if="
             detail.transactionType === 'PAYMENT' && detail.status === 'PAID'
           "
-          class="w-full py-3.5 text-[15px] font-bold rounded-2xl shadow-xs"
+          class="w-full"
           @click="openReceipt"
         >
           매출전표 보기

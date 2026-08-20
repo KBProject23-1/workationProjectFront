@@ -68,7 +68,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main class="w-full mx-auto flex flex-col min-h-screen">
+  <main class="w-full mx-auto flex flex-col min-h-screen bg-canvas">
     <LoadingScreen
       v-if="step === 0"
       title="계좌 정보를 불러오고 있어요"

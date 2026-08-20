@@ -10,20 +10,20 @@ defineEmits(['set-primary', 'delete']);
 
 <template>
   <div
-    class="flex items-center justify-between px-4 py-3.5 rounded-2xl border transition-all duration-200"
+    class="flex items-center justify-between px-4 py-3.5 rounded-sheet border transition-all duration-200"
     :class="
       account.isPrimary
-        ? 'border-blue-200 bg-blue-50/30 shadow-xs'
-        : 'border-gray-100 bg-gray-50/50 hover:bg-gray-50 hover:border-gray-200'
+        ? 'border-brand bg-brand-weak/30 shadow-xs'
+        : 'border-line bg-canvas/50 hover:bg-canvas hover:border-line'
     "
   >
     <div class="flex items-center gap-3 min-w-0">
       <div
-        class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-colors"
+        class="w-10 h-10 rounded-card flex items-center justify-center shrink-0 border transition-colors"
         :class="
           account.isPrimary
-            ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-            : 'bg-white text-gray-500 border-gray-100'
+            ? 'bg-brand text-white border-brand shadow-xs'
+            : 'bg-white text-ink-sub border-line'
         "
       >
         <Landmark :size="18" />
@@ -31,17 +31,17 @@ defineEmits(['set-primary', 'delete']);
 
       <div class="min-w-0 text-left">
         <div class="flex items-center gap-1.5">
-          <p class="text-[14px] font-bold text-gray-900 truncate">
+          <p class="text-body font-bold text-ink truncate">
             {{ account.bankName }}
           </p>
           <span
             v-if="account.isPrimary"
-            class="text-[10px] font-extrabold text-blue-600 bg-blue-100/70 px-1.5 py-0.5 rounded-md shrink-0"
+            class="text-caption font-bold text-brand bg-brand-weak/70 px-1.5 py-0.5 rounded-chip shrink-0"
           >
             주 계좌
           </span>
         </div>
-        <p class="text-[12px] font-medium text-gray-500 truncate mt-0.5">
+        <p class="text-body-sm font-medium text-ink-sub truncate mt-0.5">
           {{ account.maskedAccountNumber }}
         </p>
       </div>
@@ -59,18 +59,18 @@ defineEmits(['set-primary', 'delete']);
           :class="
             account.isPrimary
               ? 'text-yellow-400 fill-yellow-400 drop-shadow-xs'
-              : 'text-gray-500 hover:text-gray-500'
+              : 'text-ink-sub hover:text-ink-sub'
           "
         />
       </button>
 
       <button
         type="button"
-        class="p-2 rounded-full transition-colors hover:bg-red-50 hover:text-red-500 text-gray-500 active:scale-90"
+        class="p-2 rounded-full transition-colors hover:bg-danger/10 hover:text-danger text-ink-sub active:scale-90"
         aria-label="계좌 삭제"
         @click="$emit('delete', account.accountId)"
       >
-        <X :size="18" class="transition-colors hover:text-red-500" />
+        <X :size="18" class="transition-colors hover:text-danger" />
       </button>
     </div>
   </div>

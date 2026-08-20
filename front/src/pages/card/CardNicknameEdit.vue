@@ -47,7 +47,7 @@ onMounted(() => {
 
 <template>
   <main
-    class="flex flex-col items-center w-full min-h-screen px-5 pt-4 pb-5 bg-white"
+    class="flex flex-col items-center w-full min-h-screen px-5 pt-4 pb-5 bg-canvas"
   >
     <div class="w-full mb-6">
       <BaseHeader title="카드 별칭 설정" @back="router.back()" />
@@ -60,7 +60,7 @@ onMounted(() => {
     <div class="w-full pb-4 text-center">
       <BaseButton
         :disabled="isSaving"
-        class="w-full py-3.5 text-[15px] font-bold rounded-2xl"
+        class="w-full"
         @click="handleSave"
       >
         {{ isSaving ? '변경 중...' : '변경' }}

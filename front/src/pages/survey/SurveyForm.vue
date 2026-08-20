@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
+  <div class="flex min-h-screen flex-col bg-canvas px-5 pt-4 pb-8">
     <div class="mb-4">
       <BaseHeader
         title="나의 워케이션 스타일"
@@ -13,13 +13,13 @@
       여기서 단계를 표시하면 전체 개수가 어긋난다.
     -->
     <template v-if="isFirstCreateFlow">
-      <div class="h-1 w-full rounded-full bg-blue-100">
-        <div class="h-1 w-2/3 rounded-full bg-blue-600" />
+      <div class="h-1 w-full rounded-full bg-brand-weak">
+        <div class="h-1 w-2/3 rounded-full bg-brand" />
       </div>
-      <p class="mt-1 text-right text-xs text-slate-400">2 / 3</p>
+      <p class="mt-1 text-right text-body-sm text-ink-mute">2 / 3</p>
     </template>
 
-    <p class="mt-4 text-sm text-slate-500">
+    <p class="mt-4 text-body text-ink-sub">
       답변을 바탕으로 숙소와 공유오피스를 추천해 드려요
     </p>
 
@@ -48,7 +48,7 @@
     <BaseButton
       v-if="!loading && questions.length > 0"
       variant="default"
-      class="mt-8 h-12 w-full rounded-xl text-base"
+      class="mt-8 h-12 w-full rounded-card text-title"
       :disabled="submitting"
       @click="submit"
     >
@@ -57,7 +57,7 @@
 
     <p
       v-if="unansweredCount > 0 && !loading"
-      class="mt-2 text-center text-xs text-slate-400"
+      class="mt-2 text-center text-body-sm text-ink-mute"
     >
       아직 답하지 않은 문항이 {{ unansweredCount }}개 있어요
     </p>

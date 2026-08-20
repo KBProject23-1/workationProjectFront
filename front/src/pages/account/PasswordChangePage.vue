@@ -108,7 +108,7 @@ async function handleChangePassword() {
 </script>
 
 <template>
-  <main class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
+  <main class="flex min-h-screen flex-col bg-canvas px-5 pt-4 pb-8">
     <!-- 헤더 -->
     <div class="mb-6">
       <BaseHeader
@@ -118,7 +118,7 @@ async function handleChangePassword() {
     </div>
 
     <!-- 안내 문구 -->
-    <p class="text-[13px] font-medium leading-relaxed text-slate-500">
+    <p class="text-body-sm font-medium leading-relaxed text-ink-sub">
       현재 비밀번호를 확인한 뒤 새로운 비밀번호로 변경해 주세요.<br />
       변경 후에도 로그인 상태는 유지됩니다.
     </p>
@@ -129,7 +129,7 @@ async function handleChangePassword() {
       <div>
         <label
           for="change-current-password"
-          class="mb-2 block text-[13px] font-bold text-slate-900"
+          class="mb-2 block text-body-sm font-bold text-ink"
         >
           현재 비밀번호
         </label>
@@ -143,7 +143,7 @@ async function handleChangePassword() {
             autocomplete="current-password"
             :has-error="!!errors.currentPassword"
             :error-message="errors.currentPassword"
-            class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 pr-12 text-[15px] font-medium text-slate-900 placeholder:text-slate-400"
+            class="h-12 rounded-card border-line bg-canvas px-4 pr-12 text-body font-medium text-ink placeholder:text-ink-mute"
             @update:model-value="errors.currentPassword = ''"
             @blur="
               errors.currentPassword = validateCurrentPassword(currentPassword)
@@ -151,7 +151,7 @@ async function handleChangePassword() {
           />
           <button
             type="button"
-            class="absolute right-2 top-6 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-blue-600"
+            class="absolute right-2 top-6 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-ink-mute transition-colors hover:bg-canvas hover:text-brand"
             :aria-label="isCurrentVisible ? '비밀번호 숨기기' : '비밀번호 보기'"
             :aria-pressed="isCurrentVisible"
             aria-controls="change-current-password"
@@ -168,7 +168,7 @@ async function handleChangePassword() {
       <div>
         <label
           for="change-new-password"
-          class="mb-2 block text-[13px] font-bold text-slate-900"
+          class="mb-2 block text-body-sm font-bold text-ink"
         >
           새 비밀번호
         </label>
@@ -182,13 +182,13 @@ async function handleChangePassword() {
             autocomplete="new-password"
             :has-error="!!errors.newPassword"
             :error-message="errors.newPassword"
-            class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 pr-12 text-[15px] font-medium text-slate-900 placeholder:text-slate-400"
+            class="h-12 rounded-card border-line bg-canvas px-4 pr-12 text-body font-medium text-ink placeholder:text-ink-mute"
             @update:model-value="errors.newPassword = ''"
             @blur="errors.newPassword = validateNewPassword(newPassword)"
           />
           <button
             type="button"
-            class="absolute right-2 top-6 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-blue-600"
+            class="absolute right-2 top-6 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-ink-mute transition-colors hover:bg-canvas hover:text-brand"
             :aria-label="isNewVisible ? '비밀번호 숨기기' : '비밀번호 보기'"
             :aria-pressed="isNewVisible"
             aria-controls="change-new-password"
@@ -205,7 +205,7 @@ async function handleChangePassword() {
       <div>
         <label
           for="change-new-password-confirm"
-          class="mb-2 block text-[13px] font-bold text-slate-900"
+          class="mb-2 block text-body-sm font-bold text-ink"
         >
           새 비밀번호 확인
         </label>
@@ -219,7 +219,7 @@ async function handleChangePassword() {
             autocomplete="new-password"
             :has-error="!!errors.newPasswordConfirm"
             :error-message="errors.newPasswordConfirm"
-            class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 pr-12 text-[15px] font-medium text-slate-900 placeholder:text-slate-400"
+            class="h-12 rounded-card border-line bg-canvas px-4 pr-12 text-body font-medium text-ink placeholder:text-ink-mute"
             @update:model-value="errors.newPasswordConfirm = ''"
             @blur="
               errors.newPasswordConfirm =
@@ -229,7 +229,7 @@ async function handleChangePassword() {
           />
           <button
             type="button"
-            class="absolute right-2 top-6 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-blue-600"
+            class="absolute right-2 top-6 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-ink-mute transition-colors hover:bg-canvas hover:text-brand"
             :aria-label="
               isNewConfirmVisible ? '비밀번호 숨기기' : '비밀번호 보기'
             "
@@ -251,7 +251,7 @@ async function handleChangePassword() {
     <div class="pt-8 text-center">
       <BaseButton
         :disabled="!canChange"
-        class="w-full py-3.5 text-[15px] font-bold rounded-2xl"
+        class="w-full"
         @click="handleChangePassword"
       >
         {{ isChanging ? '변경 중...' : '비밀번호 변경' }}

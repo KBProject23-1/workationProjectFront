@@ -23,6 +23,15 @@ export const dotDate = (value) => {
   return value.replaceAll('-', '.');
 };
 
+// 서버는 1111********4444 처럼 하이픈 없이 내려준다.
+// 카드번호는 네 자리씩 끊어 읽는 값이라 화면에서 끊어 준다
+export const maskedCardNumber = (value) => {
+  if (!value) return '';
+  const digits = value.replaceAll('-', '');
+  if (digits.length !== 16) return value;
+  return digits.match(/.{4}/g).join('-');
+};
+
 // 2026-08-01, 2026-08-20 -> 20 (양 끝날 포함).
 // Math.round 를 쓰는 이유: 두 Date 를 T00:00:00 로 만들어도 서머타임을 쓰는
 // 타임존을 지나면 23/25시간짜리 날이 껴서 24시간 배수가 아닐 수 있다

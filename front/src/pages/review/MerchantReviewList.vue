@@ -36,7 +36,7 @@ function moveToReviewDetail(reviewId) {
     <div class="-mx-[23px] px-5 pt-4 mb-4">
       <BaseHeader
         :title="merchantName || '서핑 체험 강릉'"
-        title-class="max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap text-[18px] font-bold text-gray-900"
+        title-class="max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap text-heading font-bold text-ink"
         @back="router.back()"
       />
     </div>

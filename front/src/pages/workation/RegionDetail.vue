@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white pb-8">
+  <div class="bg-canvas min-h-screen pb-8">
     <div class="px-5 pt-4">
       <BaseHeader :title="displayName" @back="goBack" />
     </div>
@@ -134,8 +134,11 @@
             :key="merchant.merchantId"
             :name="merchant.name"
             :thumbnail-url="merchant.thumbnailUrl"
+            :category="merchant.category"
             :rating="merchant.rating"
             :price="merchant.price"
+            clickable
+            @select="goMerchantDetail(merchant)"
           />
         </SwipeRow>
 
@@ -148,7 +151,7 @@
 
         <BaseButton
           variant="default"
-          class="mt-6 h-12 w-full rounded-xl text-base"
+          class="mt-6 w-full"
           @click="goCreate"
         >
           {{ withRo(displayName) }} 워케이션 등록하기
@@ -232,6 +235,21 @@ onMounted(async () => {
   ]);
   loading.value = false;
 });
+
+// 업종마다 상세 화면이 다르다.
+// 숙소·공유오피스는 예약 화면이라 워케이션이 없으면 그쪽에서 막는다
+const MERCHANT_DETAIL_PATH = {
+  ACCOMMODATION: (id) => `/reservation/accommodations/${id}`,
+  OFFICE: (id) => `/reservation/offices/${id}`,
+  RESTAURANT: (id) => `/merchants/restaurants/${id}`,
+  ACTIVITY: (id) => `/merchants/activities/${id}`,
+};
+
+const goMerchantDetail = (merchant) => {
+  const toPath = MERCHANT_DETAIL_PATH[merchant?.category];
+  if (!toPath || !merchant?.merchantId) return;
+  router.push(toPath(merchant.merchantId));
+};
 
 // 지역을 미리 골라 둔 채로 등록 화면을 연다
 const goCreate = () => {

@@ -1,30 +1,30 @@
 <template>
-  <div class="py-3">
-    <div class="flex items-baseline justify-between">
-      <span class="text-sm font-bold text-slate-900">{{
-        item.categoryName
-      }}</span>
-      <span class="text-sm font-bold text-slate-900">{{
-        won(item.spentAmount)
-      }}</span>
+  <div class="py-4">
+    <div class="flex items-baseline justify-between gap-3">
+      <span class="text-body min-w-0 truncate font-semibold text-ink">
+        {{ item.categoryName }}
+      </span>
+      <span class="text-body shrink-0 font-bold text-ink">
+        {{ won(item.spentAmount) }}
+      </span>
     </div>
 
     <div
-      class="mt-0.5 flex items-baseline justify-between text-xs text-slate-400"
+      class="text-body-sm mt-1 flex items-baseline justify-between gap-3 text-ink-mute"
     >
       <span>{{ item.expenseCount }}건</span>
       <!-- 법인은 회사에 제출하는 값이라 배정 대비 집행률을 보여준다 -->
-      <span v-if="showTarget"
-        >{{ won(item.targetAmount) }} 중 {{ usageRate }}%</span
-      >
+      <span v-if="showTarget" :class="overspent ? 'text-danger font-bold' : ''">
+        {{ won(item.targetAmount) }} 중 {{ usageRate }}%
+      </span>
       <!-- 개인은 배정 개념 없이 전체에서 차지하는 비중만 보여준다 -->
       <span v-else-if="ratio > 0">{{ ratio }}%</span>
     </div>
 
-    <div class="mt-2 h-1 w-full rounded-full bg-slate-200">
+    <div class="bg-canvas mt-2.5 h-1.5 w-full rounded-full">
       <div
-        class="h-1 rounded-full"
-        :class="showTarget && overspent ? 'bg-red-500' : 'bg-blue-600'"
+        class="h-1.5 rounded-full"
+        :class="showTarget && overspent ? 'bg-danger' : 'bg-brand'"
         :style="{ width: barWidth + '%' }"
       />
     </div>

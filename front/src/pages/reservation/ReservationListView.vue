@@ -89,8 +89,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex min-h-screen w-full flex-col bg-white pb-8">
-    <header class="sticky top-0 z-10 bg-white">
+  <div class="flex min-h-screen w-full flex-col bg-canvas pb-8">
+    <header class="sticky top-0 z-10 bg-canvas">
       <div class="px-5 pt-4">
         <BaseHeader
           title="예약 내역"
@@ -98,16 +98,16 @@ onUnmounted(() => {
         />
       </div>
 
-      <div class="grid h-[50px] grid-cols-2 border-b border-slate-200 px-4">
+      <div class="grid h-[50px] grid-cols-2 border-b border-line px-4">
         <button
           v-for="tab in reservationTabs"
           :key="tab.key"
           type="button"
-          class="border-b-2 text-[16px] transition-colors"
+          class="border-b-2 text-title transition-colors"
           :class="
             activeTabKey === tab.key
               ? 'border-primary font-bold text-primary'
-              : 'border-transparent font-medium text-slate-400'
+              : 'border-transparent font-medium text-ink-mute'
           "
           :aria-current="activeTabKey === tab.key ? 'page' : undefined"
           @click="changeTab(tab)"
@@ -126,7 +126,7 @@ onUnmounted(() => {
         <div
           v-for="index in 3"
           :key="index"
-          class="h-[202px] animate-pulse rounded-xl border border-slate-100 bg-slate-100"
+          class="h-[202px] animate-pulse rounded-card border border-line bg-canvas"
         ></div>
       </div>
 
@@ -153,7 +153,7 @@ onUnmounted(() => {
         />
         <p
           v-if="reservationStore.isLoadingMore"
-          class="py-3 text-center text-[12px] text-slate-400"
+          class="py-3 text-center text-body-sm text-ink-mute"
         >
           불러오는 중...
         </p>

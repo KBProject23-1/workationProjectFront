@@ -71,6 +71,8 @@ export const useReservationMerchantStore = defineStore('reservationMerchant', {
     checkOut: formatDate(tomorrow),
     guestCount: 1,
     roomCount: 1,
+    // 공유오피스에서 빌리는 공간(좌석·회의실) 수. 숙소의 객실 수와 같은 자리다
+    spaceCount: 1,
     // 예약 유형 4탭. 탭마다 쓰는 필터가 달라 전체 탭은 두지 않는다
     category: 'ACCOMMODATION',
     sort: 'RATING_DESC',
@@ -93,6 +95,9 @@ export const useReservationMerchantStore = defineStore('reservationMerchant', {
     referencePlace: null,
     // 적용하기를 누르기 전에는 결과를 보여주지 않는다
     searched: false,
+    // 가맹점 상세로 나갔다가 돌아오는 중인지.
+    // 목록 화면이 다시 만들어질 때 조건을 초기화할지 말지를 이 값으로 정한다
+    returningFromDetail: false,
     size: 20,
     hasNext: false,
     nextCursor: null,

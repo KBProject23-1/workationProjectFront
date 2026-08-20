@@ -28,7 +28,7 @@ defineEmits(['go-login']);
 
     <div class="mt-10 w-full">
       <BaseButton
-        class="bg-gradient-to-b from-[#3B9BE8] to-[#2878F0]"
+        class="from-[#3B9BE8] to-[#2878F0]"
         @click="$emit('go-login')"
       >
         로그인하기

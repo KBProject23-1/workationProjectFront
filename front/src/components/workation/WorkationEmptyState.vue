@@ -1,57 +1,61 @@
 <template>
   <div>
-    <div class="rounded-2xl bg-blue-50 px-5 py-8 text-center">
-      <img
-        :src="workitLogo"
-        alt="WorkIt"
-        class="mx-auto mb-4 h-12 w-auto"
-      />
+    <!-- 헤더 그라데이션 위로 올라오는 카드 -->
+    <div class="rounded-sheet bg-surface p-[18px] shadow-card">
+      <div class="flex items-center gap-3">
+        <span
+          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-brand-weak"
+        >
+          <img :src="workitLogo" alt="" class="h-6 w-auto" />
+        </span>
 
-      <h2 class="text-lg font-bold text-slate-900">
-        진행중인 워케이션이 없어요
-      </h2>
-
-      <p class="mt-2 text-sm text-slate-500">
-        <template v-if="isReturning">
-          다음 워케이션을 등록하면<br />
-          지난 취향 그대로 추천해 드려요
-        </template>
-        <template v-else>
-          일정을 등록하면 예산과 지출을<br />
-          자동으로 관리해 드려요
-        </template>
-      </p>
+        <span>
+          <span class="block text-body font-semibold -tracking-[0.01em] text-ink">
+            아직 등록한 워케이션이 없어요
+          </span>
+          <span class="mt-0.5 block text-body-sm text-ink-sub">
+            {{
+              isReturning
+                ? '지난 취향 그대로 추천해 드릴게요'
+                : '취향에 맞는 일정을 짜드릴게요'
+            }}
+          </span>
+        </span>
+      </div>
 
       <BaseButton
         variant="default"
-        class="mt-6 h-12 w-full rounded-xl text-base"
+        class="mt-4 w-full gap-1.5"
         @click="$emit('register')"
       >
-        워케이션 등록하기
+        워케이션 시작하기
+        <ArrowRight :size="18" />
       </BaseButton>
     </div>
 
     <!-- 처음인 사용자에게만 흐름을 설명한다. 두 번째부터는 이미 안다 -->
     <template v-if="!isReturning">
-      <h3 class="mt-6 mb-2 text-sm font-bold text-slate-900">
-        워케이션은 이렇게 진행돼요
+      <h3 class="text-title mt-6 mb-3 font-bold -tracking-[0.01em] text-ink">
+        이렇게 진행돼요
       </h3>
-      <div class="rounded-xl border border-slate-200 px-4 py-4">
+      <div class="rounded-card bg-surface shadow-card px-[18px] py-1.5">
         <div
           v-for="step in STEPS"
           :key="step.no"
-          class="mb-3.5 flex items-start gap-3 last:mb-0"
+          class="border-line flex gap-3.5 border-b py-[15px] last:border-b-0"
         >
           <span
-            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500 text-[11px] font-bold text-white"
+            class="text-body-sm bg-brand-weak text-brand flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[9px] font-bold"
           >
             {{ step.no }}
           </span>
           <span>
-            <span class="block text-sm font-bold text-slate-900">
+            <span class="text-body block font-semibold text-ink">
               {{ step.title }}
             </span>
-            <span class="block text-xs text-slate-500">{{ step.body }}</span>
+            <span class="text-body-sm mt-0.5 block text-ink-mute">
+              {{ step.body }}
+            </span>
           </span>
         </div>
       </div>
@@ -59,30 +63,32 @@
 
     <!-- 재방문 사용자에게는 지난 기록을 먼저 보여준다 -->
     <template v-if="isReturning">
-      <h3 class="mt-6 mb-2 text-sm font-bold text-slate-900">지난 워케이션</h3>
-      <div class="rounded-xl border border-slate-200 px-4 py-3">
+      <h3 class="text-title mt-6 mb-3 px-0.5 font-bold -tracking-[0.01em] text-ink">
+        지난 워케이션
+      </h3>
+      <div class="rounded-card bg-surface shadow-card px-[18px] py-4">
         <div class="flex items-center justify-between gap-2">
           <button
             type="button"
-            class="min-w-0 flex-1 truncate text-left text-sm font-bold text-slate-900"
+            class="text-body min-w-0 flex-1 truncate text-left font-semibold text-ink"
             @click="$emit('record-detail', lastRecord.id)"
           >
             {{ lastRecord.title }} ›
           </button>
           <span
-            class="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-500"
+            class="text-caption bg-canvas shrink-0 rounded-full px-2.5 py-1 font-bold text-ink-mute"
           >
             정산완료
           </span>
         </div>
 
-        <p class="mt-0.5 text-xs text-slate-400">
+        <p class="text-body-sm mt-1 text-ink-mute">
           {{ lastRecord.region?.name }} · {{ dotDate(lastRecord.startDate) }} ~
           {{ dotDate(lastRecord.endDate) }} ({{ lastRecordDays }}일)
         </p>
 
         <p
-          class="mt-2.5 border-t border-slate-100 pt-2.5 text-right text-xs text-slate-400"
+          class="text-body-sm border-line mt-3 border-t pt-3 text-right text-ink-sub"
         >
           {{ workLabel }} {{ won(lastRecord.businessSpentTotal) }} / 개인
           {{ won(lastRecord.personalSpentTotal) }}
@@ -90,7 +96,7 @@
 
         <button
           type="button"
-          class="mt-2.5 w-full rounded-lg border border-blue-100 py-2.5 text-xs font-bold text-blue-500 transition-colors active:bg-blue-50"
+          class="text-body-sm bg-brand-weak text-brand mt-3 w-full rounded-chip py-3 font-bold transition-colors active:brightness-95"
           @click="$emit('records')"
         >
           지난 워케이션 모두 보기
@@ -98,7 +104,7 @@
       </div>
 
       <template v-if="bookmarks.length > 0">
-        <h3 class="mt-6 mb-2 text-sm font-bold text-slate-900">
+        <h3 class="text-title mt-6 mb-3 px-0.5 font-bold -tracking-[0.01em] text-ink">
           내가 찜한 장소
         </h3>
         <SwipeRow>
@@ -107,23 +113,32 @@
             :key="bookmark.bookmarkId"
             :name="bookmark.name"
             :thumbnail-url="bookmark.thumbnailUrl"
+            :category="bookmark.category"
             :rating="bookmark.rating"
             :price="bookmark.price"
+            clickable
+            @select="$emit('merchant', bookmark)"
           />
         </SwipeRow>
       </template>
     </template>
 
     <template v-if="regionCards.length > 0">
-      <h3 class="mt-6 mb-2 text-sm font-bold text-slate-900">
-        워케이션 지역 보기
-      </h3>
+      <div class="mt-6 mb-3 flex items-baseline justify-between px-0.5">
+        <h3 class="text-title font-bold -tracking-[0.01em] text-ink">
+          워케이션 지역
+        </h3>
+        <span class="text-body-sm text-ink-mute">
+          전체 {{ regionCards.length }}곳
+        </span>
+      </div>
       <SwipeRow>
         <RegionCard
           v-for="region in regionCards"
           :key="region.id"
-          :name="region.name"
+          :name="region.displayName"
           :image="region.image"
+          :caption="region.caption"
           @select="$emit('region', region.id)"
         />
       </SwipeRow>
@@ -131,7 +146,7 @@
 
     <!-- 처음인 사용자에게는 어떤 장소를 예약하게 되는지 미리 보여준다 -->
     <template v-if="!isReturning">
-      <h3 class="mt-6 mb-2 text-sm font-bold text-slate-900">
+      <h3 class="text-title mt-6 mb-3 px-0.5 font-bold -tracking-[0.01em] text-ink">
         지금 인기 있는 곳
       </h3>
 
@@ -141,14 +156,17 @@
           :key="merchant.merchantId"
           :name="merchant.name"
           :thumbnail-url="merchant.thumbnailUrl"
+          :category="merchant.category"
           :rating="merchant.rating"
           :price="merchant.price"
+          clickable
+          @select="$emit('merchant', merchant)"
         />
       </SwipeRow>
 
       <p
         v-else
-        class="rounded-xl border border-dashed border-slate-200 py-6 text-center text-xs text-slate-400"
+        class="rounded-card border-line text-body-sm text-ink-mute border border-dashed py-7 text-center"
       >
         곧 추천 장소를 보여드릴게요
       </p>
@@ -158,6 +176,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import { ArrowRight } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import workitLogo from '@/assets/images/splash-logo.png';
 import RegionCard from '@/components/workation/RegionCard.vue';
@@ -188,19 +207,27 @@ const props = defineProps({
   lastRecord: { type: Object, default: null },
 });
 
-defineEmits(['register', 'region', 'records', 'record-detail']);
+defineEmits(['register', 'region', 'records', 'record-detail', 'merchant']);
 
 const { workLabel } = useBudgetTypeLabel();
 
 const isReturning = computed(() => Boolean(props.lastRecord));
 
 // 지원 제도 데이터가 있는 지역만 정해진 순서로 카드가 된다.
-// 홈에서는 이름만 얹는다. 설명은 상세 화면에서 본다
+//
+// 카드에는 지역 특징만 쓴다.
+// 지자체 지원금은 우리가 제공하는 것이 아니라 여기서 내세울 값이 아니다.
+// 지원 방식과 한도는 상세 화면에서 출처와 함께 본다
 const regionCards = computed(() =>
-  orderedRegions(props.regions).map((region) => ({
-    ...region,
-    image: programOf(region.name).card,
-  })),
+  orderedRegions(props.regions).map((region) => {
+    const program = programOf(region.name);
+    return {
+      ...region,
+      displayName: program.displayName,
+      image: program.card,
+      caption: program.tagline,
+    };
+  }),
 );
 
 const lastRecordDays = computed(() =>

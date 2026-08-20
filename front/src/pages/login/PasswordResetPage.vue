@@ -603,7 +603,7 @@ const showHeader = computed(
         >
           <BaseButton
             :disabled="!loginId.trim()"
-            class="bg-gradient-to-b from-[#3B9BE8] to-[#2878F0]"
+            class="from-[#3B9BE8] to-[#2878F0]"
             @click="handleLoginIdNext"
           >
             {{ isPassDone ? '계정 확인' : '다음' }}
@@ -652,7 +652,7 @@ const showHeader = computed(
 
           <div class="mt-10 w-full space-y-2">
             <BaseButton
-              class="bg-gradient-to-b from-[#3B9BE8] to-[#2878F0]"
+              class="from-[#3B9BE8] to-[#2878F0]"
               @click="accountErrorView.onPrimary"
             >
               {{ accountErrorView.primaryLabel }}
@@ -687,7 +687,7 @@ const showHeader = computed(
           </p>
           <div class="mt-10 w-full">
             <BaseButton
-              class="bg-gradient-to-b from-[#3B9BE8] to-[#2878F0]"
+              class="from-[#3B9BE8] to-[#2878F0]"
               @click="restartAll"
             >
               처음부터 다시 시작
@@ -812,7 +812,7 @@ const showHeader = computed(
           >
             <BaseButton
               :disabled="!canChangePassword"
-              class="bg-gradient-to-b from-[#3B9BE8] to-[#2878F0]"
+              class="from-[#3B9BE8] to-[#2878F0]"
               @click="handleChangePassword"
             >
               {{ isChangingPassword ? '변경 중...' : '비밀번호 변경' }}
@@ -840,7 +840,7 @@ const showHeader = computed(
 
           <div class="mt-10 w-full">
             <BaseButton
-              class="bg-gradient-to-b from-[#3B9BE8] to-[#2878F0]"
+              class="from-[#3B9BE8] to-[#2878F0]"
               @click="router.replace('/login')"
             >
               로그인 화면으로 이동

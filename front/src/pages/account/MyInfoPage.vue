@@ -90,7 +90,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main class="min-h-screen bg-white px-5 pt-4 pb-8">
+  <main class="min-h-screen bg-canvas px-5 pt-4 pb-8">
     <LoadingScreen
       v-if="loading"
       title="내 정보를 불러오고 있어요"
@@ -109,37 +109,37 @@ onMounted(async () => {
       <!-- ① 사용자 프로필 / 기본 정보 + 프로필 수정 -->
       <section>
         <div
-          class="overflow-hidden rounded-xl border border-slate-200 bg-white"
+          class="overflow-hidden rounded-card border border-line bg-white"
         >
           <div class="flex items-center gap-4 px-5 pt-5 pb-4">
             <div
-              class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[20px] font-extrabold text-blue-600"
+              class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-weak text-heading font-bold text-brand"
             >
               {{ avatarInitial }}
             </div>
             <div class="min-w-0">
-              <p class="text-[17px] font-bold text-slate-900">
+              <p class="text-title font-bold text-ink">
                 {{ user?.name }}
               </p>
               <div class="mt-1.5 space-y-1">
-                <p class="flex items-center gap-1.5 text-[13px] text-slate-500">
-                  <Mail :size="14" class="shrink-0 text-slate-400" />
+                <p class="flex items-center gap-1.5 text-body-sm text-ink-sub">
+                  <Mail :size="14" class="shrink-0 text-ink-mute" />
                   <span class="truncate">{{ user?.email }}</span>
                 </p>
-                <p class="flex items-center gap-1.5 text-[13px] text-slate-500">
-                  <Phone :size="14" class="shrink-0 text-slate-400" />
+                <p class="flex items-center gap-1.5 text-body-sm text-ink-sub">
+                  <Phone :size="14" class="shrink-0 text-ink-mute" />
                   <span>{{ formatPhone(user?.phoneNumber) }}</span>
                 </p>
               </div>
             </div>
           </div>
-          <div class="border-t border-slate-100">
+          <div class="border-t border-line">
             <button
               type="button"
-              class="flex w-full items-center px-5 py-4 text-left transition-colors active:bg-slate-50"
+              class="flex w-full items-center px-5 py-4 text-left transition-colors active:bg-canvas"
               @click="router.push('/account/me/edit')"
             >
-              <span class="text-[15px] font-semibold text-blue-600">
+              <span class="text-body font-semibold text-brand">
                 프로필 수정
               </span>
             </button>
@@ -150,21 +150,21 @@ onMounted(async () => {
       <!-- ② 메뉴 -->
       <section class="mt-3">
         <div
-          class="overflow-hidden rounded-xl border border-slate-200 bg-white"
+          class="overflow-hidden rounded-card border border-line bg-white"
         >
-          <p class="px-5 pt-3.5 text-xs font-medium text-slate-400">메뉴</p>
-          <div class="mt-1 divide-y divide-slate-100">
+          <p class="px-5 pt-3.5 text-body-sm font-medium text-ink-mute">메뉴</p>
+          <div class="mt-1 divide-y divide-line">
             <button
               v-for="item in menuItems"
               :key="item.label"
               type="button"
-              class="flex w-full items-center px-5 py-4 text-left transition-colors active:bg-slate-50"
+              class="flex w-full items-center px-5 py-4 text-left transition-colors active:bg-canvas"
               @click="openMenu(item)"
             >
-              <span class="flex-1 text-[15px] font-medium text-slate-900">
+              <span class="flex-1 text-body font-medium text-ink">
                 {{ item.label }}
               </span>
-              <span v-if="item.to" class="text-slate-300">›</span>
+              <span v-if="item.to" class="text-ink-mute">›</span>
             </button>
           </div>
         </div>
@@ -173,20 +173,20 @@ onMounted(async () => {
       <!-- ③ 설정 -->
       <section class="mt-3">
         <div
-          class="overflow-hidden rounded-xl border border-slate-200 bg-white"
+          class="overflow-hidden rounded-card border border-line bg-white"
         >
-          <p class="px-5 pt-3.5 text-xs font-medium text-slate-400">설정</p>
-          <div class="mt-1 divide-y divide-slate-100">
+          <p class="px-5 pt-3.5 text-body-sm font-medium text-ink-mute">설정</p>
+          <div class="mt-1 divide-y divide-line">
             <button
               v-for="item in settingItems"
               :key="item.label"
               type="button"
-              class="flex w-full items-center px-5 py-4 text-left transition-colors active:bg-slate-50"
+              class="flex w-full items-center px-5 py-4 text-left transition-colors active:bg-canvas"
               @click="
                 item.to ? router.push(item.to) : showComingSoon(item.label)
               "
             >
-              <span class="text-[15px] font-medium text-slate-900">
+              <span class="text-body font-medium text-ink">
                 {{ item.label }}
               </span>
             </button>
@@ -201,7 +201,7 @@ onMounted(async () => {
           class="mx-auto flex flex-col items-center transition-opacity active:opacity-60"
           @click="handleLogout"
         >
-          <span class="text-[15px] font-semibold text-slate-400">
+          <span class="text-body font-semibold text-ink-mute">
             로그아웃
           </span>
           <span class="mt-1.5 h-px w-[52px] bg-slate-400" />

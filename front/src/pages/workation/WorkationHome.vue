@@ -1,43 +1,83 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
-    <header class="mb-4 flex items-center justify-between">
-      <h1 class="text-xl font-bold text-slate-900">나의 워케이션</h1>
+  <div class="min-h-screen bg-canvas pb-8">
+    <!--
+      브랜드 면. 아래 카드가 이 위로 올라오면서 깊이가 생긴다.
+      진행 중 워케이션이 없으면 큰 문구를, 있으면 워케이션 요약을 넣는다.
 
-      <div class="flex items-center gap-1.5">
-        <!-- 지갑(PAY) 진입: 라운드 사각 버튼 -->
-        <button
-          type="button"
-          class="flex h-9 items-center justify-center rounded-lg bg-[#1E4268] px-5 text-[13px] font-extrabold tracking-wide text-white shadow-sm transition-transform active:scale-95"
-          aria-label="지갑으로 이동"
-          @click="goPay"
-        >
-          PAY
-        </button>
-        <button
-          type="button"
-          class="relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition-colors active:bg-slate-100"
-          aria-label="알림"
-          @click="goNotifications"
-        >
-          <Bell :size="22" />
-          <span
-            v-if="notificationStore.unreadCount > 0"
-            class="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white"
+      요약을 흰 카드로 따로 두면 남색 헤더 바로 아래에 연한 파랑 카드가 붙어
+      두 파랑이 겹치고 헤더는 인사말만 남은 빈 띠가 된다.
+      요약을 헤더 안으로 올리면 그 자리가 채워지고, 아래는 흰 카드만 남아 경계가 뚜렷해진다
+    -->
+    <!--
+      마지막 색을 130% 지점에 두어 화면 안에서는 끝까지 도달하지 않게 한다.
+      to-brand 로 끝내면 아래쪽이 통째로 밝은 파랑이 되어 남색이 남지 않는다
+    -->
+    <header
+      class="bg-[linear-gradient(150deg,#0B3155_0%,#164B86_55%,#3087ED_130%)] px-5 pt-5 pb-[74px]"
+    >
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-body-sm text-white/70">안녕하세요</p>
+          <p class="text-title mt-0.5 font-bold text-white">{{ greetingName }}</p>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <button
+            type="button"
+            class="flex h-[34px] items-center gap-1.5 rounded-xl bg-white pr-3.5 pl-2.5 text-[12px] font-extrabold tracking-wide text-navy shadow-md transition-transform active:scale-95"
+            aria-label="지갑으로 이동"
+            @click="goPay"
           >
-            {{ notificationStore.unreadCount > 99 ? '99+' : notificationStore.unreadCount }}
-          </span>
-        </button>
-        <button
-          type="button"
-          class="flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition-colors active:bg-slate-100"
-          aria-label="프로필"
-          @click="goProfile"
+            <Wallet :size="15" />
+            PAY
+          </button>
+          <button
+            type="button"
+            class="relative flex h-[34px] w-[34px] items-center justify-center rounded-xl bg-white/15 text-white transition-colors active:bg-white/25"
+            aria-label="알림"
+            @click="goNotifications"
+          >
+            <Bell :size="18" />
+            <span
+              v-if="notificationStore.unreadCount > 0"
+              class="text-caption bg-danger absolute -top-1 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 font-bold text-white"
+            >
+              {{
+                notificationStore.unreadCount > 99
+                  ? '99+'
+                  : notificationStore.unreadCount
+              }}
+            </span>
+          </button>
+          <button
+            type="button"
+            class="flex h-[34px] w-[34px] items-center justify-center rounded-xl bg-white/15 text-white transition-colors active:bg-white/25"
+            aria-label="프로필"
+            @click="goProfile"
+          >
+            <UserRound :size="18" />
+          </button>
+        </div>
+      </div>
+
+      <!--
+        문구는 워케이션 상태에 따라 바뀐다.
+        없을 때만 문구를 두면 등록한 순간 이 자리가 비어 헤더가 인사말만 남은 띠가 된다
+      -->
+      <div v-if="!loading && !pageError" class="mt-6">
+        <p class="text-caption font-bold tracking-[0.08em] text-white/60">
+          WORKATION
+        </p>
+        <p
+          class="text-display mt-2 leading-[1.28] font-bold -tracking-[0.02em] text-white"
         >
-          <UserRound :size="22" />
-        </button>
+          {{ tagline.lead }}<br />
+          <span class="text-[#8FD0FF]">{{ tagline.accent }}</span>
+        </p>
       </div>
     </header>
 
+    <div class="-mt-14 px-4">
     <LoadingScreen v-if="loading" title="워케이션 정보를 불러오고 있어요" :fullscreen="false" />
 
     <BaseErrorState v-else-if="pageError" :title="pageError" @retry="loadHome" />
@@ -56,24 +96,24 @@
       -->
       <button
         v-if="setupIncomplete"
-        class="mt-5 flex w-full items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-left"
+        class="rounded-card bg-warn-weak mt-4 flex w-full items-center gap-3 px-4 py-3.5 text-left"
         @click="goIncompleteStep"
       >
         <span
-          class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-white"
+          class="text-caption bg-warn flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-bold text-white"
         >
           !
         </span>
-        <span class="flex-1">
-          <span class="block text-sm font-bold text-slate-900">
+        <span class="min-w-0 flex-1">
+          <span class="text-body-sm block font-bold text-ink">
             아직 설정이 끝나지 않았어요
           </span>
-          <span class="block text-xs text-slate-500">
+          <span class="text-caption mt-0.5 block text-ink-sub">
             {{ incompleteMessage }}
           </span>
         </span>
-        <span class="shrink-0 text-xs font-bold text-amber-600">
-          이어서 설정하기 ›
+        <span class="text-caption text-warn shrink-0 font-bold">
+          이어서 ›
         </span>
       </button>
 
@@ -97,17 +137,25 @@
 
       <div class="mt-4 grid grid-cols-2 gap-3">
         <button
-          class="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 py-3 text-sm font-bold text-slate-600"
+          class="rounded-card bg-surface shadow-card text-body-sm flex flex-col items-center gap-2 py-4 font-bold text-ink transition-transform active:scale-[0.98]"
           @click="goExpenses"
         >
-          <ReceiptText class="h-5 w-5" />
+          <span
+            class="bg-brand-weak text-brand flex h-9 w-9 items-center justify-center rounded-[11px]"
+          >
+            <ReceiptText :size="18" />
+          </span>
           지출 내역 보기
         </button>
         <button
-          class="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 py-3 text-sm font-bold text-slate-600"
+          class="rounded-card bg-surface shadow-card text-body-sm flex flex-col items-center gap-2 py-4 font-bold text-ink transition-transform active:scale-[0.98]"
           @click="goSettlement"
         >
-          <FileSpreadsheet class="h-5 w-5" />
+          <span
+            class="bg-brand-weak text-brand flex h-9 w-9 items-center justify-center rounded-[11px]"
+          >
+            <FileSpreadsheet :size="18" />
+          </span>
           정산 하러 가기
         </button>
       </div>
@@ -123,6 +171,7 @@
       @region="goRegionDetail"
       @records="goRecords"
       @record-detail="goRecordDetail"
+      @merchant="goMerchantDetail"
     />
 
     <!-- ① 삭제 확인 -->
@@ -145,7 +194,7 @@
       @confirm="goReservationsToCancel"
       @cancel="upcomingOpen = false"
     />
-
+    </div>
   </div>
 </template>
 
@@ -153,7 +202,14 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { Bell, FileSpreadsheet, ReceiptText, UserRound } from '@lucide/vue';
+import {
+  Bell,
+  FileSpreadsheet,
+  ReceiptText,
+  UserRound,
+  Wallet,
+} from '@lucide/vue';
+import { useAuthStore } from '@/stores/authStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useBudgetStore } from '@/stores/budgetStore';
@@ -170,6 +226,7 @@ import {
 import { getBookmarks } from '@/api/bookmark';
 import { fetchPopularPlaces } from '@/components/workation/popularPlaces';
 import { reservationSummaryText } from '@/components/workation/format';
+import { programOf } from '@/components/workation/regionPrograms';
 import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import WorkationProgressCard from '@/components/workation/WorkationProgressCard.vue';
 import WorkationScheduler from '@/components/workation/WorkationScheduler.vue';
@@ -187,6 +244,13 @@ const surveyStore = useSurveyStore();
 const scheduleStore = useScheduleStore();
 const notificationStore = useNotificationStore();
 const { showError } = useErrorToast();
+const authStore = useAuthStore();
+
+// 세션 복원 전에는 잠깐 이름이 비어 있다. 그때는 화면 제목을 대신 쓴다
+const greetingName = computed(() => {
+  const name = authStore.user?.name;
+  return name ? `${name}님` : '나의 워케이션';
+});
 // 지난 워케이션 지출을 법인 / 업무 중 무엇으로 부를지 정한다
 const { ensureCards } = useBudgetTypeLabel();
 const { current } = storeToRefs(workationStore);
@@ -197,6 +261,56 @@ const pageError = ref(null);
 const loading = ref(true);
 const confirmOpen = ref(false);
 const deleting = ref(false);
+
+// 헤더 문구. 워케이션이 없을 때와 있을 때, 그리고 시기별로 달라진다.
+//
+// 없을 때는 "어디로 떠날까" 라고 묻고, 진행 중에는 그 답이 이어지도록 썼다.
+// 서버가 내려주는 phase 는 BEFORE / ONGOING / PENDING_SETTLEMENT 세 가지다
+const EMPTY_TAGLINE = { lead: '일하러 가는 여행,', accent: '어디로 떠나볼까요' };
+
+const SETTLEMENT_TAGLINE = {
+  lead: '일정이 끝났어요,',
+  accent: '이제 정산할 차례예요',
+};
+
+const tagline = computed(() => {
+  const workation = current.value?.workation;
+  if (!workation) return EMPTY_TAGLINE;
+
+  const phase = workation.phase ?? 'ONGOING';
+
+  if (phase === 'PENDING_SETTLEMENT') return SETTLEMENT_TAGLINE;
+
+  // 시작 전에는 지역과 기간을 넣어 무엇이 곧 시작되는지 그대로 읽어 준다
+  if (phase === 'BEFORE') {
+    return {
+      lead: `${regionLabel.value}에서 보낼 ${workation.totalDays}일,`,
+      accent: '곧 시작돼요',
+    };
+  }
+
+  // 진행 중에는 지금 며칠째인지와 남은 날을 붙인다.
+  // 마지막 날에는 남은 날이 0 이라 "남은 0일" 이 되어 버려 문장을 따로 쓴다
+  return {
+    lead: `${regionLabel.value}에서 ${workation.elapsedDays}일째,`,
+    accent:
+      remainDays.value > 0
+        ? `남은 ${remainDays.value}일도 알차게`
+        : '오늘이 마지막 날이에요',
+  };
+});
+
+const remainDays = computed(() => {
+  const workation = current.value?.workation;
+  if (!workation) return 0;
+  return Math.max(workation.totalDays - workation.elapsedDays, 0);
+});
+
+// region.name 은 '제주' 지만 문장에서는 '제주도' 로 쓴다
+const regionLabel = computed(() => {
+  const name = current.value?.workation?.region?.name ?? '';
+  return programOf(name)?.displayName ?? name;
+});
 
 // 삭제는 세 단계다. 확인 → (예약 상태에 따라) 안내 → 실행
 const upcomingOpen = ref(false);
@@ -267,8 +381,10 @@ const loadEmptyHome = async () => {
 
 const loadHome = async () => {
   loading.value = true;
-  // 알림 읽지 않은 개수를 백그라운드에서 조회 (실패해도 홈에는 영향 없음)
+
+  // 안 읽은 알림 개수는 배지에만 쓰인다. 기다리지 않고 뒤에서 받는다
   notificationStore.fetchUnreadCount();
+
   await workationStore.fetchCurrent();
   pageError.value = workationStore.error;
 
@@ -354,6 +470,21 @@ const goRecords = () => {
 // 정산을 마친 워케이션의 상세는 정산 화면이다. 목록에서 들어가는 곳과 같다
 const goRecordDetail = (workationId) => {
   router.push(`/workation/${workationId}/settlement`);
+};
+
+// 업종마다 상세 화면이 다르다.
+// 숙소·공유오피스는 예약 화면이라 워케이션이 없으면 그쪽에서 막는다
+const MERCHANT_DETAIL_PATH = {
+  ACCOMMODATION: (id) => `/reservation/accommodations/${id}`,
+  OFFICE: (id) => `/reservation/offices/${id}`,
+  RESTAURANT: (id) => `/merchants/restaurants/${id}`,
+  ACTIVITY: (id) => `/merchants/activities/${id}`,
+};
+
+const goMerchantDetail = (merchant) => {
+  const toPath = MERCHANT_DETAIL_PATH[merchant?.category];
+  if (!toPath || !merchant?.merchantId) return;
+  router.push(toPath(merchant.merchantId));
 };
 
 const goEdit = () => {
