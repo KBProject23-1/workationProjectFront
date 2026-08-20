@@ -1,62 +1,78 @@
 <template>
   <div
-    class="fixed inset-0 z-50 flex items-end justify-center bg-black/40"
+    class="fixed inset-0 z-50 flex items-end justify-center bg-navy/45"
     @click.self="close"
   >
-    <div class="w-full max-w-md rounded-t-2xl bg-white px-5 pt-5 pb-8">
-      <div class="flex items-start justify-between">
-        <div>
-          <h2 class="text-base font-bold text-slate-900">카테고리 이름 변경</h2>
-          <p class="mt-1 text-xs text-slate-400">
+    <div
+      class="rounded-t-sheet bg-surface w-full max-w-[430px] px-5 pt-5 pb-8"
+    >
+      <span class="bg-line mx-auto mb-4 block h-1 w-9 rounded-full" />
+
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h2 class="text-title font-bold -tracking-[0.01em] text-ink">
+            카테고리 이름 변경
+          </h2>
+          <p class="text-body-sm mt-1 text-ink-mute">
             회사에서 쓰는 계정과목 이름으로 바꿀 수 있어요
           </p>
         </div>
-        <button class="text-lg text-slate-400" @click="close">×</button>
+        <button
+          class="bg-canvas flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-sub"
+          aria-label="닫기"
+          @click="close"
+        >
+          <X :size="16" />
+        </button>
       </div>
 
       <div class="mt-5">
-        <p class="mb-1.5 text-xs text-slate-500">기존 카테고리명</p>
-        <div class="rounded-md bg-slate-50 px-3 py-2">
-          <p class="text-sm font-bold text-slate-900">
+        <p class="text-body-sm mb-2 font-semibold text-ink-sub">
+          기존 카테고리명
+        </p>
+        <div class="rounded-chip bg-canvas px-3.5 py-3">
+          <p class="text-body font-semibold text-ink">
             {{ category.defaultName ?? category.name }}
           </p>
-          <p class="text-xs text-slate-400">{{ category.description }}</p>
+          <p class="text-body-sm mt-0.5 text-ink-mute">
+            {{ category.description }}
+          </p>
         </div>
       </div>
 
       <div class="mt-4">
-        <div class="mb-1.5 flex items-baseline justify-between">
-          <label class="text-xs text-slate-500"
-            >우리 회사에서 부르는 이름</label
-          >
-          <span class="text-xs text-slate-400"
-            >{{ customName.length }} / 20</span
-          >
+        <div class="mb-2 flex items-baseline justify-between">
+          <label class="text-body-sm font-semibold text-ink-sub">
+            우리 회사에서 부르는 이름
+          </label>
+          <span class="text-body-sm text-ink-mute">
+            {{ customName.length }} / 20
+          </span>
         </div>
         <Input
           v-model="customName"
           maxlength="20"
-          class="placeholder:text-slate-300"
+          class="rounded-chip text-body h-12 placeholder:text-ink-mute"
         />
       </div>
 
-      <p class="mt-3 rounded-md bg-blue-50 px-3 py-2 text-xs text-slate-500">
-        이름만 바뀌고 분류 기준은 그대로예요. 지금까지 등록한 지출도 그대로
-        집계됩니다
-      </p>
+      <!-- 두 문장을 붙여 두면 줄바꿈 자리가 화면 폭에 따라 달라진다 -->
+      <div class="rounded-chip bg-brand-weak text-body-sm mt-3 px-3.5 py-3 text-ink-sub">
+        <p>이름만 바뀌고 분류 기준은 그대로예요.</p>
+        <p class="mt-0.5">지금까지 등록한 지출도 그대로 집계됩니다</p>
+      </div>
 
-      <div class="mt-6 flex gap-2">
-        <BaseButton
-          variant="outline"
-          class="h-11 flex-1 rounded-xl text-sm"
+      <div class="mt-6 flex gap-2.5">
+        <button
+          class="rounded-card bg-canvas text-body h-[52px] flex-1 font-bold text-ink-sub transition-transform active:scale-[0.98] disabled:opacity-50"
           :disabled="saving"
           @click="reset"
         >
           기본값으로
-        </BaseButton>
+        </button>
         <BaseButton
           variant="default"
-          class="h-11 flex-1 rounded-xl text-sm"
+          class="shadow-cta text-body h-[52px] flex-1 rounded-[14px] font-bold text-white"
           :disabled="saving"
           @click="save"
         >
@@ -69,6 +85,7 @@
 
 <script setup>
 import { ref } from 'vue';
+import { X } from '@lucide/vue';
 import { Input } from '@/components/ui/input';
 import BaseButton from '@/components/common/BaseButton.vue';
 import { useCategoryStore } from '@/stores/categoryStore';

@@ -1,32 +1,33 @@
 <template>
-  <div class="min-h-screen bg-white px-5 pt-4 pb-8">
-    <div class="mb-4">
-      <BaseHeader
-        :title="pageTitle"
-        @back="goBack"
-      />
+  <div class="bg-canvas min-h-screen px-4 pt-4 pb-8">
+    <div class="mb-4 px-1">
+      <BaseHeader :title="pageTitle" @back="goBack" />
     </div>
 
     <!-- 설문은 사용자당 1회다. 이미 했으면 단계가 하나 줄어든다 -->
     <template v-if="!isEdit">
-      <div class="h-1 w-full rounded-full bg-blue-100">
+      <div class="bg-line h-1 w-full rounded-full">
         <div
-          class="h-1 rounded-full bg-blue-600"
+          class="bg-brand h-1 rounded-full"
           :class="totalSteps === 3 ? 'w-1/3' : 'w-1/2'"
         />
       </div>
-      <p class="mt-1 text-right text-xs text-slate-400">1 / {{ totalSteps }}</p>
+      <p class="text-body-sm mt-1.5 text-right text-ink-mute">
+        1 / {{ totalSteps }}
+      </p>
     </template>
 
-    <h2 class="mt-4 mb-3 text-base font-bold text-slate-900">기본 정보</h2>
+    <h2 class="text-title mt-5 mb-3 px-1 font-bold -tracking-[0.01em] text-ink">
+      기본 정보
+    </h2>
 
-    <div class="space-y-4">
+    <div class="rounded-card bg-surface shadow-card space-y-4 px-[18px] py-5">
       <WorkationFormField label="제목" :error-message="errors.title">
         <Input
           v-model="form.title"
           maxlength="100"
           placeholder="예) 제주 귤따기 워케이션"
-          class="placeholder:text-slate-300"
+          class="rounded-chip text-body h-12 placeholder:text-ink-mute"
         />
       </WorkationFormField>
 
@@ -44,12 +45,12 @@
             <button
               type="button"
               :disabled="isEdit"
-              class="border-input flex h-9 w-full items-center justify-between rounded-md border bg-transparent px-3 text-base disabled:bg-slate-50 disabled:text-slate-400 md:text-sm"
+              class="border-line rounded-chip text-body disabled:bg-canvas flex h-12 w-full items-center justify-between border bg-transparent px-3.5 disabled:text-ink-mute"
             >
-              <span :class="form.regionId ? 'text-slate-900' : 'text-slate-300'">
+              <span :class="form.regionId ? 'text-ink' : 'text-ink-mute'">
                 {{ selectedRegionName }}
               </span>
-              <ChevronDown :size="16" class="text-slate-400" />
+              <ChevronDown :size="17" class="text-ink-mute" />
             </button>
           </SelectTrigger>
           <SelectContent>
@@ -81,7 +82,7 @@
             :disabled="startDateLocked"
             class="flex-1"
           />
-          <span class="shrink-0 text-slate-400">~</span>
+          <span class="shrink-0 text-ink-mute">~</span>
           <WorkationDateInput
             v-model="form.endDate"
             placeholder="종료일"
@@ -99,13 +100,14 @@
             <Input
               :model-value="businessBudgetText"
               inputmode="numeric"
-              class="pr-8 text-right"
+              class="rounded-chip text-body h-12 pr-8 text-right"
               @update:model-value="onBusinessBudgetInput"
             />
             <span
-              class="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400"
-              >원</span
+              class="text-body-sm absolute top-1/2 right-3.5 -translate-y-1/2 text-ink-mute"
             >
+              원
+            </span>
           </div>
         </WorkationFormField>
 
@@ -117,25 +119,27 @@
             <Input
               :model-value="personalBudgetText"
               inputmode="numeric"
-              class="pr-8 text-right"
+              class="rounded-chip text-body h-12 pr-8 text-right"
               @update:model-value="onPersonalBudgetInput"
             />
             <span
-              class="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400"
-              >원</span
+              class="text-body-sm absolute top-1/2 right-3.5 -translate-y-1/2 text-ink-mute"
             >
+              원
+            </span>
           </div>
         </WorkationFormField>
       </div>
 
-      <p class="text-xs text-slate-400">
-        다음 단계에서 취향을 고르고 카테고리별로 배정하게 돼요
-      </p>
     </div>
+
+    <p class="text-body-sm mt-3 px-1 text-ink-mute">
+      다음 단계에서 취향을 고르고 카테고리별로 배정하게 돼요
+    </p>
 
     <BaseButton
       variant="default"
-      class="mt-8 h-12 w-full rounded-xl text-base"
+      class="shadow-cta text-body mt-8 h-[52px] w-full rounded-[14px] font-bold text-white"
       :disabled="submitting"
       @click="submit"
     >
@@ -183,11 +187,13 @@
         <div
           v-for="(answer, index) in surveyAnswers"
           :key="answer.questionId"
-          class="rounded-xl px-4 py-3.5"
+          class="rounded-card px-4 py-3.5"
           :class="SURVEY_CARD_TONES[index % SURVEY_CARD_TONES.length]"
         >
-          <p class="text-xs leading-5 text-slate-500">{{ answer.question }}</p>
-          <p class="mt-1 text-sm font-bold leading-5 text-slate-900">
+          <p class="text-body-sm leading-5 text-ink-sub">
+            {{ answer.question }}
+          </p>
+          <p class="text-body mt-1 leading-5 font-semibold text-ink">
             {{ answer.selectedText }}
           </p>
         </div>

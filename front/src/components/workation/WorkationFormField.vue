@@ -1,13 +1,15 @@
 <template>
   <div>
-    <div class="mb-1.5 flex items-baseline justify-between">
-      <label class="text-xs text-slate-500">{{ label }}</label>
-      <span v-if="hint" class="text-xs text-slate-400">{{ hint }}</span>
+    <div class="mb-2 flex items-baseline justify-between gap-3">
+      <label class="text-body-sm font-semibold text-ink-sub">{{ label }}</label>
+      <span v-if="hint" class="text-body-sm shrink-0 text-ink-mute">
+        {{ hint }}
+      </span>
     </div>
 
     <slot />
 
-    <p v-if="errorMessage" class="mt-1.5 text-xs text-red-500">
+    <p v-if="errorMessage" class="text-body-sm text-danger mt-1.5">
       {{ errorMessage }}
     </p>
   </div>

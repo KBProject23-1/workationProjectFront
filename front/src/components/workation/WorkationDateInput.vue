@@ -2,13 +2,9 @@
   <div class="relative">
     <button
       type="button"
-      class="border-input flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-transparent px-3 text-left text-base disabled:bg-slate-50 md:text-sm"
+      class="border-line rounded-chip text-body disabled:bg-canvas flex h-12 w-full items-center justify-between gap-2 border bg-transparent px-3.5 text-left"
       :class="
-        disabled
-          ? 'text-slate-400'
-          : modelValue
-            ? 'text-slate-900'
-            : 'text-slate-300'
+        disabled ? 'text-ink-mute' : modelValue ? 'text-ink' : 'text-ink-mute'
       "
       :disabled="disabled"
       @click="openPicker"
@@ -16,7 +12,7 @@
       <span class="truncate">{{ displayText }}</span>
 
       <svg
-        class="h-4 w-4 shrink-0 text-slate-400"
+        class="h-[17px] w-[17px] shrink-0 text-ink-mute"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
