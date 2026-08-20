@@ -42,6 +42,12 @@ export default [
     name: 'EmailChangePage',
     component: () => import('@/pages/account/EmailChangePage.vue'),
   },
+  // 알림 설정 — 알림 카테고리별 수신 여부를 Toggle 로 확인·변경한다
+  {
+    path: '/account/me/notifications',
+    name: 'NotificationSettingsPage',
+    component: () => import('@/pages/account/NotificationSettingsPage.vue'),
+  },
   // 회원 탈퇴 — 상세 UI 는 별도 작업에서 구현 (이번 작업은 route 진입만)
   {
     path: '/account/me/withdraw',

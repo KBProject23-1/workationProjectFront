@@ -35,7 +35,7 @@ const menuItems = [
 // 설정 카드(③ 설정)의 행 — 계정 설정은 진입 route 로 이동, 알림 설정은 미구현 (토스트만)
 const settingItems = [
   { label: '계정 설정', to: '/account/me/settings' },
-  { label: '알림 설정', to: null },
+  { label: '알림 설정', to: '/account/me/notifications' },
 ];
 
 // 휴대폰 번호는 010-0000-0000 형식으로 표기한다 (저장값은 하이픈 없는 숫자 — 로그인 화면과 동일 규칙)

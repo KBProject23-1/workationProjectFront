@@ -16,6 +16,7 @@ import reservationRouter from './reservationRouter';
 import recommendationRouter from './recommendationRouter';
 import bookmarkRouter from './bookmarkRouter';
 import reviewRouter from './reviewRouter';
+import notificationRouter from './notificationRouter';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,6 +36,7 @@ const router = createRouter({
     ...recommendationRouter,
     ...bookmarkRouter,
     ...reviewRouter,
+    ...notificationRouter,
   ],
 });
 

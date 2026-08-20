@@ -15,11 +15,17 @@
         </button>
         <button
           type="button"
-          class="flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition-colors active:bg-slate-100"
+          class="relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition-colors active:bg-slate-100"
           aria-label="알림"
           @click="goNotifications"
         >
           <Bell :size="22" />
+          <span
+            v-if="notificationStore.unreadCount > 0"
+            class="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white"
+          >
+            {{ notificationStore.unreadCount > 99 ? '99+' : notificationStore.unreadCount }}
+          </span>
         </button>
         <button
           type="button"
@@ -147,8 +153,8 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { toast } from 'vue-sonner';
 import { Bell, FileSpreadsheet, ReceiptText, UserRound } from '@lucide/vue';
+import { useNotificationStore } from '@/stores/notificationStore';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useExpenseStore } from '@/stores/expenseStore';
@@ -179,6 +185,7 @@ const expenseStore = useExpenseStore();
 const settlementStore = useSettlementStore();
 const surveyStore = useSurveyStore();
 const scheduleStore = useScheduleStore();
+const notificationStore = useNotificationStore();
 const { showError } = useErrorToast();
 // 지난 워케이션 지출을 법인 / 업무 중 무엇으로 부를지 정한다
 const { ensureCards } = useBudgetTypeLabel();
@@ -260,6 +267,8 @@ const loadEmptyHome = async () => {
 
 const loadHome = async () => {
   loading.value = true;
+  // 알림 읽지 않은 개수를 백그라운드에서 조회 (실패해도 홈에는 영향 없음)
+  notificationStore.fetchUnreadCount();
   await workationStore.fetchCurrent();
   pageError.value = workationStore.error;
 
@@ -320,9 +329,8 @@ const goPay = () => {
   router.push('/wallet');
 };
 
-// 알림 화면은 아직 준비 전이라 안내 토스트만 노출
 const goNotifications = () => {
-  toast('알림 기능은 준비 중이에요');
+  router.push('/notifications');
 };
 
 // 프로필 → 내 정보 조회 화면
