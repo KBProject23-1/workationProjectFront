@@ -1,18 +1,27 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
-    <header class="relative mb-4 flex items-center justify-center">
-      <h1 class="text-base font-bold text-slate-900">워케이션 완료</h1>
+  <div class="bg-canvas flex min-h-screen flex-col px-4 pt-4 pb-8">
+    <header class="mb-4 flex items-center justify-center py-1">
+      <h1 class="text-title font-bold -tracking-[0.01em] text-ink">
+        워케이션 완료
+      </h1>
     </header>
 
-    <LoadingScreen v-if="loading" title="정산 정보를 불러오고 있어요" :fullscreen="false" />
+    <LoadingScreen
+      v-if="loading"
+      title="정산 정보를 불러오고 있어요"
+      :fullscreen="false"
+    />
 
     <template v-else>
-      <section class="mt-6 rounded-2xl bg-blue-50 px-5 py-8 text-center">
-        <div class="relative mx-auto mb-4 h-16 w-16">
+      <!-- 완료를 알리는 화면이라 이 카드가 주인공이다 -->
+      <section
+        class="rounded-sheet bg-surface shadow-card mt-4 px-5 pt-9 pb-5 text-center"
+      >
+        <div class="relative mx-auto mb-5 h-16 w-16">
           <span
-            class="flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-3xl text-white"
+            class="bg-brand shadow-cta flex h-16 w-16 items-center justify-center rounded-full text-white"
           >
-            ✓
+            <Check :size="32" :stroke-width="2.4" />
           </span>
 
           <!-- 완료 순간에 한 번만 터지는 장식. 클릭을 가로채지 않도록 pointer-events 를 끈다 -->
@@ -29,44 +38,54 @@
           />
         </div>
 
-        <h2 class="text-lg font-bold text-slate-900">
-          워케이션 일정이 완료되었습니다!
+        <h2 class="text-heading font-bold -tracking-[0.02em] text-ink">
+          워케이션 일정이 완료되었습니다
         </h2>
-        <p class="mt-2 text-sm text-slate-500">
+        <p class="text-body-sm mt-2 text-ink-sub">
           정산 보고서는 기록에서 다시 볼 수 있어요
         </p>
 
         <div
-          class="mt-5 flex items-center justify-between border-t border-blue-100 pt-4 text-sm"
+          class="border-line text-body-sm mt-6 flex items-center justify-between border-t pt-4"
         >
-          <span class="text-slate-500">완료일시</span>
-          <span class="font-bold text-slate-900">{{ settledAtText }}</span>
+          <span class="text-ink-mute">완료일시</span>
+          <span class="font-bold text-ink">{{ settledAtText }}</span>
         </div>
       </section>
 
-      <section class="mt-6">
-        <h3 class="mb-2 text-sm font-bold text-slate-900">정산 요약</h3>
-        <dl class="rounded-xl border border-slate-200 px-4 py-3 text-sm">
-          <div class="flex justify-between py-1.5">
-            <dt class="text-slate-500">회사 청구</dt>
-            <dd class="font-bold text-slate-900">{{ won(workAmount) }}</dd>
+      <section class="mt-5">
+        <h3 class="text-title mb-2.5 px-1 font-bold -tracking-[0.01em] text-ink">
+          정산 요약
+        </h3>
+        <dl class="rounded-card bg-surface shadow-card px-[18px] py-2">
+          <div class="border-line flex justify-between border-b py-3">
+            <dt class="text-body-sm text-ink-sub">회사 청구</dt>
+            <dd class="text-body-sm font-semibold text-ink">
+              {{ won(workAmount) }}
+            </dd>
           </div>
-          <div class="flex justify-between py-1.5">
-            <dt class="text-slate-500">개인 부담</dt>
-            <dd class="font-bold text-slate-900">{{ won(personalAmount) }}</dd>
+          <div class="border-line flex justify-between border-b py-3">
+            <dt class="text-body-sm text-ink-sub">개인 부담</dt>
+            <dd class="text-body-sm font-semibold text-ink">
+              {{ won(personalAmount) }}
+            </dd>
           </div>
-          <div
-            class="mt-1 flex justify-between border-t border-slate-100 pt-2.5"
-          >
-            <dt class="font-bold text-slate-900">총 지출</dt>
-            <dd class="font-bold text-slate-900">{{ won(totalAmount) }}</dd>
+          <div class="flex items-baseline justify-between py-3.5">
+            <dt class="text-body font-bold text-ink">총 지출</dt>
+            <dd class="text-title font-bold text-ink">
+              {{ won(totalAmount) }}
+            </dd>
           </div>
         </dl>
       </section>
 
-      <BaseButton variant="default" class="mt-8 h-12 w-full rounded-xl text-base" @click="goHome"
-        >확인</BaseButton
+      <BaseButton
+        variant="default"
+        class="shadow-cta text-body mt-8 h-[52px] w-full rounded-[14px] font-bold text-white"
+        @click="goHome"
       >
+        확인
+      </BaseButton>
     </template>
   </div>
 </template>
@@ -74,6 +93,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { Check } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import { storeToRefs } from 'pinia';
 import { useSettlementStore } from '@/stores/settlementStore';
@@ -88,8 +108,9 @@ const { showError } = useErrorToast();
 
 const workationId = route.params.workationId;
 
-// 원 둘레로 흩어지도록 각도를 나눠 미리 계산해 둔다
-const CONFETTI_COLORS = ['#2563EB', '#60A5FA', '#F59E0B', '#EF4444', '#10B981'];
+// 원 둘레로 흩어지도록 각도를 나눠 미리 계산해 둔다.
+// 흰 카드 위에 뿌려지므로 밝은 색은 보이지 않는다
+const CONFETTI_COLORS = ['#3087ED', '#0B3155', '#F2A007', '#8FD0FF', '#164B86'];
 
 const CONFETTI = Array.from({ length: 14 }, (_, index) => {
   const angle = (Math.PI * 2 * index) / 14;

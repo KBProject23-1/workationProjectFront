@@ -1,20 +1,20 @@
 <template>
   <section
     v-if="rows.length > 0"
-    class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3"
+    class="rounded-card bg-warn-weak mt-4 px-4 py-4"
   >
     <div class="flex items-start gap-3">
       <span
-        class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-white"
+        class="text-caption bg-warn mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-bold text-white"
       >
         !
       </span>
 
-      <div class="flex-1">
-        <p class="text-sm font-bold text-slate-900">
+      <div class="min-w-0 flex-1">
+        <p class="text-body-sm font-bold text-ink">
           회사에 청구할 지출이 개인에 남아 있나요? · {{ candidates.length }}건
         </p>
-        <p class="mt-0.5 text-xs text-slate-500">
+        <p class="text-caption mt-0.5 text-ink-sub">
           {{
             showAll
               ? '개인 지출 전체예요. 청구할 것만 골라 주세요'
@@ -28,30 +28,30 @@
       <button
         v-for="expense in candidates"
         :key="expense.expenseId"
-        class="flex w-full items-center gap-2 rounded-lg bg-white px-3 py-2 text-left"
+        class="rounded-chip bg-surface flex w-full items-center gap-2.5 px-3 py-2.5 text-left"
         @click="togglePick(expense.expenseId)"
       >
         <span
-          class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border"
+          class="border-line flex h-5 w-5 shrink-0 items-center justify-center rounded-full border"
           :class="
             picked.includes(expense.expenseId)
-              ? 'border-blue-600 bg-blue-600 text-white'
-              : 'border-slate-300'
+              ? 'border-brand bg-brand text-white'
+              : 'bg-surface'
           "
         >
-          <Check v-if="picked.includes(expense.expenseId)" class="h-3 w-3" />
+          <Check v-if="picked.includes(expense.expenseId)" :size="13" />
         </span>
 
         <span class="min-w-0 flex-1">
-          <span class="block truncate text-sm font-bold text-slate-900">
+          <span class="text-body-sm block truncate font-semibold text-ink">
             {{ expense.merchantName }}
           </span>
-          <span class="block text-xs text-slate-400">
+          <span class="text-caption mt-0.5 block text-ink-mute">
             {{ dotDate(expense.spentDate) }} · {{ expense.categoryName }}
           </span>
         </span>
 
-        <span class="shrink-0 text-sm font-bold text-slate-900">
+        <span class="text-body-sm shrink-0 font-bold text-ink">
           {{ won(expense.amount) }}
         </span>
       </button>
@@ -59,14 +59,14 @@
 
     <p
       v-if="candidates.length === 0"
-      class="mt-3 rounded-lg bg-white px-3 py-3 text-center text-xs text-slate-400"
+      class="rounded-chip bg-surface text-body-sm mt-3 px-3 py-3.5 text-center text-ink-mute"
     >
       청구할 만한 지출이 없어요
     </p>
 
     <BaseButton
       variant="default"
-      class="mt-3 h-10 w-full rounded-lg text-sm"
+      class="text-body-sm mt-3 h-11 w-full rounded-[12px] font-bold text-white"
       :disabled="picked.length === 0 || working"
       @click="claim"
     >
@@ -76,7 +76,7 @@
     <!-- 추천에 안 걸린 지출도 청구할 수 있어야 한다 -->
     <button
       v-if="hiddenCount > 0 || showAll"
-      class="mt-2 w-full text-center text-xs font-bold text-slate-500"
+      class="text-body-sm mt-2.5 w-full py-1 text-center font-bold text-ink-sub"
       @click="toggleShowAll"
     >
       {{ showAll ? '추천만 보기' : `다른 개인 지출도 보기 (${hiddenCount}건)` }}
