@@ -1,19 +1,22 @@
 <template>
-  <section class="mt-5">
-    <p v-if="isLoading" class="py-8 text-center text-sm text-slate-400">
+  <section class="mt-6">
+    <p v-if="isLoading" class="text-body-sm py-8 text-center text-ink-mute">
       일정을 불러오는 중...
     </p>
 
     <template v-else>
-      <div v-for="day in schedules" :key="day.date" class="mb-4">
+      <div v-for="day in schedules" :key="day.date" class="mb-5">
         <!--
           날짜는 카드 밖 제목으로 둔다.
           카드 안에 넣으면 7일치에서 카드마다 목록이 또 들어가 이중 구조가 된다.
         -->
-        <div class="mb-2 flex items-center justify-between">
-          <p class="text-sm font-bold text-slate-900">
+        <div class="mb-2.5 flex items-center justify-between px-0.5">
+          <p class="text-title font-bold -tracking-[0.01em] text-ink">
             {{ dayLabel(day.date) }}
-            <span v-if="day.isToday" class="ml-1 text-xs text-blue-600">
+            <span
+              v-if="day.isToday"
+              class="text-caption bg-brand ml-1.5 rounded-full px-2 py-0.5 align-[3px] font-bold text-white"
+            >
               오늘
             </span>
           </p>
@@ -21,13 +24,13 @@
           <!-- 그날에 무엇을 추가한다는 뜻이라 첫 날에만 둔다 -->
           <div v-if="day === schedules[0]" class="flex items-center gap-1.5">
             <button
-              class="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-bold text-slate-600"
+              class="rounded-chip bg-surface shadow-card text-caption px-2.5 py-1.5 font-bold text-ink-sub"
               @click="$emit('reserve')"
             >
               예약 · 추천
             </button>
             <button
-              class="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-bold text-slate-600"
+              class="rounded-chip bg-surface shadow-card text-caption px-2.5 py-1.5 font-bold text-ink-sub"
               @click="$emit('history')"
             >
               예약 내역
@@ -39,11 +42,11 @@
           <!-- 왼쪽 시간 막대. 오늘만 파랗게 두어 지금 어디쯤인지 보이게 한다 -->
           <span
             class="w-1 shrink-0 rounded-full"
-            :class="day.isToday ? 'bg-blue-100' : 'bg-slate-100'"
+            :class="day.isToday ? 'bg-brand/25' : 'bg-line'"
           />
 
           <div
-            class="min-w-0 flex-1 divide-y divide-slate-100 rounded-xl border border-slate-200"
+            class="divide-line rounded-card bg-surface shadow-card min-w-0 flex-1 divide-y"
           >
             <div
               v-for="row in rowsOf(day)"
@@ -80,20 +83,20 @@
         <!-- 빈 날을 비워두면 불러오기 실패처럼 보인다 -->
         <button
           v-else
-          class="w-full rounded-xl border border-dashed border-slate-200 py-5 text-center"
+          class="rounded-card border-line w-full border border-dashed py-6 text-center"
           @click="$emit('reserve')"
         >
-          <span class="block text-xs text-slate-400">
+          <span class="text-body-sm block text-ink-mute">
             아직 정해진 일정이 없어요
           </span>
-          <span class="mt-0.5 block text-xs font-bold text-blue-600">
+          <span class="text-body-sm text-brand mt-0.5 block font-bold">
             일정 추가하기 ›
           </span>
         </button>
       </div>
 
       <button
-        class="flex w-full items-center justify-center gap-1 py-2 text-xs font-bold text-slate-500"
+        class="text-body-sm flex w-full items-center justify-center gap-1 py-2 font-bold text-ink-sub"
         @click="$emit('toggle')"
       >
         {{ expanded ? '접기' : '7일치 보기' }}

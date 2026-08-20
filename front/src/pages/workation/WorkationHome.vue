@@ -2,16 +2,18 @@
   <div class="min-h-screen bg-canvas pb-8">
     <!--
       브랜드 면. 아래 카드가 이 위로 올라오면서 깊이가 생긴다.
-      진행 중 워케이션이 없을 때만 큰 문구를 넣는다.
-      있을 때는 진행 카드가 주인공이라 헤더가 자리를 덜 차지해야 한다
+      진행 중 워케이션이 없으면 큰 문구를, 있으면 워케이션 요약을 넣는다.
+
+      요약을 흰 카드로 따로 두면 남색 헤더 바로 아래에 연한 파랑 카드가 붙어
+      두 파랑이 겹치고 헤더는 인사말만 남은 빈 띠가 된다.
+      요약을 헤더 안으로 올리면 그 자리가 채워지고, 아래는 흰 카드만 남아 경계가 뚜렷해진다
     -->
     <!--
       마지막 색을 130% 지점에 두어 화면 안에서는 끝까지 도달하지 않게 한다.
       to-brand 로 끝내면 아래쪽이 통째로 밝은 파랑이 되어 남색이 남지 않는다
     -->
     <header
-      class="bg-[linear-gradient(150deg,#0B3155_0%,#164B86_55%,#3087ED_130%)] px-5 pt-5"
-      :class="current ? 'pb-16' : 'pb-[74px]'"
+      class="bg-[linear-gradient(150deg,#0B3155_0%,#164B86_55%,#3087ED_130%)] px-5 pt-5 pb-[74px]"
     >
       <div class="flex items-start justify-between">
         <div>
@@ -48,13 +50,19 @@
         </div>
       </div>
 
-      <div v-if="!loading && !errorMessage && !current" class="mt-6">
+      <!--
+        문구는 워케이션 상태에 따라 바뀐다.
+        없을 때만 문구를 두면 등록한 순간 이 자리가 비어 헤더가 인사말만 남은 띠가 된다
+      -->
+      <div v-if="!loading && !pageError" class="mt-6">
         <p class="text-caption font-bold tracking-[0.08em] text-white/60">
           WORKATION
         </p>
-        <p class="mt-2 text-display leading-[1.28] font-bold -tracking-[0.02em] text-white">
-          일하러 가는 여행,<br />
-          <span class="text-[#8FD0FF]">어디로 떠나볼까요</span>
+        <p
+          class="text-display mt-2 leading-[1.28] font-bold -tracking-[0.02em] text-white"
+        >
+          {{ tagline.lead }}<br />
+          <span class="text-[#8FD0FF]">{{ tagline.accent }}</span>
         </p>
       </div>
     </header>
@@ -78,24 +86,24 @@
       -->
       <button
         v-if="setupIncomplete"
-        class="mt-5 flex w-full items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-left"
+        class="rounded-card bg-warn-weak mt-4 flex w-full items-center gap-3 px-4 py-3.5 text-left"
         @click="goIncompleteStep"
       >
         <span
-          class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-white"
+          class="text-caption bg-warn flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-bold text-white"
         >
           !
         </span>
-        <span class="flex-1">
-          <span class="block text-sm font-bold text-slate-900">
+        <span class="min-w-0 flex-1">
+          <span class="text-body-sm block font-bold text-ink">
             아직 설정이 끝나지 않았어요
           </span>
-          <span class="block text-xs text-slate-500">
+          <span class="text-caption mt-0.5 block text-ink-sub">
             {{ incompleteMessage }}
           </span>
         </span>
-        <span class="shrink-0 text-xs font-bold text-amber-600">
-          이어서 설정하기 ›
+        <span class="text-caption text-warn shrink-0 font-bold">
+          이어서 ›
         </span>
       </button>
 
@@ -119,17 +127,25 @@
 
       <div class="mt-4 grid grid-cols-2 gap-3">
         <button
-          class="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 py-3 text-sm font-bold text-slate-600"
+          class="rounded-card bg-surface shadow-card text-body-sm flex flex-col items-center gap-2 py-4 font-bold text-ink transition-transform active:scale-[0.98]"
           @click="goExpenses"
         >
-          <ReceiptText class="h-5 w-5" />
+          <span
+            class="bg-brand-weak text-brand flex h-9 w-9 items-center justify-center rounded-[11px]"
+          >
+            <ReceiptText :size="18" />
+          </span>
           지출 내역 보기
         </button>
         <button
-          class="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 py-3 text-sm font-bold text-slate-600"
+          class="rounded-card bg-surface shadow-card text-body-sm flex flex-col items-center gap-2 py-4 font-bold text-ink transition-transform active:scale-[0.98]"
           @click="goSettlement"
         >
-          <FileSpreadsheet class="h-5 w-5" />
+          <span
+            class="bg-brand-weak text-brand flex h-9 w-9 items-center justify-center rounded-[11px]"
+          >
+            <FileSpreadsheet :size="18" />
+          </span>
           정산 하러 가기
         </button>
       </div>
@@ -200,6 +216,7 @@ import {
 import { getBookmarks } from '@/api/bookmark';
 import { fetchPopularPlaces } from '@/components/workation/popularPlaces';
 import { reservationSummaryText } from '@/components/workation/format';
+import { programOf } from '@/components/workation/regionPrograms';
 import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import WorkationProgressCard from '@/components/workation/WorkationProgressCard.vue';
 import WorkationScheduler from '@/components/workation/WorkationScheduler.vue';
@@ -233,6 +250,56 @@ const pageError = ref(null);
 const loading = ref(true);
 const confirmOpen = ref(false);
 const deleting = ref(false);
+
+// 헤더 문구. 워케이션이 없을 때와 있을 때, 그리고 시기별로 달라진다.
+//
+// 없을 때는 "어디로 떠날까" 라고 묻고, 진행 중에는 그 답이 이어지도록 썼다.
+// 서버가 내려주는 phase 는 BEFORE / ONGOING / PENDING_SETTLEMENT 세 가지다
+const EMPTY_TAGLINE = { lead: '일하러 가는 여행,', accent: '어디로 떠나볼까요' };
+
+const SETTLEMENT_TAGLINE = {
+  lead: '일정이 끝났어요,',
+  accent: '이제 정산할 차례예요',
+};
+
+const tagline = computed(() => {
+  const workation = current.value?.workation;
+  if (!workation) return EMPTY_TAGLINE;
+
+  const phase = workation.phase ?? 'ONGOING';
+
+  if (phase === 'PENDING_SETTLEMENT') return SETTLEMENT_TAGLINE;
+
+  // 시작 전에는 지역과 기간을 넣어 무엇이 곧 시작되는지 그대로 읽어 준다
+  if (phase === 'BEFORE') {
+    return {
+      lead: `${regionLabel.value}에서 보낼 ${workation.totalDays}일,`,
+      accent: '곧 시작돼요',
+    };
+  }
+
+  // 진행 중에는 지금 며칠째인지와 남은 날을 붙인다.
+  // 마지막 날에는 남은 날이 0 이라 "남은 0일" 이 되어 버려 문장을 따로 쓴다
+  return {
+    lead: `${regionLabel.value}에서 ${workation.elapsedDays}일째,`,
+    accent:
+      remainDays.value > 0
+        ? `남은 ${remainDays.value}일도 알차게`
+        : '오늘이 마지막 날이에요',
+  };
+});
+
+const remainDays = computed(() => {
+  const workation = current.value?.workation;
+  if (!workation) return 0;
+  return Math.max(workation.totalDays - workation.elapsedDays, 0);
+});
+
+// region.name 은 '제주' 지만 문장에서는 '제주도' 로 쓴다
+const regionLabel = computed(() => {
+  const name = current.value?.workation?.region?.name ?? '';
+  return programOf(name)?.displayName ?? name;
+});
 
 // 삭제는 세 단계다. 확인 → (예약 상태에 따라) 안내 → 실행
 const upcomingOpen = ref(false);
