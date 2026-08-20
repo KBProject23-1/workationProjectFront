@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { Heart, MapPin } from '@lucide/vue';
@@ -12,14 +12,22 @@ import ScheduleRegistrationPanel from '@/components/schedule/ScheduleRegistratio
 import { useScheduleRegistration } from '@/composables/useScheduleRegistration';
 import { useActivityStore } from '@/stores/merchant/activityStore';
 import { useErrorToast } from '@/composables/useErrorToast';
+import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
 
 const activityStore = useActivityStore();
 const route = useRoute();
 const { activity, isLoading, isBookmarkLoading, error } =
   storeToRefs(activityStore);
 const { showError } = useErrorToast();
+const heroImageLoadFailed = ref(false);
+const defaultThumbnail = computed(() => getMerchantDefaultImage({
+  category: 'ACTIVITY',
+  merchantId: activity.value.merchantId,
+  activityType: activity.value.activityType,
+}));
 
 async function fetchActivity() {
+  heroImageLoadFailed.value = false;
   await activityStore.fetchActivity(Number(route.params.merchantId));
 }
 
@@ -71,15 +79,12 @@ async function toggleBookmark() {
       aria-label="여가활동 대표 이미지"
     >
       <img
-        v-if="activity.thumbnailUrl"
-        :src="activity.thumbnailUrl"
+        :src="activity.thumbnailUrl && !heroImageLoadFailed
+          ? activity.thumbnailUrl
+          : defaultThumbnail"
         :alt="`${activity.merchantName} 대표 이미지`"
+        @error="heroImageLoadFailed = true"
       />
-      <template v-else>
-      <div class="activity-window"><i></i></div>
-      <div class="surfer"></div>
-      <div class="surfboard"></div>
-      </template>
     </section>
 
     <section v-if="!isLoading && !error" class="activity-info">
@@ -139,7 +144,7 @@ async function toggleBookmark() {
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
 .activity-page { min-height:min(871px,100vh); padding-bottom:22px; color:#111827; background:#fff; font-family:'SUIT Variable','SUIT',sans-serif; } button { font:inherit; }
-.hero-image { position:relative; height:175px; margin:0 16px 16px; overflow:hidden; border-radius:22px; background:#b4d3fb; }.activity-window { position:absolute; top:27px; left:26px; right:26px; height:104px; overflow:hidden; border-radius:11px; background:#edf4fd; }.activity-window::after { content:''; position:absolute; left:-20px; right:-20px; bottom:-18px; height:65px; border-radius:50% 50% 0 0; background:#b6d3f5; }.activity-window i { position:absolute; top:12px; right:39px; z-index:1; width:24px; height:24px; border-radius:50%; background:#ffd057; }.surfer { position:absolute; left:102px; bottom:62px; z-index:2; width:73px; height:70px; border-radius:48% 48% 40% 40%; background:#c8c5c8; }.surfer::after { content:''; position:absolute; left:-30px; right:-8px; bottom:-8px; height:34px; border-radius:50% 50% 0 0; background:#5da0d2; }.surfboard { position:absolute; right:92px; bottom:69px; z-index:2; width:78px; height:7px; border-radius:8px; background:#3c83c8; transform:rotate(31deg); }.surfboard::after { content:''; position:absolute; left:54px; top:24px; width:53px; height:7px; border-radius:8px; background:#4d91d2; transform:rotate(-5deg); }
+.hero-image { position:relative; height:175px; margin:0 16px 16px; overflow:hidden; border-radius:22px; background:#b4d3fb; }
 .hero-image > img { width:100%; height:100%; object-fit:cover; }
 .bookmark-button:disabled { cursor:wait; opacity:.55; }
 .activity-info { position:relative; margin:0 16px; padding:20px; border:1.5px solid #dbe3ee; border-radius:20px; background:#fff; }.bookmark-button { position:absolute; top:17px; right:18px; padding:0; color:#88a0bf; border:0; background:transparent; cursor:pointer; transition:color .16s ease,transform .16s ease; }.bookmark-button:hover { color:#3087ed; transform:scale(1.1); }.bookmark-button.bookmarked { color:#3087ed; }.activity-info h2 { margin:0 42px 8px 0; font-size:22px; }.description { margin:0 0 9px; color:#687587; font-size:12px; line-height:1.5; }.address { display:flex; align-items:center; gap:4px; margin:0; color:#8592a2; font-size:12px; }.divider { height:1px; margin:12px 0; background:#e3e8ee; }.rating { margin:0; font-size:16px; font-weight:800; }.rating span { color:#ff8a00; }

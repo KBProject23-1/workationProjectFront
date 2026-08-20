@@ -1,9 +1,15 @@
 <script setup>
+import { computed, ref, watch } from 'vue';
 import { Heart, MapPin } from '@lucide/vue';
+import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
 
-defineProps({
+const props = defineProps({
   item: {
     type: Object,
+    required: true,
+  },
+  category: {
+    type: String,
     required: true,
   },
   ranking: {
@@ -21,17 +27,40 @@ defineProps({
 });
 
 defineEmits(['detail', 'bookmark']);
+
+const imageLoadFailed = ref(false);
+
+watch(
+  () => [props.item.thumbnailUrl, props.item.imageUrl, props.category],
+  () => {
+    imageLoadFailed.value = false;
+  },
+);
+
+const defaultThumbnail = computed(
+  () => getMerchantDefaultImage({
+    category: props.category,
+    merchantId: props.item.merchantId,
+    activityType: props.item.activityType,
+  }),
+);
+
+const thumbnailSource = computed(() => {
+  const remoteThumbnail = props.item.thumbnailUrl || props.item.imageUrl;
+  return remoteThumbnail && !imageLoadFailed.value
+    ? remoteThumbnail
+    : defaultThumbnail.value;
+});
 </script>
 
 <template>
   <article class="result-card">
     <div class="ranking">{{ ranking }}</div>
     <img
-      v-if="item.thumbnailUrl || item.imageUrl"
-      :src="item.thumbnailUrl || item.imageUrl"
+      :src="thumbnailSource"
       :alt="`${item.name} 대표 이미지`"
+      @error="imageLoadFailed = true"
     />
-    <div v-else class="image-placeholder" aria-hidden="true"></div>
 
     <div class="result-content">
       <div class="result-title-row">
@@ -88,17 +117,12 @@ defineEmits(['detail', 'bookmark']);
   box-shadow: 0 6px 18px rgb(48 135 237 / 10%);
 }
 
-.result-card > img,
-.image-placeholder {
+.result-card > img {
   width: 90px;
   min-width: 90px;
   height: 112px;
   border-radius: 8px;
   object-fit: cover;
-}
-
-.image-placeholder {
-  background: #edf3fa;
 }
 
 .ranking {

@@ -4,7 +4,7 @@
   >
     <div class="h-[92px] bg-slate-100">
       <img
-        :src="thumbnailUrl || defaultThumbnail"
+        :src="thumbnailSource"
         :alt="name"
         class="h-full w-full object-cover"
         loading="lazy"
@@ -25,22 +25,44 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { shortWon } from '@/components/workation/format';
-import defaultThumbnail from '@/assets/images/merchant-default.webp';
+import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
 
 const props = defineProps({
   name: { type: String, required: true },
+  merchantId: { type: [String, Number], default: null },
+  category: { type: String, default: '' },
+  activityType: { type: String, default: '' },
   thumbnailUrl: { type: String, default: '' },
   rating: { type: [String, Number], default: null },
   price: { type: [String, Number], default: null },
 });
 
-// thumbnail_url 이 있어도 링크가 끊겨 있을 수 있다. 그때도 기본 이미지로 돌린다
-const onImageError = (event) => {
-  if (event.target.src !== defaultThumbnail) {
-    event.target.src = defaultThumbnail;
-  }
+const imageLoadFailed = ref(false);
+const defaultThumbnail = computed(
+  () => getMerchantDefaultImage({
+    category: props.category,
+    merchantId: props.merchantId,
+    activityType: props.activityType,
+  }),
+);
+const thumbnailSource = computed(
+  () => props.thumbnailUrl && !imageLoadFailed.value
+    ? props.thumbnailUrl
+    : defaultThumbnail.value,
+);
+
+watch(
+  () => [props.thumbnailUrl, props.category, props.activityType],
+  () => {
+    imageLoadFailed.value = false;
+  },
+);
+
+// thumbnail_url 링크 오류 시 카테고리별 기본 이미지 표시
+const onImageError = () => {
+  imageLoadFailed.value = true;
 };
 
 // 평점과 가격 중 있는 것만 붙인다. 둘 다 없으면 빈 줄이 남는다

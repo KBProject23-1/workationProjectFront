@@ -1,7 +1,9 @@
 <script setup>
+import { computed, ref, watch } from 'vue';
 import { Heart, MapPin } from '@lucide/vue';
+import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
 
-defineProps({
+const props = defineProps({
   bookmark: {
     type: Object,
     required: true,
@@ -9,11 +11,36 @@ defineProps({
 });
 
 defineEmits(['remove', 'details']);
+
+const imageLoadFailed = ref(false);
+const defaultThumbnail = computed(
+  () => getMerchantDefaultImage({
+    category: props.bookmark.category,
+    merchantId: props.bookmark.merchantId,
+    activityType: props.bookmark.activityType,
+  }),
+);
+const thumbnailSource = computed(
+  () => props.bookmark.thumbnailUrl && !imageLoadFailed.value
+    ? props.bookmark.thumbnailUrl
+    : defaultThumbnail.value,
+);
+
+watch(
+  () => [props.bookmark.thumbnailUrl, props.bookmark.category],
+  () => {
+    imageLoadFailed.value = false;
+  },
+);
 </script>
 
 <template>
   <article class="place-card">
-    <img :src="bookmark.thumbnailUrl" :alt="`${bookmark.name} 대표 이미지`" />
+    <img
+      :src="thumbnailSource"
+      :alt="`${bookmark.name} 대표 이미지`"
+      @error="imageLoadFailed = true"
+    />
     <div class="place-info">
       <h2>{{ bookmark.name }}</h2>
       <p class="rating"><span>★</span> {{ bookmark.rating }}</p>

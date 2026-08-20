@@ -1,8 +1,8 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { Bed, Heart, MapPin, Phone } from '@lucide/vue';
+import { Heart, MapPin, Phone } from '@lucide/vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationOccupancyModal from '@/components/reservation/ReservationOccupancyModal.vue';
 import AccommodationProductCard from '@/components/merchant/AccommodationProductCard.vue';
@@ -11,6 +11,7 @@ import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import { useAccommodationStore } from '@/stores/merchant/accommodationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
+import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
 
 const accommodationStore = useAccommodationStore();
 const route = useRoute();
@@ -20,6 +21,10 @@ const { showError } = useErrorToast();
 const dateModalMode = ref('');
 const isOccupancyModalOpen = ref(false);
 const heroImageLoadFailed = ref(false);
+const defaultThumbnail = computed(() => getMerchantDefaultImage({
+  category: 'ACCOMMODATION',
+  merchantId: accommodation.value.merchantId,
+}));
 
 function displayDate(value) {
   const date = new Date(`${value}T00:00:00`);
@@ -111,15 +116,13 @@ onMounted(async () => {
     <template v-if="!isLoading && !error">
     <section class="hero-image">
       <img
-        v-if="accommodation.thumbnailUrl && !heroImageLoadFailed"
         class="hero-thumbnail"
-        :src="accommodation.thumbnailUrl"
+        :src="accommodation.thumbnailUrl && !heroImageLoadFailed
+          ? accommodation.thumbnailUrl
+          : defaultThumbnail"
         :alt="`${accommodation.name} 대표 이미지`"
         @error="heroImageLoadFailed = true"
       />
-      <div v-else class="hero-fallback" role="img" aria-label="숙소 기본 이미지">
-        <Bed :size="48" class="text-blue-400" aria-hidden="true" />
-      </div>
     </section>
 
     <section class="merchant-section">
@@ -195,8 +198,7 @@ onMounted(async () => {
 .detail-page { min-height:min(871px,100vh); padding-bottom:16px; color:#111827; background:#fff; font-family:'SUIT Variable','SUIT',sans-serif; }
 button { font:inherit; }
 .hero-image { position:relative; height:175px; margin:0 16px; overflow:hidden; border-radius:22px; background:#b4d3fb; }
-.hero-thumbnail,.hero-fallback { width:100%; height:100%; display:block; }.hero-thumbnail { object-fit:cover; }
-.hero-fallback { display:flex; align-items:center; justify-content:center; background:#edf3fa; }
+.hero-thumbnail { width:100%; height:100%; display:block; object-fit:cover; }
 .merchant-section { position:relative; padding:10px 17px 8px; }.merchant-section h2 { margin:0 42px 8px 0; font-size:22px; }.merchant-section p { margin:0; }.bookmark-button { position:absolute; top:17px; right:18px; padding:0; color:#88a0bf; border:0; background:transparent; cursor:pointer; transition:color .16s ease,transform .16s ease; }.bookmark-button:hover { color:#3087ed; transform:scale(1.1); }.bookmark-button.bookmarked { color:#3087ed; }.bookmark-button:disabled { cursor:wait; opacity:.55; }.address { display:flex; align-items:center; gap:4px; color:#8592a2; font-size:12px; }.rating-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; }.rating { font-size:16px; font-weight:800; }.rating span { color:#ff8a00; }.rating b { color:#7b8794; }.review-button { flex:none; padding:5px 10px; border:1px solid #3087ed; border-radius:999px; color:#3087ed; background:#fff; font-size:12px; font-weight:800; }
 .accommodation-info { margin:4px 16px 0; padding:14px; border:1.5px solid #dbe3ee; border-radius:16px; background:#f8fbff; }.accommodation-info p { margin:0 0 10px; font-size:16px; }.accommodation-info > div { display:flex; align-items:center; gap:6px; color:#687587; font-size:12px; }.accommodation-info .times { margin-top:8px; }.times i { width:4px; height:4px; border-radius:50%; background:#c6d0dc; }
 h3 { margin:0 0 10px; font-size:16px; }.room-section { padding:0 16px; }

@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { Building2, Heart, MapPin, Phone } from '@lucide/vue';
+import { Heart, MapPin, Phone } from '@lucide/vue';
 import OfficeProductCard from '@/components/merchant/OfficeProductCard.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
@@ -12,6 +12,7 @@ import ReservationGuestModal from '@/components/reservation/ReservationGuestModa
 import ReservationSpaceModal from '@/components/reservation/ReservationSpaceModal.vue';
 import { useOfficeStore } from '@/stores/merchant/officeStore';
 import { useErrorToast } from '@/composables/useErrorToast';
+import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
 
 const officeStore = useOfficeStore();
 const route = useRoute();
@@ -22,6 +23,10 @@ const dateModalMode = ref('');
 const isSpaceModalOpen = ref(false);
 const isGuestModalOpen = ref(false);
 const heroImageLoadFailed = ref(false);
+const defaultThumbnail = computed(() => getMerchantDefaultImage({
+  category: 'OFFICE',
+  merchantId: office.value.merchantId,
+}));
 const selectedProductTypeLabel = computed(() => ({
   OFFICE_SEAT: '좌석',
   MEETING_ROOM: '회의실',
@@ -112,15 +117,13 @@ onMounted(async () => {
     <template v-if="!isLoading && !error">
     <section class="hero-image">
       <img
-        v-if="office.thumbnailUrl && !heroImageLoadFailed"
         class="hero-thumbnail"
-        :src="office.thumbnailUrl"
+        :src="office.thumbnailUrl && !heroImageLoadFailed
+          ? office.thumbnailUrl
+          : defaultThumbnail"
         :alt="`${office.name} 대표 이미지`"
         @error="heroImageLoadFailed = true"
       />
-      <div v-else class="hero-fallback" role="img" aria-label="공유오피스 기본 이미지">
-        <Building2 :size="48" class="text-emerald-400" aria-hidden="true" />
-      </div>
     </section>
 
     <section class="merchant-section">
@@ -207,8 +210,7 @@ onMounted(async () => {
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
 .office-page { min-height:min(871px,100vh); padding-bottom:16px; color:#111827; background:#fff; font-family:'SUIT Variable','SUIT',sans-serif; } button { font:inherit; }
 .hero-image { position:relative; height:175px; margin:0 16px; overflow:hidden; border-radius:22px; background:#b4d3fb; }
-.hero-thumbnail,.hero-fallback { width:100%; height:100%; display:block; }.hero-thumbnail { object-fit:cover; }
-.hero-fallback { display:flex; align-items:center; justify-content:center; background:#edf3fa; }
+.hero-thumbnail { width:100%; height:100%; display:block; object-fit:cover; }
 .merchant-section { position:relative; padding:10px 17px 8px; }.merchant-section h2 { margin:0 42px 8px 0; font-size:22px; }.merchant-section p { margin:0; }.bookmark-button { position:absolute; top:17px; right:18px; padding:0; color:#88a0bf; border:0; background:transparent; cursor:pointer; transition:color .16s ease,transform .16s ease; }.bookmark-button:hover { color:#3087ed; transform:scale(1.1); }.bookmark-button.bookmarked { color:#3087ed; }.bookmark-button:disabled { cursor:wait; opacity:.55; }.address { display:flex; align-items:center; gap:4px; color:#8592a2; font-size:12px; }.rating-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; }.rating { font-size:16px; font-weight:800; }.rating span { color:#ff8a00; }.rating b { color:#7b8794; }.review-button { flex:none; padding:5px 10px; border:1px solid #3087ed; border-radius:999px; color:#3087ed; background:#fff; font-size:12px; font-weight:800; }
 .office-info { margin:4px 16px 13px; padding:12px 14px; border:1.5px solid #dbe3ee; border-radius:16px; background:#f8fbff; }.office-info strong { font-size:12px; }.office-info p { margin:5px 0 8px; color:#7b8794; font-size:12px; }.office-info div { display:flex; align-items:center; gap:6px; color:#7b8794; font-size:12px; }
 h3 { margin:0 0 10px; font-size:16px; }.condition-section,.usage-section,.product-section { padding:0 16px; }.conditions { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }.conditions button,.conditions > div { height:75px; display:flex; flex-direction:column; justify-content:center; padding:9px 12px; text-align:left; color:#111827; border:1.5px solid #dbe3ee; border-radius:16px; background:#fff; }.conditions small { margin-bottom:9px; color:#8a96a5; font-size:12px; white-space:nowrap; }.conditions strong { font-size:16px; white-space:nowrap; }

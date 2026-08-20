@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { Heart, MapPin } from '@lucide/vue';
@@ -12,14 +12,21 @@ import ScheduleRegistrationPanel from '@/components/schedule/ScheduleRegistratio
 import { useScheduleRegistration } from '@/composables/useScheduleRegistration';
 import { useRestaurantStore } from '@/stores/merchant/restaurantStore';
 import { useErrorToast } from '@/composables/useErrorToast';
+import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
 
 const restaurantStore = useRestaurantStore();
 const route = useRoute();
 const { restaurant, isLoading, isBookmarkLoading, error } =
   storeToRefs(restaurantStore);
 const { showError } = useErrorToast();
+const heroImageLoadFailed = ref(false);
+const defaultThumbnail = computed(() => getMerchantDefaultImage({
+  category: 'RESTAURANT',
+  merchantId: restaurant.value.merchantId,
+}));
 
 async function fetchRestaurant() {
+  heroImageLoadFailed.value = false;
   await restaurantStore.fetchRestaurant(Number(route.params.merchantId));
 }
 
@@ -71,15 +78,12 @@ async function toggleBookmark() {
       aria-label="음식점 대표 이미지"
     >
       <img
-        v-if="restaurant.thumbnailUrl"
-        :src="restaurant.thumbnailUrl"
+        :src="restaurant.thumbnailUrl && !heroImageLoadFailed
+          ? restaurant.thumbnailUrl
+          : defaultThumbnail"
         :alt="`${restaurant.merchantName} 대표 이미지`"
+        @error="heroImageLoadFailed = true"
       />
-      <template v-else>
-      <div class="restaurant-window"><i></i></div>
-      <div class="pasta"><span></span><b></b><em></em></div>
-      <div class="table-item"></div>
-      </template>
     </section>
 
     <section v-if="!isLoading && !error" class="restaurant-info">
@@ -140,7 +144,7 @@ async function toggleBookmark() {
 <style scoped>
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
 .restaurant-page { min-height:min(871px,100vh); padding-bottom:22px; color:#111827; background:#fff; font-family:'SUIT Variable','SUIT',sans-serif; } button { font:inherit; }
-.hero-image { position:relative; height:175px; margin:0 16px 16px; overflow:hidden; border-radius:22px; background:#b4d3fb; }.restaurant-window { position:absolute; top:27px; left:26px; right:26px; height:104px; overflow:hidden; border-radius:11px; background:#edf4fd; }.restaurant-window::after { content:''; position:absolute; left:-15px; right:-15px; bottom:-14px; height:55px; border-radius:50% 50% 0 0; background:#b6d3f5; }.restaurant-window i { position:absolute; top:12px; right:39px; z-index:1; width:24px; height:24px; border-radius:50%; background:#ffd057; }.pasta { position:absolute; left:65px; bottom:64px; z-index:2; width:100px; height:35px; border:5px solid #df9854; border-radius:50%; background:#e7a654; }.pasta span,.pasta b,.pasta em { position:absolute; width:8px; height:8px; border-radius:50%; }.pasta span { top:7px; left:21px; background:#77ae67; }.pasta b { top:13px; left:45px; background:#e95d54; }.pasta em { top:4px; right:20px; background:#69ae67; }.table-item { position:absolute; right:106px; bottom:72px; width:58px; height:33px; border:9px solid #88776d; border-radius:7px; background:#e7ddd1; }
+.hero-image { position:relative; height:175px; margin:0 16px 16px; overflow:hidden; border-radius:22px; background:#b4d3fb; }
 .hero-image > img { width:100%; height:100%; object-fit:cover; }
 .bookmark-button:disabled { cursor:wait; opacity:.55; }
 .restaurant-info { position:relative; margin:0 16px; padding:20px; border:1.5px solid #dbe3ee; border-radius:20px; background:#fff; }.bookmark-button { position:absolute; top:17px; right:18px; padding:0; color:#88a0bf; border:0; background:transparent; cursor:pointer; transition:color .16s ease,transform .16s ease; }.bookmark-button:hover { color:#3087ed; transform:scale(1.1); }.bookmark-button.bookmarked { color:#3087ed; }.restaurant-info h2 { margin:0 42px 8px 0; font-size:22px; }.description { margin:0 0 9px; color:#687587; font-size:12px; line-height:1.5; }.address { display:flex; align-items:center; gap:4px; margin:0; color:#8592a2; font-size:12px; }.divider { height:1px; margin:12px 0; background:#e3e8ee; }.rating { margin:0; font-size:16px; font-weight:800; }.rating span { color:#ff8a00; }.price { height:32px; display:flex; align-items:center; justify-content:space-between; margin-top:12px; padding:0 16px; border:1px solid #e4e9ef; border-radius:999px; background:#f8fafc; }.price span { color:#7b8794; font-size:12px; }.price strong { font-size:16px; }
