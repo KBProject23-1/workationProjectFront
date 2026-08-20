@@ -14,16 +14,16 @@ defineProps({
 
 <template>
   <div
-    class="flex flex-col items-center justify-center w-full px-5 py-5 bg-white text-center"
+    class="flex flex-col items-center justify-center w-full px-5 py-5 bg-canvas text-center"
     :class="fullscreen ? 'min-h-screen' : 'flex-1'"
   >
     <div
-      class="w-16 h-16 rounded-3xl bg-blue-50 border border-blue-100 flex items-center justify-center mb-6 shadow-xs text-blue-600"
+      class="w-16 h-16 rounded-3xl bg-brand-weak border border-line flex items-center justify-center mb-6 shadow-xs text-brand"
     >
       <LoaderCircle :size="30" :stroke-width="2.5" class="animate-spin" />
     </div>
 
-    <h1 class="text-[20px] font-bold text-gray-900 mb-2">{{ title }}</h1>
-    <p class="text-[14px] font-medium text-gray-400">{{ description }}</p>
+    <h1 class="text-heading font-bold text-ink mb-2">{{ title }}</h1>
+    <p class="text-body font-medium text-ink-mute">{{ description }}</p>
   </div>
 </template>
