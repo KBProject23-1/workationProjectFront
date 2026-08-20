@@ -1,28 +1,28 @@
 <template>
-  <div class="min-h-screen bg-white px-5 pt-4 pb-8">
-    <div class="mb-4">
+  <div class="bg-canvas min-h-screen px-4 pt-4 pb-8">
+    <div class="mb-4 px-1">
       <BaseHeader
         :title="isEdit ? '지출 내역 수정하기' : '지출 내역 추가하기'"
         @back="goBack"
       />
     </div>
 
-    <p v-if="!isEdit" class="mb-4 text-xs text-slate-400">
+    <p v-if="!isEdit" class="text-body-sm mb-4 px-1 text-ink-mute">
       지갑으로 결제하지 않은 내역을 등록해 주세요
     </p>
 
-    <div class="space-y-4">
+    <div class="rounded-card bg-surface shadow-card space-y-4 px-[18px] py-5">
       <div v-if="!isEdit">
-        <p class="mb-1.5 text-sm font-bold text-slate-900">경비 구분</p>
-        <div class="grid grid-cols-2 gap-2">
+        <p class="text-body-sm mb-2 font-semibold text-ink-sub">경비 구분</p>
+        <div class="grid grid-cols-2 gap-2.5">
           <button
             v-for="type in BUDGET_TYPES"
             :key="type.value"
-            class="rounded-xl border py-3 text-sm font-bold"
+            class="rounded-chip text-body h-12 font-bold transition-colors"
             :class="
               form.budgetType === type.value
-                ? 'border-blue-500 bg-blue-50 text-blue-600'
-                : 'border-slate-200 text-slate-400'
+                ? 'bg-brand text-white'
+                : 'bg-canvas text-ink-mute'
             "
             @click="changeBudgetType(type.value)"
           >
@@ -41,12 +41,12 @@
           <SelectTrigger as-child>
             <button
               type="button"
-              class="border-input flex h-9 w-full items-center justify-between rounded-md border bg-transparent px-3 text-base md:text-sm"
+              class="border-line rounded-chip text-body flex h-12 w-full items-center justify-between border bg-transparent px-3.5"
             >
-              <span :class="form.cardId ? 'text-slate-900' : 'text-slate-300'">
+              <span :class="form.cardId ? 'text-ink' : 'text-ink-mute'">
                 {{ selectedCardLabel }}
               </span>
-              <ChevronDown :size="16" class="text-slate-400" />
+              <ChevronDown :size="17" class="text-ink-mute" />
             </button>
           </SelectTrigger>
           <SelectContent>
@@ -59,7 +59,7 @@
             </SelectItem>
           </SelectContent>
         </Select>
-        <p class="mt-1.5 text-xs text-slate-400">{{ cardHint }}</p>
+        <p class="text-body-sm mt-1.5 text-ink-mute">{{ cardHint }}</p>
       </WorkationFormField>
 
       <WorkationFormField label="가맹점명" :error-message="errors.merchantName">
@@ -67,7 +67,7 @@
           v-model="form.merchantName"
           maxlength="150"
           placeholder="예) 제주공항 리무진"
-          class="placeholder:text-slate-300"
+          class="rounded-chip text-body h-12 placeholder:text-ink-mute"
         />
       </WorkationFormField>
 
@@ -84,13 +84,14 @@
             <Input
               :model-value="amountText"
               inputmode="numeric"
-              class="pr-8 text-right"
+              class="rounded-chip text-body h-12 pr-8 text-right"
               @update:model-value="onAmountInput"
             />
             <span
-              class="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400"
-              >원</span
+              class="text-body-sm absolute top-1/2 right-3.5 -translate-y-1/2 text-ink-mute"
             >
+              원
+            </span>
           </div>
         </WorkationFormField>
       </div>
@@ -104,14 +105,14 @@
           <SelectTrigger as-child>
             <button
               type="button"
-              class="border-input flex h-9 w-full items-center justify-between rounded-md border bg-transparent px-3 text-base md:text-sm"
+              class="border-line rounded-chip text-body flex h-12 w-full items-center justify-between border bg-transparent px-3.5"
             >
               <span
-                :class="form.expenseCategoryId ? 'text-slate-900' : 'text-slate-300'"
+                :class="form.expenseCategoryId ? 'text-ink' : 'text-ink-mute'"
               >
                 {{ selectedCategoryLabel }}
               </span>
-              <ChevronDown :size="16" class="text-slate-400" />
+              <ChevronDown :size="17" class="text-ink-mute" />
             </button>
           </SelectTrigger>
           <SelectContent>
@@ -130,14 +131,14 @@
         <Input
           v-model="form.memo"
           maxlength="255"
-          class="placeholder:text-slate-300"
+          class="rounded-chip text-body h-12 placeholder:text-ink-mute"
         />
       </WorkationFormField>
     </div>
 
     <BaseButton
       variant="default"
-      class="mt-8 h-12 w-full rounded-xl text-base"
+      class="shadow-cta text-body mt-8 h-[52px] w-full rounded-[14px] font-bold text-white"
       :disabled="submitting"
       @click="submit"
     >

@@ -1,100 +1,118 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
-    <div class="mb-4">
-      <BaseHeader
-        title="사용내역 상세"
-        @back="goBack"
-      />
+  <div class="bg-canvas flex min-h-screen flex-col px-4 pt-4 pb-8">
+    <div class="mb-4 px-1">
+      <BaseHeader title="사용내역 상세" @back="goBack" />
     </div>
 
-    <LoadingScreen v-if="loading" title="사용내역을 불러오고 있어요" :fullscreen="false" />
+    <LoadingScreen
+      v-if="loading"
+      title="사용내역을 불러오고 있어요"
+      :fullscreen="false"
+    />
 
     <template v-else-if="detail">
-      <div class="flex items-start justify-between">
-        <span class="text-xs text-slate-400">{{
-          dotDate(detail.spentDate)
-        }}</span>
-        <button
-          class="flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-[11px] font-bold text-blue-600"
-          @click="budgetTypeSheetOpen = true"
+      <!-- 금액이 이 화면의 주인공이라 카드 하나로 묶어 맨 위에 둔다 -->
+      <div class="rounded-sheet bg-surface shadow-card px-[18px] py-[18px]">
+        <div class="flex items-start justify-between gap-3">
+          <span class="text-body-sm text-ink-mute">
+            {{ dotDate(detail.spentDate) }}
+          </span>
+          <button
+            class="text-caption rounded-full bg-brand-weak text-brand flex shrink-0 items-center gap-1 px-3 py-1.5 font-bold"
+            @click="budgetTypeSheetOpen = true"
+          >
+            {{
+              detail.budgetType === 'WORK' ? `${workLabel} 경비` : '개인 소비'
+            }}
+            <ChevronDown :size="13" />
+          </button>
+        </div>
+
+        <!-- 어디서 썼는지를 먼저 읽고 금액을 본다 -->
+        <p class="text-body mt-3 text-ink-sub">{{ detail.merchantName }}</p>
+        <p class="text-display mt-0.5 font-bold -tracking-[0.02em] text-ink">
+          {{ won(detail.amount) }}
+        </p>
+
+        <!-- 두 문장을 붙여 두면 줄바꿈 자리가 화면 폭에 따라 달라진다 -->
+        <div
+          v-if="detail.isAutoCategorized"
+          class="text-body-sm rounded-chip bg-canvas mt-4 px-3.5 py-3 text-ink-sub"
         >
-          {{ detail.budgetType === 'WORK' ? `${workLabel} 경비` : '개인 소비' }}
-          <ChevronDown class="h-3 w-3" />
-        </button>
+          <p>가맹점 업종을 보고 {{ detail.categoryName }}(으)로 분류했어요.</p>
+          <p class="mt-0.5">맞으면 그대로 두시면 됩니다</p>
+        </div>
       </div>
 
-      <p class="mt-1 text-2xl font-bold text-slate-900">
-        {{ won(detail.amount) }}
-      </p>
-      <p class="text-sm text-slate-500">{{ detail.merchantName }}</p>
-
-      <p
-        v-if="detail.isAutoCategorized"
-        class="mt-4 rounded-md bg-blue-50 px-3 py-2 text-xs text-slate-500"
-      >
-        가맹점 업종을 보고 {{ detail.categoryName }}(으)로 분류했어요. 맞으면
-        그대로 두시면 됩니다
-      </p>
-
-      <section class="mt-6">
-        <h2 class="mb-2 text-sm font-bold text-slate-900">결제 정보</h2>
-        <dl class="rounded-xl border border-slate-200 px-4 py-3 text-sm">
+      <section class="mt-5">
+        <h2 class="text-title mb-2.5 px-1 font-bold -tracking-[0.01em] text-ink">
+          결제 정보
+        </h2>
+        <dl class="rounded-card bg-surface shadow-card px-[18px] py-2">
           <div
             v-for="row in paymentRows"
             :key="row.label"
-            class="flex justify-between py-1.5"
+            class="border-line flex justify-between gap-4 border-b py-3 last:border-b-0"
           >
-            <dt class="text-slate-500">{{ row.label }}</dt>
-            <dd class="font-bold text-slate-900">{{ row.value }}</dd>
+            <dt class="text-body-sm shrink-0 text-ink-sub">{{ row.label }}</dt>
+            <dd class="text-body-sm min-w-0 text-right font-semibold text-ink">
+              {{ row.value }}
+            </dd>
           </div>
         </dl>
       </section>
 
-      <section class="mt-6">
-        <h2 class="mb-2 text-sm font-bold text-slate-900">카테고리</h2>
+      <section class="mt-5">
+        <h2 class="text-title mb-2.5 px-1 font-bold -tracking-[0.01em] text-ink">
+          카테고리
+        </h2>
         <div
-          class="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3"
+          class="rounded-card bg-surface shadow-card flex items-center justify-between gap-3 px-[18px] py-4"
         >
           <div class="min-w-0">
-            <p class="truncate text-sm font-bold text-slate-900">
+            <p class="text-body truncate font-semibold text-ink">
               {{ currentCategoryName }}
-              <span v-if="categoryChanged" class="text-xs text-blue-600">
+              <span v-if="categoryChanged" class="text-caption text-brand">
                 변경됨
               </span>
             </p>
-            <p class="truncate text-xs text-slate-400">
+            <p class="text-body-sm mt-0.5 truncate text-ink-mute">
               {{ currentCategoryDescription }}
             </p>
           </div>
           <button
-            class="shrink-0 rounded-lg border border-blue-600 px-3 py-1.5 text-xs font-bold text-blue-600"
+            class="text-body-sm rounded-chip bg-brand-weak text-brand shrink-0 px-3.5 py-2 font-bold"
             @click="categorySheetOpen = true"
           >
             변경
           </button>
         </div>
-        <p class="mt-2 text-xs text-slate-400">
+        <p class="text-body-sm mt-2 px-1 text-ink-mute">
           변경하면 다음부터 이 가맹점은 바꾼 카테고리로 분류돼요
         </p>
       </section>
 
-      <section class="mt-6">
-        <h2 class="mb-2 text-sm font-bold text-slate-900">증빙</h2>
+      <section class="mt-5">
+        <h2 class="text-title mb-2.5 px-1 font-bold -tracking-[0.01em] text-ink">
+          증빙
+        </h2>
         <div
-          class="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3"
+          class="rounded-card bg-surface shadow-card flex items-center justify-between gap-3 px-[18px] py-4"
         >
           <div class="min-w-0">
-            <p class="truncate text-sm font-bold text-slate-900">
+            <p class="text-body truncate font-semibold text-ink">
               {{ proof.title }}
             </p>
-            <p class="truncate text-xs text-slate-400">
+            <p class="text-body-sm mt-0.5 truncate text-ink-mute">
               {{ proof.description }}
             </p>
           </div>
           <span
-            class="shrink-0 rounded-full px-2 py-0.5 text-[11px]"
+            class="text-caption shrink-0 rounded-full px-2.5 py-1 font-bold"
             :class="
-              proof.done ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-500'
+              proof.done
+                ? 'bg-brand-weak text-brand'
+                : 'bg-danger/10 text-danger'
             "
           >
             {{ proof.done ? '완료' : '보완 필요' }}
@@ -110,14 +128,17 @@
       <BaseButton
         v-if="showConfirm"
         variant="default"
-        class="mt-8 h-12 w-full rounded-xl text-base"
+        class="shadow-cta text-body mt-8 h-[52px] w-full rounded-[14px] font-bold text-white"
         :disabled="confirming"
         @click="confirmAndClose"
       >
         {{ confirming ? '처리 중...' : '확인 완료' }}
       </BaseButton>
 
-      <p v-if="showConfirm" class="mt-2 text-center text-xs text-slate-400">
+      <p
+        v-if="showConfirm"
+        class="text-body-sm mt-2.5 text-center leading-relaxed text-ink-mute"
+      >
         {{
           categoryChanged
             ? '확인 완료를 누르면 바뀐 카테고리로 저장돼요'
@@ -125,28 +146,30 @@
         }}
       </p>
 
-      <!-- 수기 등록 건만 금액·일시를 고칠 수 있다 -->
-      <div v-if="isManual" class="mt-4 flex gap-2">
-        <BaseButton
-          variant="outline"
-          class="h-12 flex-1 rounded-xl text-base text-red-500 hover:text-red-600"
+      <!--
+        수기 등록 건만 금액·일시를 고칠 수 있다.
+        수정이 주로 하는 일이라 오른쪽에 두고 면을 채운다.
+        삭제는 되돌릴 수 없어 눈에 덜 띄게 흰 면으로 둔다
+      -->
+      <div v-if="isManual" class="mt-4 flex gap-2.5">
+        <button
+          class="rounded-card bg-surface shadow-card text-body text-danger h-[52px] flex-1 font-bold transition-transform active:scale-[0.98] disabled:opacity-50"
           :disabled="removing"
           @click="confirmOpen = true"
         >
           삭제하기
-        </BaseButton>
-        <BaseButton
-          variant="outline"
-          class="h-12 flex-1 rounded-xl text-base"
+        </button>
+        <button
+          class="rounded-card bg-brand-weak text-brand text-body h-[52px] flex-1 font-bold transition-transform active:scale-[0.98]"
           @click="goEdit"
         >
           수정하기
-        </BaseButton>
+        </button>
       </div>
 
       <p
         v-if="!isManual && !showConfirm"
-        class="mt-8 text-center text-xs text-slate-400"
+        class="text-body-sm mt-8 text-center text-ink-mute"
       >
         앱 내 결제 건은 금액과 일시를 바꿀 수 없어요
       </p>
@@ -192,7 +215,11 @@ import { useExpenseStore } from '@/stores/expenseStore';
 import { useCategoryStore } from '@/stores/categoryStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
-import { dotDate, won } from '@/components/workation/format';
+import {
+  dotDate,
+  maskedCardNumber,
+  won,
+} from '@/components/workation/format';
 import ExpenseCategorySheet from '@/components/workation/ExpenseCategorySheet.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 
@@ -238,7 +265,8 @@ const paymentMeans = computed(() => {
   if (!value) return '';
 
   if (value.card) {
-    return `${value.card.cardName} ${value.card.maskedNumber ?? ''}`.trim();
+    const number = maskedCardNumber(value.card.maskedNumber);
+    return `${value.card.cardName} ${number}`.trim();
   }
   if (value.paymentSourceType === 'WALLET') return '지갑';
   return value.budgetType === 'WORK' ? '카드 미지정' : '현금';

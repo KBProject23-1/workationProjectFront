@@ -1,22 +1,23 @@
 <template>
   <button
-    class="w-full rounded-xl border px-4 py-3 text-left"
-    :class="needsCard ? 'border-red-200 bg-red-50' : 'border-slate-200'"
+    class="rounded-card bg-surface shadow-card w-full px-4 py-3.5 text-left transition-transform active:scale-[0.99]"
     @click="$emit('click', expense.expenseId)"
   >
     <div class="flex items-start justify-between gap-3">
-      <span class="truncate text-sm font-bold text-slate-900">
+      <span class="text-body min-w-0 truncate font-semibold text-ink">
         {{ expense.merchantName }}
       </span>
-      <span class="shrink-0 text-sm font-bold text-slate-900">
+      <span class="text-body shrink-0 font-bold text-ink">
         {{ won(expense.amount) }}
       </span>
     </div>
 
-    <div class="mt-1 flex items-center justify-between gap-3">
-      <span class="truncate text-xs text-slate-400">{{ subText }}</span>
+    <div class="mt-1.5 flex items-center justify-between gap-3">
+      <span class="text-body-sm min-w-0 truncate text-ink-mute">
+        {{ subText }}
+      </span>
       <span
-        class="shrink-0 rounded-full px-2 py-0.5 text-[11px]"
+        class="text-caption shrink-0 rounded-full px-2.5 py-1 font-bold"
         :class="badgeClass"
       >
         {{ badgeText }}
@@ -72,9 +73,11 @@ const badgeText = computed(() => {
   return props.expense.categoryName;
 });
 
+// 확인 필요·보완 필요는 정산 전에 반드시 처리해야 해서 빨강으로 둔다
 const badgeClass = computed(() => {
-  if (needsCard.value) return 'bg-red-100 text-red-500';
-  if (props.expense.isAutoCategorized) return 'bg-red-50 text-red-500';
-  return 'bg-blue-50 text-blue-600';
+  if (needsCard.value || props.expense.isAutoCategorized) {
+    return 'bg-danger/10 text-danger';
+  }
+  return 'bg-brand-weak text-brand';
 });
 </script>
