@@ -10,6 +10,20 @@ const route = useRoute();
 const router = useRouter();
 const reservationStore = useReservationStore();
 
+const CONFETTI_COLORS = ['#2563EB', '#60A5FA', '#F59E0B', '#EF4444', '#10B981'];
+
+const CONFETTI = Array.from({ length: 14 }, (_, index) => {
+  const angle = (Math.PI * 2 * index) / 14;
+  const distance = 58 + (index % 3) * 14;
+  return {
+    id: index,
+    color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
+    dx: `${Math.round(Math.cos(angle) * distance)}px`,
+    dy: `${Math.round(Math.sin(angle) * distance)}px`,
+    delay: `${(index % 4) * 40}ms`,
+  };
+});
+
 const reservationId = computed(() => Number(route.params.reservationId));
 const createResult = computed(() => (
   reservationStore.reservationCreateResult?.reservationId === reservationId.value
@@ -102,13 +116,22 @@ onMounted(() => {
     <template v-else-if="reservation">
       <main class="flex-1 px-4 pb-6">
         <section class="relative flex flex-col items-center pb-9 pt-8 text-center">
-          <span class="absolute left-[25%] top-12 size-2 rotate-12 rounded-sm bg-amber-300"></span>
-          <span class="absolute right-[24%] top-16 size-2 rounded-full bg-rose-300"></span>
-          <span class="absolute left-[31%] top-28 size-1.5 rounded-full bg-violet-300"></span>
-          <span class="absolute right-[30%] top-28 size-2 rotate-45 bg-emerald-300"></span>
-          <span class="grid size-24 place-items-center rounded-full bg-primary text-white shadow-[0_12px_35px_rgba(48,135,237,0.25)]">
-            <Check :size="52" :stroke-width="2.8" />
-          </span>
+          <div class="relative size-24">
+            <span class="relative z-10 grid size-24 animate-bounce-once place-items-center rounded-full bg-primary text-white shadow-[0_12px_35px_rgba(48,135,237,0.25)]">
+              <Check :size="52" :stroke-width="2.8" />
+            </span>
+            <span
+              v-for="piece in CONFETTI"
+              :key="piece.id"
+              class="confetti pointer-events-none absolute top-1/2 left-1/2 block size-2 rounded-[1px]"
+              :style="{
+                backgroundColor: piece.color,
+                '--dx': piece.dx,
+                '--dy': piece.dy,
+                animationDelay: piece.delay,
+              }"
+            />
+          </div>
           <h2 class="mt-6 text-[24px] font-extrabold">예약이 완료되었어요!</h2>
         </section>
 
@@ -143,3 +166,32 @@ onMounted(() => {
     </template>
   </div>
 </template>
+
+<style scoped>
+@keyframes confetti-burst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy)))
+      scale(1) rotate(220deg);
+  }
+}
+
+.confetti {
+  z-index: 20;
+  opacity: 0;
+  animation: confetti-burst 900ms ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti {
+    display: none;
+  }
+}
+</style>

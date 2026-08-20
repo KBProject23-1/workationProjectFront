@@ -27,6 +27,7 @@ const loading = ref(true);
 const menuItems = [
   { label: '내 장소', to: '/bookmarks' },
   { label: '나의 워케이션 스타일', to: '/account/me/survey' },
+  { label: '예약 내역', to: '/reservations' },
   { label: '내가 작성한 리뷰', to: '/users/me/reviews' },
   { label: '워케이션 정산기록 보기', to: '/workation/records' },
 ];
