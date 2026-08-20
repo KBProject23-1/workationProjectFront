@@ -12,6 +12,20 @@ const route = useRoute();
 const router = useRouter();
 const reservationStore = useReservationStore();
 
+const CONFETTI_COLORS = ['#2563EB', '#60A5FA', '#F59E0B', '#EF4444', '#10B981'];
+
+const CONFETTI = Array.from({ length: 14 }, (_, index) => {
+  const angle = (Math.PI * 2 * index) / 14;
+  const distance = 58 + (index % 3) * 14;
+  return {
+    id: index,
+    color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
+    dx: `${Math.round(Math.cos(angle) * distance)}px`,
+    dy: `${Math.round(Math.sin(angle) * distance)}px`,
+    delay: `${(index % 4) * 40}ms`,
+  };
+});
+
 const reservationId = computed(() => Number(route.params.reservationId));
 const detail = computed(() => reservationStore.reservationDetail);
 const cancellation = computed(() => reservationStore.cancellationDetail);
@@ -73,8 +87,21 @@ onMounted(fetchResult);
 
     <template v-else>
       <main class="flex flex-1 flex-col items-center px-4 pt-10">
-        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-primary">
-          <Check :size="48" :stroke-width="2.4" class="text-white" />
+        <div class="relative h-20 w-20">
+          <div class="relative z-10 flex h-20 w-20 animate-bounce-once items-center justify-center rounded-full bg-primary">
+            <Check :size="48" :stroke-width="2.4" class="text-white" />
+          </div>
+          <span
+            v-for="piece in CONFETTI"
+            :key="piece.id"
+            class="confetti pointer-events-none absolute top-1/2 left-1/2 block size-2 rounded-[1px]"
+            :style="{
+              backgroundColor: piece.color,
+              '--dx': piece.dx,
+              '--dy': piece.dy,
+              animationDelay: piece.delay,
+            }"
+          />
         </div>
         <h2 class="mt-5 text-[20px] font-extrabold text-slate-800">
           취소가 완료되었어요.
@@ -109,3 +136,32 @@ onMounted(fetchResult);
     </template>
   </div>
 </template>
+
+<style scoped>
+@keyframes confetti-burst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy)))
+      scale(1) rotate(220deg);
+  }
+}
+
+.confetti {
+  z-index: 20;
+  opacity: 0;
+  animation: confetti-burst 900ms ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti {
+    display: none;
+  }
+}
+</style>

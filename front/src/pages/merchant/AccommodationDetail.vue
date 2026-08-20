@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { Heart, MapPin, Phone } from '@lucide/vue';
+import { Bed, Heart, MapPin, Phone } from '@lucide/vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationOccupancyModal from '@/components/reservation/ReservationOccupancyModal.vue';
 import AccommodationProductCard from '@/components/merchant/AccommodationProductCard.vue';
@@ -118,8 +118,7 @@ onMounted(async () => {
         @error="heroImageLoadFailed = true"
       />
       <div v-else class="hero-fallback" role="img" aria-label="숙소 기본 이미지">
-        <div class="hero-window"><span></span></div>
-        <div class="hero-bed"><span></span></div>
+        <Bed :size="48" class="text-blue-400" aria-hidden="true" />
       </div>
     </section>
 
@@ -197,10 +196,7 @@ onMounted(async () => {
 button { font:inherit; }
 .hero-image { position:relative; height:175px; margin:0 16px; overflow:hidden; border-radius:22px; background:#b4d3fb; }
 .hero-thumbnail,.hero-fallback { width:100%; height:100%; display:block; }.hero-thumbnail { object-fit:cover; }
-.hero-fallback { position:relative; }
-.hero-window { position:absolute; top:27px; left:26px; right:26px; height:104px; overflow:hidden; border-radius:11px; background:#edf4fd; }
-.hero-window::after { content:''; position:absolute; left:-15px; right:-15px; bottom:-14px; height:55px; border-radius:50% 50% 0 0; background:#b6d3f5; }.hero-window span { position:absolute; top:0; bottom:0; left:50%; width:4px; background:#c5dcf8; }.hero-window span::after { content:''; position:absolute; top:12px; left:98px; width:24px; height:24px; border-radius:50%; background:#ffd057; }
-.hero-bed { position:absolute; left:72px; bottom:30px; width:113px; height:38px; border-radius:6px; background:#9b8980; }.hero-bed span { position:absolute; top:-11px; left:11px; right:11px; height:16px; border-radius:6px; background:#f2dfcf; }
+.hero-fallback { display:flex; align-items:center; justify-content:center; background:#edf3fa; }
 .merchant-section { position:relative; padding:10px 17px 8px; }.merchant-section h2 { margin:0 42px 8px 0; font-size:22px; }.merchant-section p { margin:0; }.bookmark-button { position:absolute; top:17px; right:18px; padding:0; color:#88a0bf; border:0; background:transparent; cursor:pointer; transition:color .16s ease,transform .16s ease; }.bookmark-button:hover { color:#3087ed; transform:scale(1.1); }.bookmark-button.bookmarked { color:#3087ed; }.bookmark-button:disabled { cursor:wait; opacity:.55; }.address { display:flex; align-items:center; gap:4px; color:#8592a2; font-size:12px; }.rating-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; }.rating { font-size:16px; font-weight:800; }.rating span { color:#ff8a00; }.rating b { color:#7b8794; }.review-button { flex:none; padding:5px 10px; border:1px solid #3087ed; border-radius:999px; color:#3087ed; background:#fff; font-size:12px; font-weight:800; }
 .accommodation-info { margin:4px 16px 0; padding:14px; border:1.5px solid #dbe3ee; border-radius:16px; background:#f8fbff; }.accommodation-info p { margin:0 0 10px; font-size:16px; }.accommodation-info > div { display:flex; align-items:center; gap:6px; color:#687587; font-size:12px; }.accommodation-info .times { margin-top:8px; }.times i { width:4px; height:4px; border-radius:50%; background:#c6d0dc; }
 h3 { margin:0 0 10px; font-size:16px; }.room-section { padding:0 16px; }
