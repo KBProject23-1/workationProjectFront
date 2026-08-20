@@ -78,7 +78,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main class="min-h-screen bg-white px-5 pt-4 pb-8">
+  <main class="min-h-screen bg-canvas px-5 pt-4 pb-8">
     <LoadingScreen
       v-if="loading"
       title="계정 정보를 불러오고 있어요"
@@ -94,14 +94,14 @@ onMounted(async () => {
         />
       </div>
 
-      <p class="text-[13px] font-medium leading-relaxed text-slate-500">
+      <p class="text-body-sm font-medium leading-relaxed text-ink-sub">
         안전한 계정 관리를 위해<br />현재 비밀번호를 입력해주세요.
       </p>
 
       <div class="mt-7">
         <label
           for="account-settings-password"
-          class="mb-2 block text-[13px] font-bold text-slate-900"
+          class="mb-2 block text-body-sm font-bold text-ink"
         >
           현재 비밀번호
         </label>
@@ -113,12 +113,12 @@ onMounted(async () => {
             inputmode="text"
             placeholder="현재 비밀번호를 입력해 주세요"
             autocomplete="current-password"
-            class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 pr-12 text-[15px] font-medium text-slate-900 placeholder:text-slate-400"
+            class="h-12 rounded-card border-line bg-canvas px-4 pr-12 text-body font-medium text-ink placeholder:text-ink-mute"
             @keyup.enter="handleVerify"
           />
           <button
             type="button"
-            class="absolute right-2 top-6 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-blue-600"
+            class="absolute right-2 top-6 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-ink-mute transition-colors hover:bg-canvas hover:text-brand"
             :aria-label="
               isPasswordVisible ? '비밀번호 숨기기' : '비밀번호 보기'
             "
@@ -139,7 +139,7 @@ onMounted(async () => {
       <div class="pt-8 text-center">
         <BaseButton
           :disabled="!password || isVerifying"
-          class="w-full py-3.5 text-[15px] font-bold rounded-2xl"
+          class="w-full"
           @click="handleVerify"
         >
           {{ isVerifying ? '확인 중...' : '확인' }}
@@ -160,15 +160,15 @@ onMounted(async () => {
       <!-- ① 계정 정보 — 이름은 수정할 수 없는 표시 전용 -->
       <section>
         <div
-          class="overflow-hidden rounded-xl border border-slate-200 bg-white"
+          class="overflow-hidden rounded-card border border-line bg-white"
         >
-          <p class="px-5 pt-3.5 text-xs font-medium text-slate-400">
+          <p class="px-5 pt-3.5 text-body-sm font-medium text-ink-mute">
             계정 정보
           </p>
-          <div class="mt-1 divide-y divide-slate-100">
+          <div class="mt-1 divide-y divide-line">
             <div class="flex w-full items-center justify-between px-5 py-4">
-              <span class="text-[15px] font-medium text-slate-900">이름</span>
-              <span class="text-[15px] font-medium text-slate-400">
+              <span class="text-body font-medium text-ink">이름</span>
+              <span class="text-body font-medium text-ink-mute">
                 {{ user?.name }}
               </span>
             </div>
@@ -179,22 +179,22 @@ onMounted(async () => {
       <!-- ② 계정 — 휴대폰 번호 / 이메일 변경 진입 -->
       <section class="mt-3">
         <div
-          class="overflow-hidden rounded-xl border border-slate-200 bg-white"
+          class="overflow-hidden rounded-card border border-line bg-white"
         >
-          <p class="px-5 pt-3.5 text-xs font-medium text-slate-400">계정</p>
-          <div class="mt-1 divide-y divide-slate-100">
+          <p class="px-5 pt-3.5 text-body-sm font-medium text-ink-mute">계정</p>
+          <div class="mt-1 divide-y divide-line">
             <div class="flex w-full items-center justify-between px-5 py-4">
               <div>
-                <p class="text-[15px] font-medium text-slate-900">
+                <p class="text-body font-medium text-ink">
                   휴대폰 번호
                 </p>
-                <p class="mt-1 text-[13px] font-medium text-slate-400">
+                <p class="mt-1 text-body-sm font-medium text-ink-mute">
                   {{ formatPhone(user?.phoneNumber) }}
                 </p>
               </div>
               <button
                 type="button"
-                class="flex items-center gap-0.5 text-[14px] font-semibold text-blue-600 transition-opacity active:opacity-70"
+                class="flex items-center gap-0.5 text-body font-semibold text-brand transition-opacity active:opacity-70"
                 @click="router.push('/account/me/phone')"
               >
                 변경하기
@@ -203,14 +203,14 @@ onMounted(async () => {
             </div>
             <div class="flex w-full items-center justify-between px-5 py-4">
               <div>
-                <p class="text-[15px] font-medium text-slate-900">이메일</p>
-                <p class="mt-1 text-[13px] font-medium text-slate-400">
+                <p class="text-body font-medium text-ink">이메일</p>
+                <p class="mt-1 text-body-sm font-medium text-ink-mute">
                   {{ user?.email }}
                 </p>
               </div>
               <button
                 type="button"
-                class="flex items-center gap-0.5 text-[14px] font-semibold text-blue-600 transition-opacity active:opacity-70"
+                class="flex items-center gap-0.5 text-body font-semibold text-brand transition-opacity active:opacity-70"
                 @click="router.push('/account/me/email')"
               >
                 변경하기
@@ -224,20 +224,20 @@ onMounted(async () => {
       <!-- ③ 보안 — 비밀번호 변경 진입 (마지막 변경일은 GET /users/me 가 제공하지 않아 표시하지 않는다) -->
       <section class="mt-3">
         <div
-          class="overflow-hidden rounded-xl border border-slate-200 bg-white"
+          class="overflow-hidden rounded-card border border-line bg-white"
         >
-          <p class="px-5 pt-3.5 text-xs font-medium text-slate-400">보안</p>
-          <div class="mt-1 divide-y divide-slate-100">
+          <p class="px-5 pt-3.5 text-body-sm font-medium text-ink-mute">보안</p>
+          <div class="mt-1 divide-y divide-line">
             <button
               type="button"
-              class="flex w-full items-center justify-between px-5 py-4 text-left transition-colors active:bg-slate-50"
+              class="flex w-full items-center justify-between px-5 py-4 text-left transition-colors active:bg-canvas"
               @click="router.push('/account/me/password')"
             >
-              <span class="text-[15px] font-medium text-slate-900"
+              <span class="text-body font-medium text-ink"
                 >비밀번호</span
               >
               <span
-                class="flex items-center gap-0.5 text-[14px] font-semibold text-blue-600"
+                class="flex items-center gap-0.5 text-body font-semibold text-brand"
               >
                 비밀번호 변경
                 <ChevronRight :size="16" />
@@ -250,19 +250,19 @@ onMounted(async () => {
       <!-- ④ 기타 — 회원 탈퇴 진입 -->
       <section class="mt-3">
         <div
-          class="overflow-hidden rounded-xl border border-slate-200 bg-white"
+          class="overflow-hidden rounded-card border border-line bg-white"
         >
-          <p class="px-5 pt-3.5 text-xs font-medium text-slate-400">기타</p>
-          <div class="mt-1 divide-y divide-slate-100">
+          <p class="px-5 pt-3.5 text-body-sm font-medium text-ink-mute">기타</p>
+          <div class="mt-1 divide-y divide-line">
             <button
               type="button"
-              class="flex w-full items-center justify-between px-5 py-4 text-left transition-colors active:bg-slate-50"
+              class="flex w-full items-center justify-between px-5 py-4 text-left transition-colors active:bg-canvas"
               @click="router.push('/account/me/withdraw')"
             >
-              <span class="text-[15px] font-medium text-slate-900"
+              <span class="text-body font-medium text-ink"
                 >회원 탈퇴</span
               >
-              <ChevronRight :size="16" class="shrink-0 text-slate-400" />
+              <ChevronRight :size="16" class="shrink-0 text-ink-mute" />
             </button>
           </div>
         </div>

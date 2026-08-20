@@ -66,7 +66,7 @@
 
     <BaseButton
       variant="default"
-      class="text-body-sm mt-3 h-11 w-full rounded-[12px] font-bold text-white"
+      class="mt-3 w-full"
       :disabled="picked.length === 0 || working"
       @click="claim"
     >

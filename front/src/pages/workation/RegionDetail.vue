@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white pb-8">
+  <div class="bg-canvas min-h-screen pb-8">
     <div class="px-5 pt-4">
       <BaseHeader :title="displayName" @back="goBack" />
     </div>
@@ -151,7 +151,7 @@
 
         <BaseButton
           variant="default"
-          class="mt-6 h-12 w-full rounded-xl text-base"
+          class="mt-6 w-full"
           @click="goCreate"
         >
           {{ withRo(displayName) }} 워케이션 등록하기

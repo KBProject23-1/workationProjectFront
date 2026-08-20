@@ -47,7 +47,7 @@ onMounted(fetchResult);
 </script>
 
 <template>
-  <div class="flex min-h-screen w-full flex-col bg-white">
+  <div class="flex min-h-screen w-full flex-col bg-canvas">
     <div class="px-5 pt-4">
       <BaseHeader
         title="예약 취소 완료"
@@ -57,7 +57,7 @@ onMounted(fetchResult);
     </div>
 
     <main v-if="isLoading" class="flex flex-1 items-center justify-center">
-      <div class="h-12 w-12 animate-pulse rounded-full bg-slate-100"></div>
+      <div class="h-12 w-12 animate-pulse rounded-full bg-canvas"></div>
     </main>
 
     <main
@@ -76,10 +76,10 @@ onMounted(fetchResult);
         <div class="flex h-20 w-20 items-center justify-center rounded-full bg-primary">
           <Check :size="48" :stroke-width="2.4" class="text-white" />
         </div>
-        <h2 class="mt-5 text-[20px] font-extrabold text-slate-800">
+        <h2 class="mt-5 text-heading font-bold text-ink">
           취소가 완료되었어요.
         </h2>
-        <p class="mt-1 text-[12px] font-semibold text-slate-600">
+        <p class="mt-1 text-body-sm font-semibold text-ink-sub">
           {{ canceledAtLabel }}
         </p>
 
@@ -98,9 +98,9 @@ onMounted(fetchResult);
         </div>
       </main>
 
-      <footer class="sticky bottom-0 bg-white px-4 pb-6 pt-3">
+      <footer class="sticky bottom-0 bg-canvas px-4 pb-6 pt-3">
         <BaseButton
-          class="max-w-none rounded-lg py-3.5 text-[16px] font-bold"
+          class="max-w-none"
           @click="goToCancellationList"
         >
           확인

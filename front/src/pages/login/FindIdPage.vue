@@ -162,7 +162,7 @@ function goToLogin() {
           class="shrink-0 flex flex-col items-center px-6 pt-3 pb-[max(env(safe-area-inset-bottom),28px)]"
         >
           <BaseButton
-            class="bg-gradient-to-b from-[#3B9BE8] to-[#2878F0]"
+            class="from-[#3B9BE8] to-[#2878F0]"
             @click="verification.start"
           >
             PASS 인증하기
@@ -214,7 +214,7 @@ function goToLogin() {
 
         <div class="mt-10 w-full">
           <BaseButton
-            class="bg-gradient-to-b from-[#3B9BE8] to-[#2878F0]"
+            class="from-[#3B9BE8] to-[#2878F0]"
             @click="goToLogin"
           >
             확인

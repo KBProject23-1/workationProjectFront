@@ -1,10 +1,10 @@
 <template>
   <section>
-    <h2 class="text-base leading-6 font-bold text-slate-900">
+    <h2 class="text-title leading-6 font-bold text-ink">
       {{ order }}. {{ question.questionText }}
       <span
         v-if="isLeisureActivity"
-        class="ml-1 whitespace-nowrap text-xs font-medium text-slate-400"
+        class="ml-1 whitespace-nowrap text-body-sm font-medium text-ink-mute"
       >
         (최대 {{ maxSelections }}개 선택)
       </span>
@@ -14,14 +14,14 @@
       v-if="questionHint"
       :class="
         isOfficeAtmosphere
-          ? 'mt-5 text-sm text-slate-400'
+          ? 'mt-5 text-body text-ink-mute'
           : isCardStyle
-            ? 'mt-1 text-sm text-slate-400'
+            ? 'mt-1 text-body text-ink-mute'
             : isLeisureActivity
-              ? 'mt-3 text-sm text-slate-400'
+              ? 'mt-3 text-body text-ink-mute'
               : isMealStyle
-                ? 'mt-2 text-sm text-slate-400'
-                : 'mt-1 text-xs text-slate-400'
+                ? 'mt-2 text-body text-ink-mute'
+                : 'mt-1 text-body-sm text-ink-mute'
       "
     >
       {{ questionHint }}

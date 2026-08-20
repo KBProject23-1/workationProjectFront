@@ -176,7 +176,7 @@
     <template v-if="selectMode">
       <BaseButton
         variant="default"
-        class="shadow-cta text-body mt-8 h-[52px] w-full rounded-[14px] font-bold text-white"
+        class="mt-8 w-full"
         :disabled="selectedIds.length === 0 || confirming"
         @click="confirmSelected"
       >
@@ -191,7 +191,7 @@
     <BaseButton
       v-else
       variant="default"
-      class="shadow-cta text-body mt-8 h-[52px] w-full rounded-[14px] font-bold text-white"
+      class="mt-8 w-full"
       @click="goCreate"
     >
       지출 내역 추가하기

@@ -1,6 +1,6 @@
 <template>
   <fieldset class="mt-5">
-    <legend class="mb-2 text-[14px] font-extrabold text-slate-900">
+    <legend class="mb-2 text-body font-bold text-ink">
       {{ label }}
     </legend>
     <div class="flex flex-wrap gap-2">
@@ -8,11 +8,11 @@
         v-for="option in options"
         :key="String(option.value)"
         type="button"
-        class="rounded-full border px-4 py-2 text-[12px] font-bold"
+        class="rounded-full border px-4 py-2 text-body-sm font-bold"
         :class="
           modelValue === option.value
-            ? 'border-blue-600 bg-blue-600 text-white'
-            : 'border-slate-200 text-slate-600'
+            ? 'border-brand bg-brand text-white'
+            : 'border-line text-ink-sub'
         "
         @click="$emit('update:modelValue', option.value)"
       >

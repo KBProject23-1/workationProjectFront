@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { CalendarDays, CalendarPlus, ChevronRight, Clock } from '@lucide/vue';
+import { CalendarDays, ChevronRight, Clock } from '@lucide/vue';
+import BaseButton from '@/components/common/BaseButton.vue';
 import ScheduleDateModal from '@/components/schedule/ScheduleDateModal.vue';
 import ScheduleTimePicker from '@/components/workation/ScheduleTimePicker.vue';
 
@@ -15,63 +16,80 @@ const props = defineProps({
   disabledTimes: { type: Array, default: () => [] },
 });
 
-const emit = defineEmits(['update:selectedDate', 'update:selectedTime', 'register']);
+const emit = defineEmits([
+  'update:selectedDate',
+  'update:selectedTime',
+  'register',
+]);
+
 const dateModalVisible = ref(false);
 const timePickerVisible = ref(false);
-const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 const formattedDate = computed(() => {
   if (!props.selectedDate) return '날짜를 선택해 주세요';
   const [year, month, day] = props.selectedDate.split('-').map(Number);
-  return `${year}. ${String(month).padStart(2, '0')}. ${String(day).padStart(2, '0')} (${weekdays[new Date(year, month - 1, day).getDay()]})`;
+  const weekday = WEEKDAYS[new Date(year, month - 1, day).getDay()];
+  return `${year}.${String(month).padStart(2, '0')}.${String(day).padStart(2, '0')} (${weekday})`;
 });
 
-function openDateModal() {
-  if (!props.disabled && props.minDate && props.maxDate) dateModalVisible.value = true;
-}
+const openDateModal = () => {
+  if (!props.disabled && props.minDate && props.maxDate) {
+    dateModalVisible.value = true;
+  }
+};
 
-function selectDate(value) {
+const selectDate = (value) => {
   emit('update:selectedDate', value);
   dateModalVisible.value = false;
-}
+};
 
-function selectTime(value) {
+const selectTime = (value) => {
   emit('update:selectedTime', value);
   timePickerVisible.value = false;
-}
+};
 </script>
 
 <template>
-  <section class="schedule-panel">
-    <h3>일정 날짜</h3>
-    <button type="button" class="date-button" :disabled="disabled" @click="openDateModal">
-      <CalendarDays :size="19" />
-      <span>{{ formattedDate }}</span>
-      <ChevronRight :size="19" />
-    </button>
-
-    <h3>시간 선택</h3>
+  <section class="rounded-card bg-surface shadow-card px-[18px] py-4">
+    <p class="text-body-sm mb-2 font-semibold text-ink-sub">일정 날짜</p>
     <button
       type="button"
-      class="time-button"
+      class="border-line rounded-chip flex h-12 w-full items-center gap-2.5 border px-3.5 text-left disabled:text-ink-mute"
+      :disabled="disabled"
+      @click="openDateModal"
+    >
+      <CalendarDays :size="17" class="text-ink-mute shrink-0" />
+      <span class="text-body flex-1 truncate" :class="selectedDate ? 'text-ink' : 'text-ink-mute'">
+        {{ formattedDate }}
+      </span>
+      <ChevronRight :size="16" class="text-ink-mute shrink-0" />
+    </button>
+
+    <p class="text-body-sm mt-4 mb-2 font-semibold text-ink-sub">시간 선택</p>
+    <button
+      type="button"
+      class="border-line rounded-chip flex h-12 w-full items-center gap-2.5 border px-3.5 text-left disabled:text-ink-mute"
       :disabled="disabled"
       @click="timePickerVisible = true"
     >
-      <Clock :size="19" />
-      <span>{{ selectedTime }}</span>
-      <ChevronRight :size="19" />
+      <Clock :size="17" class="text-ink-mute shrink-0" />
+      <span class="text-body flex-1 truncate text-ink">{{ selectedTime }}</span>
+      <ChevronRight :size="16" class="text-ink-mute shrink-0" />
     </button>
 
-    <p v-if="errorMessage" class="schedule-error">{{ errorMessage }}</p>
-    <button
-      type="button"
-      class="register-button"
+    <p v-if="errorMessage" class="text-body-sm text-danger mt-3 leading-relaxed">
+      {{ errorMessage }}
+    </p>
+
+    <BaseButton
+      class="mt-4"
       :disabled="disabled || loading || !selectedDate || !selectedTime"
       @click="$emit('register')"
     >
-      <CalendarPlus :size="19" />
       {{ loading ? '등록 중...' : '일정 등록하기' }}
-    </button>
+    </BaseButton>
 
     <ScheduleDateModal
       v-if="minDate && maxDate"
@@ -96,9 +114,3 @@ function selectTime(value) {
     />
   </section>
 </template>
-
-<style scoped>
-.schedule-panel { margin-top:16px; padding-top:16px; border-top:1px solid #e3e8ee; }.schedule-panel h3 { margin:0 0 9px; font-size:14px; }.date-button { width:100%; height:44px; display:grid; grid-template-columns:20px 1fr 20px; align-items:center; gap:8px; padding:0 14px; color:#3f4d5f; border:1px solid #dbe3ee; border-radius:13px; background:#f8fafc; text-align:left; }.date-button:disabled { color:#9ca8b6; }
-.time-button { width:100%; height:44px; display:grid; grid-template-columns:20px 1fr 20px; align-items:center; gap:8px; margin-bottom:16px; padding:0 14px; color:#3f4d5f; border:1px solid #dbe3ee; border-radius:13px; background:#f8fafc; text-align:left; }.time-button:disabled { color:#9ca8b6; }
-.register-button { width:100%; height:48px; display:flex; align-items:center; justify-content:center; gap:8px; color:#fff; border:0; border-radius:14px; background:#3087ed; font-weight:800; }.register-button:disabled { background:#a9c9ee; }.schedule-error { margin:0 0 10px; color:#e05252; font-size:12px; line-height:1.45; }
-</style>

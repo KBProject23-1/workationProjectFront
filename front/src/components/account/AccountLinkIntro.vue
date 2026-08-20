@@ -28,22 +28,22 @@ function handleBack() {
 
 <template>
   <div
-    class="flex flex-col items-center w-full min-h-screen px-5 py-5 text-center bg-white"
+    class="flex flex-col items-center w-full min-h-screen px-5 py-5 text-center bg-canvas"
   >
     <button
       type="button"
-      class="mb-4 self-start p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+      class="mb-4 self-start p-1 -ml-1 text-ink hover:text-ink rounded-full active:bg-canvas transition-colors"
         aria-label="뒤로 가기"
       @click="handleBack"
     >
       <ChevronLeft :size="24" />
     </button>
 
-    <h1 class="text-[24px] font-bold mb-2 text-gray-900">계좌 연동</h1>
-    <p class="text-[14px] font-medium text-gray-600 leading-relaxed mb-1">
+    <h1 class="text-display font-bold mb-2 text-ink">계좌 연동</h1>
+    <p class="text-body font-medium text-ink-sub leading-relaxed mb-1">
       안전하게 계좌를 연동하고<br />사용 내역을 한눈에 관리하세요.
     </p>
-    <p class="text-[13px] text-gray-500 mb-6">
+    <p class="text-body-sm text-ink-sub mb-6">
       금융정보원 표준 API를 통해<br />안전하게 연결됩니다.
     </p>
 
@@ -51,7 +51,7 @@ function handleBack() {
       <div
         class="relative flex justify-center items-center my-4 w-[40%] max-w-56 min-w-32 aspect-square"
       >
-        <div class="absolute inset-0 bg-blue-50 rounded-full opacity-60" />
+        <div class="absolute inset-0 bg-brand-weak rounded-full opacity-60" />
         <div class="relative w-3/4 h-3/4">
           <svg class="w-full h-full" viewBox="0 0 100 100">
             <path
@@ -92,10 +92,10 @@ function handleBack() {
             />
           </svg>
           <div
-            class="absolute -bottom-2 -right-2 w-[28%] aspect-square min-w-10 max-w-14 bg-white rounded-2xl shadow-xl flex items-center justify-center border border-blue-50"
+            class="absolute -bottom-2 -right-2 w-[28%] aspect-square min-w-10 max-w-14 bg-white rounded-sheet shadow-xl flex items-center justify-center border border-blue-50"
           >
             <div
-              class="w-2/3 h-2/3 bg-blue-600 rounded-full flex items-center justify-center text-white"
+              class="w-2/3 h-2/3 bg-brand rounded-full flex items-center justify-center text-white"
             >
               <Check class="w-1/2 h-1/2" :stroke-width="3" />
             </div>
@@ -107,14 +107,14 @@ function handleBack() {
         <li
           v-for="feature in features"
           :key="feature.label"
-          class="flex items-center gap-3 rounded-2xl bg-gray-50/70 border border-gray-100 px-4 py-3"
+          class="flex items-center gap-3 rounded-sheet bg-canvas/70 border border-line px-4 py-3"
         >
           <div
-            class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 shrink-0"
+            class="w-8 h-8 rounded-chip bg-brand-weak flex items-center justify-center text-brand shrink-0"
           >
             <component :is="feature.icon" :size="16" />
           </div>
-          <span class="text-[14px] font-bold text-gray-800">{{
+          <span class="text-body font-bold text-ink">{{
             feature.label
           }}</span>
         </li>

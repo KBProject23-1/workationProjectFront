@@ -330,7 +330,7 @@ function goBack() {
     >
       <BaseButton
         :disabled="isSubmitting || !canSubmit"
-        class="bg-gradient-to-b from-[#3B9BE8] to-[#2878F0]"
+        class="from-[#3B9BE8] to-[#2878F0]"
         @click="handleLogin"
       >
         {{ isSubmitting ? '로그인 중...' : '로그인' }}

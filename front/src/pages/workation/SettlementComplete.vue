@@ -81,7 +81,7 @@
 
       <BaseButton
         variant="default"
-        class="shadow-cta text-body mt-8 h-[52px] w-full rounded-[14px] font-bold text-white"
+        class="mt-8 w-full"
         @click="goHome"
       >
         확인

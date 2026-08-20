@@ -192,7 +192,7 @@
       <BaseButton
         v-if="!settled"
         variant="default"
-        class="shadow-cta text-body mt-4 h-[52px] w-full rounded-[14px] font-bold text-white"
+        class="mt-4 w-full"
         @click="confirmOpen = true"
       >
         워케이션 완료 처리

@@ -25,7 +25,7 @@
 
       <BaseButton
         variant="default"
-        class="shadow-cta text-body mt-4 h-[52px] w-full gap-1.5 rounded-[14px] font-bold text-white"
+        class="mt-4 w-full gap-1.5"
         @click="$emit('register')"
       >
         워케이션 시작하기

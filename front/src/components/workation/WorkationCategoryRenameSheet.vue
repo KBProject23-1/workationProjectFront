@@ -72,7 +72,7 @@
         </button>
         <BaseButton
           variant="default"
-          class="shadow-cta text-body h-[52px] flex-1 rounded-[14px] font-bold text-white"
+          class="flex-1"
           :disabled="saving"
           @click="save"
         >

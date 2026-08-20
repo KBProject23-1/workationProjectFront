@@ -60,7 +60,7 @@ onMounted(fetchCancellationDetail);
 </script>
 
 <template>
-  <div class="flex min-h-screen w-full flex-col bg-white">
+  <div class="flex min-h-screen w-full flex-col bg-canvas">
     <div class="px-5 pt-4">
       <BaseHeader
         title="예약 내역 상세"
@@ -74,9 +74,9 @@ onMounted(fetchCancellationDetail);
       class="flex-1 px-4 pb-8"
       aria-label="취소 상세 정보를 불러오는 중"
     >
-      <div class="h-[202px] animate-pulse rounded-xl bg-slate-100"></div>
-      <div class="mt-4 h-12 animate-pulse rounded-lg bg-slate-100"></div>
-      <div class="mt-3 h-[290px] animate-pulse rounded-xl bg-slate-100"></div>
+      <div class="h-[202px] animate-pulse rounded-card bg-canvas"></div>
+      <div class="mt-4 h-12 animate-pulse rounded-chip bg-canvas"></div>
+      <div class="mt-3 h-[290px] animate-pulse rounded-card bg-canvas"></div>
     </main>
 
     <main
@@ -93,7 +93,7 @@ onMounted(fetchCancellationDetail);
     <main v-else-if="cancellation" class="flex-1 px-4 pb-8">
       <button
         type="button"
-        class="block h-[202px] w-full overflow-hidden rounded-xl bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        class="block h-[202px] w-full overflow-hidden rounded-card bg-brand-weak focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         :aria-label="`${cancellation.merchantName} 상세 보기`"
         @click="goToMerchantDetail"
       >
@@ -105,7 +105,7 @@ onMounted(fetchCancellationDetail);
       </button>
 
       <div class="flex items-end justify-between gap-3 px-2 py-3">
-        <h2 class="min-w-0 flex-1 truncate text-[17px] font-extrabold text-slate-800">
+        <h2 class="min-w-0 flex-1 truncate text-title font-bold text-ink">
           <button
             type="button"
             class="max-w-full truncate text-left hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -114,7 +114,7 @@ onMounted(fetchCancellationDetail);
             {{ cancellation.merchantName }}
           </button>
         </h2>
-        <p class="shrink-0 text-[10px] text-slate-400">
+        <p class="shrink-0 text-caption text-ink-mute">
           예약 번호 {{ cancellation.reservationCode }}
         </p>
       </div>

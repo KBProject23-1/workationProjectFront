@@ -36,37 +36,37 @@ function handleOpenChange(open) {
 
 <template>
   <Dialog :open="open" @update:open="handleOpenChange">
-    <DialogContent class="max-h-[calc(100vh-2rem)] max-w-sm overflow-y-auto rounded-2xl border-0 px-5 pb-6 pt-7">
-      <DialogTitle class="text-[20px] font-extrabold text-slate-900">
+    <DialogContent class="max-h-[calc(100vh-2rem)] max-w-sm overflow-y-auto rounded-sheet border-0 px-5 pb-6 pt-7">
+      <DialogTitle class="text-heading font-bold text-ink">
         결제 수단 변경
       </DialogTitle>
-      <DialogDescription class="text-[13px] text-slate-500">
+      <DialogDescription class="text-body-sm text-ink-sub">
         결제에 사용할 Wallet 또는 카드를 선택해 주세요.
       </DialogDescription>
 
       <section>
-        <h3 class="mb-2 text-[12px] font-bold text-slate-400">Wallet</h3>
-        <div v-if="walletLoading" class="h-20 animate-pulse rounded-xl bg-slate-100"></div>
-        <div v-else-if="walletError" class="rounded-xl bg-rose-50 px-4 py-4">
-          <p class="text-[12px] font-semibold text-rose-600">Wallet 잔액을 불러오지 못했어요.</p>
-          <button type="button" class="mt-2 text-[12px] font-bold text-primary" @click="emit('retry-wallet')">
+        <h3 class="mb-2 text-body-sm font-bold text-ink-mute">Wallet</h3>
+        <div v-if="walletLoading" class="h-20 animate-pulse rounded-card bg-canvas"></div>
+        <div v-else-if="walletError" class="rounded-card bg-danger/10 px-4 py-4">
+          <p class="text-body-sm font-semibold text-danger">Wallet 잔액을 불러오지 못했어요.</p>
+          <button type="button" class="mt-2 text-body-sm font-bold text-primary" @click="emit('retry-wallet')">
             다시 시도
           </button>
         </div>
         <button
           v-else
           type="button"
-          class="flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-          :class="selectedPaymentSourceType === 'WALLET' ? 'border-primary bg-blue-50' : 'border-slate-200 bg-white'"
+          class="flex w-full items-center gap-3 rounded-card border px-4 py-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          :class="selectedPaymentSourceType === 'WALLET' ? 'border-primary bg-brand-weak' : 'border-line bg-white'"
           :disabled="!walletAvailable"
           @click="emit('select-wallet')"
         >
-          <span class="grid size-10 shrink-0 place-items-center rounded-full bg-blue-100 text-primary">
+          <span class="grid size-10 shrink-0 place-items-center rounded-full bg-brand-weak text-primary">
             <WalletCards :size="21" />
           </span>
           <span class="min-w-0 flex-1">
-            <strong class="block text-[14px] text-slate-800">워크페이 Wallet</strong>
-            <span class="mt-1 block text-[12px] text-slate-500">
+            <strong class="block text-body text-ink">워크페이 Wallet</strong>
+            <span class="mt-1 block text-body-sm text-ink-sub">
               잔액 {{ walletBalance.toLocaleString('ko-KR') }}원
             </span>
           </span>
@@ -75,38 +75,38 @@ function handleOpenChange(open) {
       </section>
 
       <section>
-        <h3 class="mb-2 text-[12px] font-bold text-slate-400">등록 카드</h3>
+        <h3 class="mb-2 text-body-sm font-bold text-ink-mute">등록 카드</h3>
         <div v-if="cardLoading" class="space-y-2">
-          <div v-for="index in 2" :key="index" class="h-20 animate-pulse rounded-xl bg-slate-100"></div>
+          <div v-for="index in 2" :key="index" class="h-20 animate-pulse rounded-card bg-canvas"></div>
         </div>
-        <div v-else-if="cardError" class="rounded-xl bg-rose-50 px-4 py-4">
-          <p class="text-[12px] font-semibold text-rose-600">카드 목록을 불러오지 못했어요.</p>
-          <button type="button" class="mt-2 text-[12px] font-bold text-primary" @click="emit('retry-cards')">
+        <div v-else-if="cardError" class="rounded-card bg-danger/10 px-4 py-4">
+          <p class="text-body-sm font-semibold text-danger">카드 목록을 불러오지 못했어요.</p>
+          <button type="button" class="mt-2 text-body-sm font-bold text-primary" @click="emit('retry-cards')">
             다시 시도
           </button>
         </div>
-        <div v-else-if="cards.length === 0" class="rounded-xl bg-slate-50 px-4 py-5 text-center">
-          <CreditCard class="mx-auto text-slate-300" :size="28" />
-          <p class="mt-2 text-[12px] font-semibold text-slate-500">등록된 카드가 없습니다.</p>
+        <div v-else-if="cards.length === 0" class="rounded-card bg-canvas px-4 py-5 text-center">
+          <CreditCard class="mx-auto text-ink-mute" :size="28" />
+          <p class="mt-2 text-body-sm font-semibold text-ink-sub">등록된 카드가 없습니다.</p>
         </div>
         <div v-else class="space-y-2">
           <button
             v-for="card in cards"
             :key="card.cardId"
             type="button"
-            class="flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors"
-            :class="selectedPaymentSourceType === 'CARD' && card.cardId === selectedCardId ? 'border-primary bg-blue-50' : 'border-slate-200 bg-white'"
+            class="flex w-full items-center gap-3 rounded-card border px-4 py-3 text-left transition-colors"
+            :class="selectedPaymentSourceType === 'CARD' && card.cardId === selectedCardId ? 'border-primary bg-brand-weak' : 'border-line bg-white'"
             @click="emit('select-card', card.cardId)"
           >
-            <span class="grid size-10 shrink-0 place-items-center rounded-full bg-blue-100 text-primary">
+            <span class="grid size-10 shrink-0 place-items-center rounded-full bg-brand-weak text-primary">
               <CreditCard :size="21" />
             </span>
             <span class="min-w-0 flex-1">
               <span class="flex items-center gap-2">
-                <strong class="truncate text-[14px] text-slate-800">{{ card.cardName }}</strong>
-                <span v-if="card.isPrimary" class="shrink-0 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">주 카드</span>
+                <strong class="truncate text-body text-ink">{{ card.cardName }}</strong>
+                <span v-if="card.isPrimary" class="shrink-0 rounded-full bg-primary px-2 py-0.5 text-caption font-bold text-white">주 카드</span>
               </span>
-              <span class="mt-1 block text-[12px] text-slate-500">
+              <span class="mt-1 block text-body-sm text-ink-sub">
                 {{ card.cardCompanyName }} · {{ formatCardNumber(card.maskedNumber) }}
               </span>
             </span>

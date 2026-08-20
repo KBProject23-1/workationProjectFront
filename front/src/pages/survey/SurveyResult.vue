@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
+  <div class="flex min-h-screen flex-col bg-canvas px-5 pt-4 pb-8">
     <div class="mb-4">
       <BaseHeader
         title="나의 워케이션 스타일"
@@ -10,8 +10,8 @@
     <LoadingScreen v-if="loading" title="설문 결과를 불러오고 있어요" :fullscreen="false" />
 
     <template v-else-if="result">
-      <h2 class="mt-2 text-lg font-bold text-slate-900">내가 선택한 응답</h2>
-      <p class="mt-1 text-xs text-slate-400">
+      <h2 class="mt-2 text-heading font-bold text-ink">내가 선택한 응답</h2>
+      <p class="mt-1 text-body-sm text-ink-mute">
         선택한 취향을 바탕으로 워케이션 장소를 추천해드려요.
       </p>
 
@@ -19,41 +19,41 @@
         <div
           v-for="(question, index) in result.questions"
           :key="question.questionId"
-          class="rounded-xl px-4 py-4"
+          class="rounded-card px-4 py-4"
           :class="SURVEY_CARD_TONES[index % SURVEY_CARD_TONES.length]"
         >
-          <p class="text-xs text-slate-500">{{ question.question }}</p>
-          <p class="mt-1.5 text-sm font-bold text-slate-900">
+          <p class="text-body-sm text-ink-sub">{{ question.question }}</p>
+          <p class="mt-1.5 text-body font-bold text-ink">
             {{ selectedOptionsText(question) }}
           </p>
         </div>
       </div>
 
-      <p class="mt-5 flex items-start gap-2 text-xs text-slate-400">
+      <p class="mt-5 flex items-start gap-2 text-body-sm text-ink-mute">
         <span
-          class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[10px] text-slate-500"
+          class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-slate-200 text-caption text-ink-sub"
         >
           i
         </span>
         응답을 수정하면 추천 결과에도 반영돼요.
       </p>
 
-      <BaseButton variant="default" class="mt-5 h-12 w-full rounded-xl text-base" @click="goEdit">
+      <BaseButton variant="default" class="mt-5 w-full" @click="goEdit">
         수정하기
       </BaseButton>
     </template>
 
     <div v-else class="flex flex-1 flex-col items-center justify-center">
-      <p class="text-sm font-bold text-slate-900">
+      <p class="text-body font-bold text-ink">
         아직 워케이션 스타일을 정하지 않았어요
       </p>
-      <p class="mt-2 text-center text-xs leading-5 text-slate-400">
+      <p class="mt-2 text-center text-body-sm leading-5 text-ink-mute">
         워케이션을 등록하면 취향 설문을 진행하고,<br />
         그에 맞는 숙소와 공간을 추천해 드려요
       </p>
       <BaseButton
         variant="default"
-        class="mt-6 h-12 w-full rounded-xl text-base"
+        class="mt-6 w-full"
         @click="goCreateWorkation"
       >
         워케이션 등록하기

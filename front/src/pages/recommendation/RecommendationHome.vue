@@ -135,7 +135,7 @@ function startRecommendation() {
     <div v-if="!isSingleMode" class="start-area">
       <BaseButton
         variant="default"
-        class="h-12 w-full rounded-xl text-base"
+        class="w-full"
         :disabled="!hasSelection"
         @click="startRecommendation"
       >

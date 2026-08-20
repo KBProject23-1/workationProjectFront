@@ -75,28 +75,28 @@ function handleNext() {
 </script>
 
 <template>
-  <div class="flex flex-col w-full min-h-screen px-5 pt-4 pb-5 bg-white text-left">
+  <div class="flex flex-col w-full min-h-screen px-5 pt-4 pb-5 bg-canvas text-left">
     <div class="mb-5">
       <BaseHeader title="환불하기" @back="$emit('back')" />
     </div>
 
     <div class="mb-5">
-      <p class="text-[12px] font-semibold text-gray-500 mb-1.5">
+      <p class="text-body-sm font-semibold text-ink-sub mb-1.5">
         환불 가능 포인트
       </p>
       <div
-        class="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/60 p-3.5 shadow-xs"
+        class="flex items-center gap-3 rounded-sheet border border-line bg-canvas/60 p-3.5 shadow-xs"
       >
         <div
-          class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 border border-blue-100/50"
+          class="w-10 h-10 rounded-card bg-brand-weak flex items-center justify-center shrink-0 border border-line/50"
         >
-          <Wallet :size="18" class="text-blue-600" />
+          <Wallet :size="18" class="text-brand" />
         </div>
         <div>
-          <p class="text-[16px] font-extrabold text-gray-900 leading-tight">
+          <p class="text-title font-bold text-ink leading-tight">
             {{ balance.toLocaleString('ko-KR') }} P
           </p>
-          <p class="text-[11px] font-medium text-gray-500 mt-0.5">
+          <p class="text-caption font-medium text-ink-sub mt-0.5">
             신청 즉시 연결된 내 계좌로 입금돼요
           </p>
         </div>
@@ -105,12 +105,12 @@ function handleNext() {
 
     <div class="mb-3">
       <div class="flex items-center justify-between mb-1">
-        <p class="text-[12px] font-semibold text-gray-500">
+        <p class="text-body-sm font-semibold text-ink-sub">
           얼마나 환불할까요?
         </p>
         <button
           type="button"
-          class="text-[11px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100/70 px-2.5 py-1 rounded-full transition-all active:scale-95"
+          class="text-caption font-bold text-brand bg-brand-weak hover:bg-brand-weak/70 px-2.5 py-1 rounded-full transition-all active:scale-95"
           @click="setMaxAmount"
         >
           전액 입력
@@ -119,14 +119,14 @@ function handleNext() {
 
       <div class="flex items-baseline gap-1">
         <span
-          class="text-[32px] font-extrabold tracking-tight transition-colors"
-          :class="amount > 0 ? 'text-gray-900' : 'text-gray-500'"
+          class="text-[32px] font-bold tracking-tight transition-colors"
+          :class="amount > 0 ? 'text-ink' : 'text-ink-sub'"
         >
           {{ amount.toLocaleString('ko-KR') }}
         </span>
         <span
-          class="text-[20px] font-bold"
-          :class="amount > 0 ? 'text-gray-800' : 'text-gray-500'"
+          class="text-heading font-bold"
+          :class="amount > 0 ? 'text-ink' : 'text-ink-sub'"
           >원</span
         >
       </div>
@@ -137,7 +137,7 @@ function handleNext() {
         v-for="preset in presets"
         :key="preset"
         type="button"
-        class="rounded-xl py-2.5 text-[12px] font-bold bg-blue-50/80 text-blue-600 hover:bg-blue-100/70 active:scale-95 transition-all"
+        class="rounded-card py-2.5 text-body-sm font-bold bg-brand-weak/80 text-brand hover:bg-brand-weak/70 active:scale-95 transition-all"
         @click="addPreset(preset)"
       >
         +{{ preset / 10000 }}만원
@@ -154,7 +154,7 @@ function handleNext() {
       <button
         v-if="amountInput"
         type="button"
-        class="absolute right-3 top-3.5 text-gray-500 hover:text-gray-600 p-0.5 rounded-full bg-gray-100"
+        class="absolute right-3 top-3.5 text-ink-sub hover:text-ink-sub p-0.5 rounded-full bg-canvas"
         aria-label="입력 지우기"
         @click="clearAmount"
       >
@@ -175,7 +175,7 @@ function handleNext() {
     <div class="mt-auto pt-4 pb-2 text-center">
       <BaseButton
         :disabled="isLoading"
-        class="w-full py-3.5 text-[15px] font-bold rounded-2xl"
+        class="w-full"
         @click="handleNext"
       >
         {{ isLoading ? '처리 중...' : '환불 신청' }}

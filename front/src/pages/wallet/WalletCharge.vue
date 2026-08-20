@@ -39,7 +39,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main class="w-full mx-auto flex flex-col min-h-screen">
+  <main class="w-full mx-auto flex flex-col min-h-screen bg-canvas">
     <WalletChargeAmount
       v-if="step === 'amount'"
       :accounts="accountStore.accounts"
