@@ -10,6 +10,20 @@ const route = useRoute();
 const router = useRouter();
 const reservationStore = useReservationStore();
 
+const CONFETTI_COLORS = ['#2563EB', '#60A5FA', '#F59E0B', '#EF4444', '#10B981'];
+
+const CONFETTI = Array.from({ length: 14 }, (_, index) => {
+  const angle = (Math.PI * 2 * index) / 14;
+  const distance = 58 + (index % 3) * 14;
+  return {
+    id: index,
+    color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
+    dx: `${Math.round(Math.cos(angle) * distance)}px`,
+    dy: `${Math.round(Math.sin(angle) * distance)}px`,
+    delay: `${(index % 4) * 40}ms`,
+  };
+});
+
 const reservationId = computed(() => Number(route.params.reservationId));
 const createResult = computed(() => (
   reservationStore.reservationCreateResult?.reservationId === reservationId.value
@@ -79,16 +93,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex min-h-screen w-full flex-col bg-canvas text-ink">
+  <div class="flex min-h-screen w-full flex-col bg-white text-slate-900">
     <header class="flex h-16 shrink-0 items-center justify-center px-4">
-      <h1 class="text-[19px] font-bold">예약 완료</h1>
+      <h1 class="text-[19px] font-extrabold">예약 완료</h1>
     </header>
 
     <main v-if="reservationStore.isDetailLoading && !reservation" class="flex-1 space-y-4 px-4 pt-10">
-      <div class="mx-auto size-24 animate-pulse rounded-full bg-canvas"></div>
-      <div class="mx-auto h-7 w-48 animate-pulse rounded bg-canvas"></div>
-      <div class="mt-10 h-16 animate-pulse rounded-card bg-canvas"></div>
-      <div class="h-52 animate-pulse rounded-card bg-canvas"></div>
+      <div class="mx-auto size-24 animate-pulse rounded-full bg-slate-100"></div>
+      <div class="mx-auto h-7 w-48 animate-pulse rounded bg-slate-100"></div>
+      <div class="mt-10 h-16 animate-pulse rounded-xl bg-slate-100"></div>
+      <div class="h-52 animate-pulse rounded-xl bg-slate-100"></div>
     </main>
 
     <main v-else-if="reservationStore.detailError && !reservation" class="flex flex-1 flex-col items-center justify-center px-6 text-center">
@@ -102,44 +116,82 @@ onMounted(() => {
     <template v-else-if="reservation">
       <main class="flex-1 px-4 pb-6">
         <section class="relative flex flex-col items-center pb-9 pt-8 text-center">
-          <span class="absolute left-[25%] top-12 size-2 rotate-12 rounded-sm bg-amber-300"></span>
-          <span class="absolute right-[24%] top-16 size-2 rounded-full bg-rose-300"></span>
-          <span class="absolute left-[31%] top-28 size-1.5 rounded-full bg-violet-300"></span>
-          <span class="absolute right-[30%] top-28 size-2 rotate-45 bg-emerald-300"></span>
-          <span class="grid size-24 place-items-center rounded-full bg-primary text-white shadow-[0_12px_35px_rgba(48,135,237,0.25)]">
-            <Check :size="52" :stroke-width="2.8" />
-          </span>
-          <h2 class="mt-6 text-display font-bold">예약이 완료되었어요!</h2>
+          <div class="relative size-24">
+            <span class="relative z-10 grid size-24 animate-bounce-once place-items-center rounded-full bg-primary text-white shadow-[0_12px_35px_rgba(48,135,237,0.25)]">
+              <Check :size="52" :stroke-width="2.8" />
+            </span>
+            <span
+              v-for="piece in CONFETTI"
+              :key="piece.id"
+              class="confetti pointer-events-none absolute top-1/2 left-1/2 block size-2 rounded-[1px]"
+              :style="{
+                backgroundColor: piece.color,
+                '--dx': piece.dx,
+                '--dy': piece.dy,
+                animationDelay: piece.delay,
+              }"
+            />
+          </div>
+          <h2 class="mt-6 text-[24px] font-extrabold">예약이 완료되었어요!</h2>
         </section>
 
-        <button type="button" class="flex w-full items-center justify-between rounded-card border border-line px-4 py-4 text-left bg-surface shadow-card" @click="goToDetail">
-          <span><span class="block text-caption text-ink-mute">예약 번호</span><strong class="mt-1 block text-body">{{ reservation.reservationCode }}</strong></span>
-          <ChevronRight class="text-ink-mute" :size="20" />
+        <button type="button" class="flex w-full items-center justify-between rounded-xl border border-slate-200 px-4 py-4 text-left" @click="goToDetail">
+          <span><span class="block text-[11px] text-slate-400">예약 번호</span><strong class="mt-1 block text-[15px]">{{ reservation.reservationCode }}</strong></span>
+          <ChevronRight class="text-slate-400" :size="20" />
         </button>
 
         <section class="px-1 py-5">
-          <h3 class="text-title font-bold">{{ reservation.merchantName }}</h3>
-          <p class="mt-2 text-body-sm font-medium text-ink-sub">{{ reservation.productName }} · {{ reservation.quantity }}개</p>
+          <h3 class="text-[17px] font-extrabold">{{ reservation.merchantName }}</h3>
+          <p class="mt-2 text-[13px] font-medium text-slate-500">{{ reservation.productName }} · {{ reservation.quantity }}개</p>
         </section>
 
-        <section class="rounded-card border border-line bg-brand-weak/70 px-4 py-5">
+        <section class="rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-5">
           <dl class="space-y-4">
-            <div class="flex justify-between gap-4"><dt class="text-body-sm text-ink-mute">이용 시작일</dt><dd class="text-right text-body-sm font-bold">{{ formatDate(reservation.startDate) }}</dd></div>
-            <div class="flex justify-between gap-4"><dt class="text-body-sm text-ink-mute">이용 종료일</dt><dd class="text-right text-body-sm font-bold">{{ formatDate(reservation.endDate) }}</dd></div>
-            <div class="flex justify-between gap-4"><dt class="text-body-sm text-ink-mute">이용 인원</dt><dd class="text-right text-body-sm font-bold">{{ reservation.headcount }}명</dd></div>
-            <div class="flex justify-between gap-4"><dt class="text-body-sm text-ink-mute">결제 금액</dt><dd class="text-right text-body-sm font-bold text-primary">{{ formatAmount(reservation.totalAmount) }}</dd></div>
+            <div class="flex justify-between gap-4"><dt class="text-[12px] text-slate-400">이용 시작일</dt><dd class="text-right text-[13px] font-bold">{{ formatDate(reservation.startDate) }}</dd></div>
+            <div class="flex justify-between gap-4"><dt class="text-[12px] text-slate-400">이용 종료일</dt><dd class="text-right text-[13px] font-bold">{{ formatDate(reservation.endDate) }}</dd></div>
+            <div class="flex justify-between gap-4"><dt class="text-[12px] text-slate-400">이용 인원</dt><dd class="text-right text-[13px] font-bold">{{ reservation.headcount }}명</dd></div>
+            <div class="flex justify-between gap-4"><dt class="text-[12px] text-slate-400">결제 금액</dt><dd class="text-right text-[13px] font-bold text-primary">{{ formatAmount(reservation.totalAmount) }}</dd></div>
           </dl>
         </section>
       </main>
 
-      <footer class="sticky bottom-0 space-y-2 bg-canvas px-4 pb-6 pt-3">
-        <BaseButton class="max-w-none text-primary" @click="goToDetail">
+      <footer class="sticky bottom-0 space-y-2 bg-white px-4 pb-6 pt-3">
+        <BaseButton class="max-w-none rounded-xl border-primary bg-white py-3.5 text-[16px] font-bold text-primary hover:bg-blue-50" @click="goToDetail">
           예약 상세 보기
         </BaseButton>
-        <BaseButton class="max-w-none" @click="router.push({ name: 'ReservationMerchantList' })">
+        <BaseButton class="max-w-none rounded-xl py-3.5 text-[16px] font-bold" @click="router.push({ name: 'ReservationMerchantList' })">
           확인
         </BaseButton>
       </footer>
     </template>
   </div>
 </template>
+
+<style scoped>
+@keyframes confetti-burst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy)))
+      scale(1) rotate(220deg);
+  }
+}
+
+.confetti {
+  z-index: 20;
+  opacity: 0;
+  animation: confetti-burst 900ms ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti {
+    display: none;
+  }
+}
+</style>
