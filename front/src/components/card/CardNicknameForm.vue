@@ -39,7 +39,7 @@ watch(
 
         <div class="flex items-start justify-between relative z-10">
           <div
-            class="w-9 h-6 rounded-md bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-600 p-[1px] shadow-inner relative overflow-hidden"
+            class="w-9 h-6 rounded-chip bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-600 p-[1px] shadow-inner relative overflow-hidden"
           >
             <div
               class="w-full h-full border border-amber-800/20 rounded-[5px] grid grid-cols-2 gap-0.5 p-0.5 opacity-60"
@@ -55,12 +55,12 @@ watch(
         <div class="flex items-end justify-between gap-1 relative z-10">
           <div class="flex flex-col min-w-0 flex-1">
             <span
-              class="text-[11px] font-medium text-white/75 tracking-wider uppercase truncate"
+              class="text-caption font-medium text-white/75 tracking-wider uppercase truncate"
             >
               {{ card.cardCompanyName || card.cardName }}
             </span>
             <span
-              class="text-[13px] font-bold tracking-widest text-white/95 whitespace-nowrap mt-0.5"
+              class="text-body-sm font-bold tracking-widest text-white/95 whitespace-nowrap mt-0.5"
             >
               {{ formatCardNumber(card.maskedNumber) }}
             </span>
@@ -69,7 +69,7 @@ watch(
       </div>
 
       <p
-        class="text-[15px] font-bold text-gray-900 mt-3 truncate max-w-[15rem]"
+        class="text-body font-bold text-ink mt-3 truncate max-w-[15rem]"
       >
         {{ nickname || card.cardName }}
       </p>
@@ -77,7 +77,7 @@ watch(
 
     <!-- 별칭 입력 폼 -->
     <div class="space-y-2">
-      <label class="block text-[12px] font-semibold text-gray-500">
+      <label class="block text-body-sm font-semibold text-ink-sub">
         카드 별칭 설정
       </label>
       <div class="relative flex items-center">
@@ -86,13 +86,13 @@ watch(
           type="text"
           maxlength="100"
           placeholder="예: 여행경비 카드, 생활비 카드"
-          class="w-full bg-gray-50/80 border border-gray-200 focus:border-blue-500 focus:bg-white focus:outline-hidden rounded-2xl px-4 py-3.5 text-[14px] font-medium text-gray-900 placeholder:text-gray-500 transition-all"
+          class="w-full bg-canvas/80 border border-line focus:border-brand focus:bg-white focus:outline-hidden rounded-sheet px-4 py-3.5 text-body font-medium text-ink placeholder:text-ink-sub transition-all"
         />
-        <div class="absolute right-4 text-gray-500 pointer-events-none">
+        <div class="absolute right-4 text-ink-sub pointer-events-none">
           <Edit3 :size="16" />
         </div>
       </div>
-      <p class="text-[11px] text-gray-500 pl-1">
+      <p class="text-caption text-ink-sub pl-1">
         나만의 별칭을 정해두면 거래 내역에서 쉽게 알아볼 수 있어요.
       </p>
     </div>

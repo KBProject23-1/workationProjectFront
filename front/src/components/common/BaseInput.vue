@@ -45,7 +45,7 @@ defineEmits(['update:modelValue']);
       :class="cn(props.class)"
       @update:model-value="$emit('update:modelValue', $event)"
     />
-    <p v-if="hasError && errorMessage" class="text-[13px] text-red-500 mt-1.5">
+    <p v-if="hasError && errorMessage" class="text-body-sm text-danger mt-1.5">
       {{ errorMessage }}
     </p>
   </div>

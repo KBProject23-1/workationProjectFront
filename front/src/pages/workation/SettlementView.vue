@@ -1,63 +1,74 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
-    <div class="mb-4">
+  <div class="bg-canvas flex min-h-screen flex-col px-4 pt-4 pb-8">
+    <div class="mb-4 px-1">
       <BaseHeader
         :title="settled ? '지난 워케이션 상세' : '정산 내역 보기'"
         @back="goBack"
       >
         <template v-if="settled" #right>
           <button
-            class="text-slate-400"
+            class="text-ink-mute"
             aria-label="기록 삭제"
             @click="removeOpen = true"
           >
-            <Trash2 class="h-5 w-5" />
+            <Trash2 :size="19" />
           </button>
         </template>
       </BaseHeader>
     </div>
 
-    <LoadingScreen v-if="loading" title="정산 정보를 불러오고 있어요" :fullscreen="false" />
+    <LoadingScreen
+      v-if="loading"
+      title="정산 정보를 불러오고 있어요"
+      :fullscreen="false"
+    />
 
     <template v-else-if="workation">
       <!-- 정산이 끝난 워케이션은 기록 카드 형태로 보여준다 -->
       <section
         v-if="settled"
-        class="rounded-2xl bg-slate-800 px-4 py-4 text-white"
+        class="rounded-sheet bg-navy px-[18px] py-[18px] text-white"
       >
-        <div class="flex items-start justify-between">
+        <div class="flex items-center justify-between gap-3">
           <span
-            class="rounded-md bg-blue-600 px-2 py-1 text-[11px] font-semibold"
+            class="text-caption rounded-chip bg-brand px-2.5 py-1 font-bold"
           >
             정산완료
           </span>
-          <span class="text-xs text-slate-300">{{ settledAtText }} 정산</span>
+          <span class="text-body-sm text-white/60">
+            {{ settledAtText }} 정산
+          </span>
         </div>
 
-        <h2 class="mt-2 text-xl font-bold">{{ workation.title }}</h2>
-        <p class="mt-1 text-xs text-slate-300">
+        <h2 class="text-heading mt-3 font-bold -tracking-[0.02em]">
+          {{ workation.title }}
+        </h2>
+        <p class="text-body-sm mt-1 text-white/70">
           {{ workation.region?.name }} · {{ dotDate(workation.startDate) }} ~
           {{ dotDate(workation.endDate) }} ({{ workation.totalDays }}일)
         </p>
       </section>
 
-      <template v-else>
-        <h2 class="text-sm font-bold text-slate-900">{{ workation.title }}</h2>
-        <p class="text-xs text-slate-400">
+      <section
+        v-else
+        class="rounded-sheet bg-surface shadow-card px-[18px] py-4"
+      >
+        <h2 class="text-title font-bold -tracking-[0.01em] text-ink">
+          {{ workation.title }}
+        </h2>
+        <p class="text-body-sm mt-1 text-ink-mute">
           {{ dotDate(workation.startDate) }} ~
           {{ dotDate(workation.endDate) }} ({{ workation.totalDays }}일)
         </p>
-      </template>
+      </section>
 
-      <div class="mt-4 grid grid-cols-2 rounded-xl bg-blue-50 p-1">
+      <div class="rounded-card bg-surface shadow-card mt-4 grid grid-cols-2 p-1">
         <button
           v-for="tab in TABS"
           :key="tab.value"
-          class="rounded-lg py-2 text-sm font-bold"
+          class="text-body-sm rounded-chip py-2 font-bold transition-colors"
           :class="
-            budgetType === tab.value
-              ? 'bg-white text-blue-600'
-              : 'text-slate-400'
+            budgetType === tab.value ? 'bg-brand text-white' : 'text-ink-mute'
           "
           @click="budgetType = tab.value"
         >
@@ -65,13 +76,13 @@
         </button>
       </div>
 
-      <section class="mt-4 rounded-xl bg-blue-50 px-4 py-4">
-        <p class="text-xs text-slate-500">{{ currentTab.summaryLabel }}</p>
-        <p class="mt-1 text-2xl font-bold text-slate-900">
+      <section class="rounded-card bg-surface shadow-card mt-3 px-[18px] py-4">
+        <p class="text-body-sm text-ink-sub">{{ currentTab.summaryLabel }}</p>
+        <p class="text-display mt-1 font-bold -tracking-[0.02em] text-ink">
           {{ won(current.totalAmount) }}
         </p>
         <div
-          class="mt-1 flex items-baseline justify-between text-xs text-slate-400"
+          class="border-line text-body-sm mt-3 flex items-baseline justify-between border-t pt-3 text-ink-mute"
         >
           <span>총 {{ current.totalCount }}건</span>
           <span>예산 {{ won(budgetTotal) }} · {{ usageRate }}%</span>
@@ -79,14 +90,18 @@
       </section>
 
       <section class="mt-5">
-        <div class="flex items-baseline justify-between">
-          <h3 class="text-sm font-bold text-slate-900">
+        <div class="mb-2.5 flex items-baseline justify-between px-1">
+          <h3 class="text-title font-bold -tracking-[0.01em] text-ink">
             {{ isWork ? '계정과목별 내역' : '항목별 사용 내역' }}
           </h3>
-          <span v-if="isWork" class="text-xs text-slate-400">배정 / 집행</span>
+          <span v-if="isWork" class="text-body-sm text-ink-mute">
+            배정 / 집행
+          </span>
         </div>
 
-        <div class="divide-y divide-slate-100">
+        <div
+          class="divide-line rounded-card bg-surface shadow-card divide-y px-[18px]"
+        >
           <SettlementCategoryItem
             v-for="item in current.categories"
             :key="item.expenseCategoryId"
@@ -100,27 +115,25 @@
       <!-- 회사 제출용이라 법인 내역에서만, 아직 정산 전일 때만 안내한다 -->
       <button
         v-if="isWork && !settled && validation.uncheckedCount > 0"
-        class="mt-4 flex w-full items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-left"
+        class="rounded-card bg-danger/8 mt-4 flex w-full items-center gap-3 px-4 py-3.5 text-left transition-transform active:scale-[0.99]"
         @click="goUncheckedExpenses"
       >
         <span
-          class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-500 text-[11px] font-bold text-white"
+          class="text-caption bg-danger flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-bold text-white"
         >
           !
         </span>
 
-        <span class="flex-1">
-          <span class="block text-sm font-bold text-slate-900">
+        <span class="min-w-0 flex-1">
+          <span class="text-body-sm block font-bold text-ink">
             계정과목을 확인하지 않은 지출 {{ validation.uncheckedCount }}건
           </span>
-          <span class="block text-xs text-slate-500">
+          <span class="text-caption mt-0.5 block text-ink-sub">
             회사에 제출하기 전에 분류를 확인해 주세요
           </span>
         </span>
 
-        <span class="shrink-0 text-xs font-bold text-red-500"
-          >처리하러 가기 ›</span
-        >
+        <span class="text-caption text-danger shrink-0 font-bold">처리 ›</span>
       </button>
 
       <!--
@@ -133,47 +146,53 @@
         @claimed="loadSettlement"
       />
 
-      <div v-if="!isWork" class="mt-4">
-        <div class="grid grid-cols-2 gap-3">
-          <div class="rounded-xl bg-slate-50 px-4 py-3">
-            <p class="text-xs text-slate-400">하루 평균</p>
-            <p class="mt-0.5 text-sm font-bold text-slate-900">
-              {{ won(dailyAverage) }}
-            </p>
-          </div>
-          <div class="rounded-xl bg-slate-50 px-4 py-3">
-            <p class="text-xs text-slate-400">안 쓴 날</p>
-            <p class="mt-0.5 text-sm font-bold text-slate-900">
-              {{ current.noSpendDayCount }}일
-            </p>
-          </div>
+      <div v-if="!isWork" class="mt-4 grid grid-cols-2 gap-3">
+        <div class="rounded-card bg-surface shadow-card px-4 py-3.5">
+          <p class="text-body-sm text-ink-sub">하루 평균</p>
+          <p class="text-title mt-1 font-bold text-ink">
+            {{ won(dailyAverage) }}
+          </p>
+        </div>
+        <div class="rounded-card bg-surface shadow-card px-4 py-3.5">
+          <p class="text-body-sm text-ink-sub">안 쓴 날</p>
+          <p class="text-title mt-1 font-bold text-ink">
+            {{ current.noSpendDayCount }}일
+          </p>
         </div>
       </div>
 
       <!-- 회사 제출용 문서라 법인 내역에서만 내려받는다 -->
-      <div v-if="isWork" class="mt-5 grid grid-cols-2 gap-2">
-        <BaseButton
-          variant="outline"
-          class="h-11 rounded-xl text-sm"
+      <div v-if="isWork" class="mt-5 grid grid-cols-2 gap-2.5">
+        <button
+          class="rounded-card bg-surface shadow-card text-body-sm flex flex-col items-center gap-2 py-4 font-bold text-ink transition-transform active:scale-[0.98] disabled:opacity-50"
           :disabled="downloading"
           @click="downloadExcel"
         >
+          <span
+            class="bg-brand-weak text-brand flex h-9 w-9 items-center justify-center rounded-[11px]"
+          >
+            <FileSpreadsheet :size="18" />
+          </span>
           세부내역 Excel 저장
-        </BaseButton>
-        <BaseButton
-          variant="outline"
-          class="h-11 rounded-xl text-sm"
+        </button>
+        <button
+          class="rounded-card bg-surface shadow-card text-body-sm flex flex-col items-center gap-2 py-4 font-bold text-ink transition-transform active:scale-[0.98] disabled:opacity-50"
           :disabled="downloading"
           @click="downloadPdf"
         >
+          <span
+            class="bg-brand-weak text-brand flex h-9 w-9 items-center justify-center rounded-[11px]"
+          >
+            <FileText :size="18" />
+          </span>
           증빙자료 PDF 저장
-        </BaseButton>
+        </button>
       </div>
 
       <BaseButton
         v-if="!settled"
         variant="default"
-        class="mt-4 h-12 w-full rounded-xl text-base"
+        class="mt-4 w-full"
         @click="confirmOpen = true"
       >
         워케이션 완료 처리
@@ -225,7 +244,7 @@
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { Trash2 } from '@lucide/vue';
+import { FileSpreadsheet, FileText, Trash2 } from '@lucide/vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import { useBudgetStore } from '@/stores/budgetStore';
 import BaseHeader from '@/components/common/BaseHeader.vue';

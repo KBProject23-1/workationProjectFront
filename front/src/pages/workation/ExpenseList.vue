@@ -1,19 +1,18 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
-    <div class="mb-4">
-      <BaseHeader
-        title="지출 내역"
-        @back="goBack"
-      />
+  <div class="bg-canvas flex min-h-screen flex-col px-4 pt-4 pb-8">
+    <div class="mb-4 px-1">
+      <BaseHeader title="지출 내역" @back="goBack" />
     </div>
 
-    <div class="grid grid-cols-3 rounded-xl bg-blue-50 p-1">
+    <div class="rounded-card bg-surface shadow-card grid grid-cols-3 p-1">
       <button
         v-for="tab in TABS"
         :key="tab.label"
-        class="rounded-lg py-2 text-sm font-bold"
+        class="text-body-sm rounded-chip py-2 font-bold transition-colors"
         :class="
-          budgetType === tab.value ? 'bg-white text-blue-600' : 'text-slate-400'
+          budgetType === tab.value
+            ? 'bg-brand text-white'
+            : 'text-ink-mute'
         "
         @click="changeBudgetType(tab.value)"
       >
@@ -24,11 +23,9 @@
     <div class="mt-3 flex flex-wrap gap-2">
       <button
         v-if="summary.uncheckedCount > 0"
-        class="rounded-full border px-3 py-1 text-xs"
+        class="text-body-sm rounded-full px-3 py-1.5 font-bold transition-colors"
         :class="
-          uncheckedOnly
-            ? 'border-red-300 bg-red-100 text-red-600'
-            : 'border-red-200 bg-red-50 text-red-500'
+          uncheckedOnly ? 'bg-danger text-white' : 'bg-danger/10 text-danger'
         "
         @click="toggleUnchecked"
       >
@@ -39,11 +36,11 @@
       <button
         v-for="category in budgetType === null ? [] : filterCategories"
         :key="category.id"
-        class="rounded-full border px-3 py-1 text-xs"
+        class="text-body-sm rounded-full px-3 py-1.5 font-bold transition-colors"
         :class="
           categoryId === category.id
-            ? 'border-blue-300 bg-blue-50 text-blue-600'
-            : 'border-slate-200 text-slate-500'
+            ? 'bg-brand text-white'
+            : 'bg-surface shadow-card text-ink-sub'
         "
         @click="toggleCategory(category.id)"
       >
@@ -51,7 +48,7 @@
       </button>
     </div>
 
-    <div class="my-5 space-y-5">
+    <div class="mt-4 space-y-3">
       <BudgetUsageCard
         v-for="card in budgetCards"
         :key="card.key"
@@ -60,8 +57,8 @@
       />
     </div>
 
-    <div class="mt-3 flex items-center justify-between">
-      <p class="text-xs text-slate-400">
+    <div class="mt-5 flex items-center justify-between gap-3 px-1">
+      <p class="text-body-sm min-w-0 text-ink-sub">
         <!-- 요약 금액은 워케이션 전체 기준이라 필터를 걸면 건수만 보여준다 -->
         <template v-if="filtered"> 총 {{ totalElements }}건 </template>
         <template v-else-if="selectMode">
@@ -78,11 +75,11 @@
       -->
       <button
         v-if="(uncheckedOnly && summary.uncheckedCount > 0) || selectMode"
-        class="shrink-0 rounded-lg border px-3 py-1.5 text-xs font-bold"
+        class="text-body-sm rounded-chip shrink-0 px-3.5 py-2 font-bold"
         :class="
           selectMode
-            ? 'border-slate-300 text-slate-500'
-            : 'border-blue-600 bg-blue-600 text-white'
+            ? 'bg-surface shadow-card text-ink-sub'
+            : 'bg-brand shadow-cta text-white'
         "
         @click="toggleSelectMode"
       >
@@ -91,27 +88,26 @@
     </div>
 
     <!-- 아래 항목들과 같은 자리·같은 모양으로 둬야 전체 선택인 걸 바로 안다 -->
-    <div v-if="selectMode" class="mt-3 flex items-center gap-2">
+    <div v-if="selectMode" class="mt-3 flex items-center gap-2 px-1">
       <button
-        class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border"
-        :class="
-          allSelected
-            ? 'border-blue-600 bg-blue-600 text-white'
-            : 'border-slate-300'
-        "
+        class="border-line flex h-6 w-6 shrink-0 items-center justify-center rounded-full border"
+        :class="allSelected ? 'border-brand bg-brand text-white' : 'bg-surface'"
         aria-label="확인 필요 전체 선택"
         @click="toggleAll"
       >
-        <Check v-if="allSelected" class="h-4 w-4" />
+        <Check v-if="allSelected" :size="15" />
       </button>
 
-      <span class="text-xs font-bold text-slate-700">전체 선택</span>
-      <span class="text-xs text-slate-400">
+      <span class="text-body-sm font-bold text-ink">전체 선택</span>
+      <span class="text-body-sm text-ink-mute">
         {{ expenses.length }}건 중 {{ selectedIds.length }}건 선택
       </span>
     </div>
 
-    <p v-if="selectMode && hasMoreThanLimit" class="mt-1 text-xs text-amber-600">
+    <p
+      v-if="selectMode && hasMoreThanLimit"
+      class="text-body-sm text-warn mt-2 px-1"
+    >
       한 번에 {{ SELECT_MODE_SIZE }}건까지 처리할 수 있어요. 나머지는 확정 후
       다시 눌러 주세요
     </p>
@@ -120,7 +116,7 @@
 
     <BaseEmptyState v-else-if="expenses.length === 0" title="조건에 맞는 지출이 없어요" />
 
-    <div v-else class="mt-2 space-y-2">
+    <div v-else class="mt-3 space-y-2.5">
       <div
         v-for="expense in expenses"
         :key="expense.expenseId"
@@ -129,19 +125,16 @@
         <!-- 선택 모드에서는 확인 필요 건만 조회하므로 전부 고를 수 있다 -->
         <button
           v-if="selectMode"
-          class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border"
+          class="border-line flex h-6 w-6 shrink-0 items-center justify-center rounded-full border"
           :class="
             selectedIds.includes(expense.expenseId)
-              ? 'border-blue-600 bg-blue-600 text-white'
-              : 'border-slate-300'
+              ? 'border-brand bg-brand text-white'
+              : 'bg-surface'
           "
           :aria-label="`${expense.merchantName} 선택`"
           @click="toggleOne(expense.expenseId)"
         >
-          <Check
-            v-if="selectedIds.includes(expense.expenseId)"
-            class="h-4 w-4"
-          />
+          <Check v-if="selectedIds.includes(expense.expenseId)" :size="15" />
         </button>
 
         <ExpenseListItem
@@ -152,23 +145,26 @@
       </div>
     </div>
 
-    <div v-if="totalPages > 1" class="mt-5 flex items-center justify-center gap-4">
+    <div
+      v-if="totalPages > 1"
+      class="mt-6 flex items-center justify-center gap-5"
+    >
       <button
-        class="text-sm"
-        :class="hasPrev ? 'text-slate-500' : 'text-slate-300'"
+        class="text-body-sm font-bold"
+        :class="hasPrev ? 'text-ink-sub' : 'text-ink-mute/50'"
         :disabled="!hasPrev"
         @click="goPage(page - 1)"
       >
         이전
       </button>
 
-      <span class="text-xs text-slate-400"
-        >{{ page + 1 }} / {{ totalPages }}</span
-      >
+      <span class="text-body-sm text-ink-mute">
+        {{ page + 1 }} / {{ totalPages }}
+      </span>
 
       <button
-        class="text-sm"
-        :class="hasNext ? 'text-slate-500' : 'text-slate-300'"
+        class="text-body-sm font-bold"
+        :class="hasNext ? 'text-ink-sub' : 'text-ink-mute/50'"
         :disabled="!hasNext"
         @click="goPage(page + 1)"
       >
@@ -180,14 +176,14 @@
     <template v-if="selectMode">
       <BaseButton
         variant="default"
-        class="mt-8 h-12 w-full rounded-xl text-base"
+        class="mt-8 w-full"
         :disabled="selectedIds.length === 0 || confirming"
         @click="confirmSelected"
       >
         {{ confirming ? '처리 중...' : `${selectedIds.length}건 확인 완료` }}
       </BaseButton>
 
-      <p class="mt-2 text-center text-xs text-slate-400">
+      <p class="text-body-sm mt-2.5 text-center text-ink-mute">
         고른 지출을 지금 카테고리 그대로 확정해요
       </p>
     </template>
@@ -195,7 +191,7 @@
     <BaseButton
       v-else
       variant="default"
-      class="mt-8 h-12 w-full rounded-xl text-base"
+      class="mt-8 w-full"
       @click="goCreate"
     >
       지출 내역 추가하기

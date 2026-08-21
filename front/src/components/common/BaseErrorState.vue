@@ -4,7 +4,7 @@ defineProps({
   description: { type: String, default: '' },
   retryLabel: { type: String, default: '다시 시도' },
   showRetry: { type: Boolean, default: true },
-  titleClass: { type: [String, Array, Object], default: 'text-[15px] font-semibold text-slate-600' },
+  titleClass: { type: [String, Array, Object], default: 'text-body font-semibold text-ink-sub' },
 });
 
 defineEmits(['retry']);
@@ -13,11 +13,11 @@ defineEmits(['retry']);
 <template>
   <div class="text-center">
     <p :class="titleClass">{{ title }}</p>
-    <p v-if="description" class="mt-2 text-[12px] text-slate-400">{{ description }}</p>
+    <p v-if="description" class="mt-2 text-body-sm text-ink-mute">{{ description }}</p>
     <button
       v-if="showRetry"
       type="button"
-      class="mt-5 rounded-lg border border-slate-300 px-4 py-2 text-[14px] font-semibold text-slate-700"
+      class="mt-5 rounded-chip border border-line px-4 py-2 text-body font-semibold text-ink"
       @click="$emit('retry')"
     >
       {{ retryLabel }}

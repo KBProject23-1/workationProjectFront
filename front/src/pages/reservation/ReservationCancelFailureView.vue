@@ -35,7 +35,7 @@ onMounted(fetchDetail);
 </script>
 
 <template>
-  <div class="flex min-h-screen w-full flex-col bg-white">
+  <div class="flex min-h-screen w-full flex-col bg-canvas">
     <div class="px-5 pt-4">
       <BaseHeader
         title="예약 취소 실패"
@@ -48,7 +48,7 @@ onMounted(fetchDetail);
       v-if="reservationStore.isDetailLoading"
       class="flex flex-1 items-center justify-center"
     >
-      <div class="h-12 w-12 animate-pulse rounded-full bg-slate-100"></div>
+      <div class="h-12 w-12 animate-pulse rounded-full bg-canvas"></div>
     </main>
 
     <main
@@ -64,13 +64,13 @@ onMounted(fetchDetail);
 
     <template v-else>
       <main class="flex flex-1 flex-col items-center px-4 pt-10">
-        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-rose-500">
+        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-danger">
           <X :size="48" :stroke-width="2.4" class="text-white" />
         </div>
-        <h2 class="mt-5 text-[20px] font-extrabold text-slate-800">
+        <h2 class="mt-5 text-heading font-bold text-ink">
           취소에 실패했어요.
         </h2>
-        <p class="mt-1 text-center text-[12px] text-slate-500">
+        <p class="mt-1 text-center text-body-sm text-ink-sub">
           {{ failureMessage }}
         </p>
 
@@ -89,9 +89,9 @@ onMounted(fetchDetail);
         </div>
       </main>
 
-      <footer class="sticky bottom-0 bg-white px-4 pb-6 pt-3">
+      <footer class="sticky bottom-0 bg-canvas px-4 pb-6 pt-3">
         <BaseButton
-          class="max-w-none rounded-lg py-3.5 text-[16px] font-bold"
+          class="max-w-none"
           @click="goToCancellationList"
         >
           확인

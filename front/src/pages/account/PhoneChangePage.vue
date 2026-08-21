@@ -112,7 +112,7 @@ async function goToMyInfo() {
 </script>
 
 <template>
-  <main class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
+  <main class="flex min-h-screen flex-col bg-canvas px-5 pt-4 pb-8">
     <!-- PASS 본인인증 처리 중 로딩 -->
     <LoadingScreen
       v-if="isBusy"
@@ -142,21 +142,21 @@ async function goToMyInfo() {
         class="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center"
       >
         <div
-          class="flex h-20 w-20 items-center justify-center rounded-full bg-blue-50"
+          class="flex h-20 w-20 items-center justify-center rounded-full bg-brand-weak"
         >
-          <CheckCircle2 :size="44" :stroke-width="2" class="text-blue-600" />
+          <CheckCircle2 :size="44" :stroke-width="2" class="text-brand" />
         </div>
 
-        <h2 class="mt-6 text-[22px] font-extrabold leading-snug tracking-tight text-slate-900">
+        <h2 class="mt-6 text-display font-bold leading-snug tracking-tight text-ink">
           휴대폰 번호 변경 완료
         </h2>
-        <p class="mt-2 text-[13px] font-medium leading-relaxed text-slate-500">
+        <p class="mt-2 text-body-sm font-medium leading-relaxed text-ink-sub">
           인증한 휴대폰 번호로 계정 정보가 변경됐어요
         </p>
 
         <div class="mt-10 w-full">
           <BaseButton
-            class="w-full rounded-2xl py-3.5 text-[15px] font-bold"
+            class="w-full"
             @click="goToMyInfo"
           >
             확인
@@ -174,25 +174,25 @@ async function goToMyInfo() {
 
       <!-- 안내 화면 (IDLE/CANCELLED — PASS 인증 전) -->
       <template v-else>
-        <p class="text-[13px] font-medium leading-relaxed text-slate-500">
+        <p class="text-body-sm font-medium leading-relaxed text-ink-sub">
           휴대폰 번호를 변경하려면 PASS 인증이 필요해요.<br />
           본인 명의의 휴대폰으로 PASS 인증을 진행해주세요.
         </p>
 
         <!-- Mock 인증 안내 카드 -->
         <div
-          class="mt-7 flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5"
+          class="mt-7 flex items-center gap-4 rounded-sheet border border-line bg-canvas p-5"
         >
           <div
-            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600"
+            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-sheet bg-brand-weak text-brand"
           >
             <ShieldCheck :size="24" :stroke-width="2" />
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-[13px] font-semibold leading-relaxed text-slate-700">
+            <p class="text-body-sm font-semibold leading-relaxed text-ink">
               현재는 테스트용 Mock 인증이에요.
             </p>
-            <p class="mt-1 text-[12.5px] font-medium leading-relaxed text-slate-500">
+            <p class="mt-1 text-[12.5px] font-medium leading-relaxed text-ink-sub">
               PASS 팝업에서 통신사 선택과 약관 동의 후<br />
               이름·휴대폰 번호·보안문자를 입력하면 인증이 완료됩니다.
             </p>
@@ -204,12 +204,12 @@ async function goToMyInfo() {
         <!-- PASS 인증 시작 -->
         <div class="pt-8 text-center">
           <BaseButton
-            class="w-full rounded-2xl py-3.5 text-[15px] font-bold"
+            class="w-full"
             @click="verification.start"
           >
             PASS 인증하기
           </BaseButton>
-          <p class="mt-3 text-[11.5px] font-medium text-slate-400">
+          <p class="mt-3 text-[11.5px] font-medium text-ink-mute">
             테스트용 Mock 인증 · 입력한 정보는 외부로 전송되지 않아요
           </p>
         </div>

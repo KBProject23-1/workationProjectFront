@@ -1,7 +1,7 @@
 <template>
   <button
     type="button"
-    class="flex w-full items-center rounded-xl border text-left transition"
+    class="flex w-full items-center rounded-card border text-left transition"
     :class="
       [
         detailed
@@ -10,17 +10,17 @@
             ? 'min-h-[70px] gap-4 px-6 py-3'
             : 'gap-3 px-4 py-4',
         selected
-          ? 'border-2 border-blue-500 bg-white'
-          : 'border-slate-200 bg-white',
+          ? 'border-2 border-brand bg-white'
+          : 'border-line bg-white',
       ]
     "
     @click="$emit('select', option.optionId)"
   >
     <span
       class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2"
-      :class="selected ? 'border-blue-500' : 'border-slate-300'"
+      :class="selected ? 'border-brand' : 'border-line'"
     >
-      <span v-if="selected" class="h-2.5 w-2.5 rounded-full bg-blue-500" />
+      <span v-if="selected" class="h-2.5 w-2.5 rounded-full bg-brand" />
     </span>
 
     <img
@@ -31,12 +31,12 @@
     />
 
     <span class="min-w-0 flex-1">
-      <span class="block text-sm font-bold text-slate-900">
+      <span class="block text-body font-bold text-ink">
         {{ option.optionText }}
       </span>
       <span
         v-if="(detailed || mealStyle) && optionDescription"
-        class="mt-1 block text-xs leading-5 text-slate-400"
+        class="mt-1 block text-body-sm leading-5 text-ink-mute"
       >
         {{ optionDescription }}
       </span>

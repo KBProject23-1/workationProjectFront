@@ -40,7 +40,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main class="w-full mx-auto flex flex-col min-h-screen">
+  <main class="w-full mx-auto flex flex-col min-h-screen bg-canvas">
     <WalletRefundAmount
       v-if="step === 'amount'"
       :balance="walletStore.balance"

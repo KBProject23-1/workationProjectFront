@@ -1,31 +1,26 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
-    <div class="mb-4">
-      <BaseHeader
-        title="예산 세부 금액 설정"
-        @back="goBack"
-      />
+  <div class="bg-canvas flex min-h-screen flex-col px-4 pt-4 pb-8">
+    <div class="mb-4 px-1">
+      <BaseHeader title="예산 세부 금액 설정" @back="goBack" />
     </div>
 
     <!-- 마지막 단계다. 설문을 건너뛰었으면 2/2, 했으면 3/3 -->
     <template v-if="isCreateFlow">
-      <div class="h-1 w-full rounded-full bg-blue-100">
-        <div class="h-1 w-full rounded-full bg-blue-600" />
+      <div class="bg-line h-1 w-full rounded-full">
+        <div class="bg-brand h-1 w-full rounded-full" />
       </div>
-      <p class="mt-1 text-right text-xs text-slate-400">
+      <p class="text-body-sm mt-1.5 text-right text-ink-mute">
         {{ totalSteps }} / {{ totalSteps }}
       </p>
     </template>
 
-    <div class="mt-4 grid grid-cols-2 rounded-xl bg-blue-50 p-1">
+    <div class="rounded-card bg-surface shadow-card mt-4 grid grid-cols-2 p-1">
       <button
         v-for="tab in TABS"
         :key="tab.value"
-        class="rounded-lg py-2 text-sm font-bold"
+        class="text-body-sm rounded-chip py-2 font-bold transition-colors"
         :class="
-          budgetType === tab.value
-            ? 'bg-white text-blue-600'
-            : 'bg-transparent text-slate-400'
+          budgetType === tab.value ? 'bg-brand text-white' : 'text-ink-mute'
         "
         @click="budgetType = tab.value"
       >
@@ -33,30 +28,63 @@
       </button>
     </div>
 
-    <LoadingScreen v-if="loading" title="예산 정보를 불러오고 있어요" :fullscreen="false" />
+    <LoadingScreen
+      v-if="loading"
+      title="예산 정보를 불러오고 있어요"
+      :fullscreen="false"
+    />
 
     <template v-else>
+      <!--
+        총액을 여기서도 고칠 수 있어야 한다.
+        배정하다 보면 처음 잡은 금액이 모자라거나 남는데,
+        고치려고 등록 화면까지 되돌아갈 방법이 없었다
+      -->
       <div
-        class="mt-4 flex items-center justify-between border-b border-slate-100 pb-3"
+        class="rounded-card bg-surface shadow-card mt-3 flex items-center justify-between gap-3 px-[18px] py-3.5"
       >
-        <span class="text-sm text-slate-500">총 예산</span>
-        <span class="text-lg font-bold text-slate-900">{{
-          won(budgetTotal)
-        }}</span>
+        <span class="text-body-sm shrink-0 text-ink-sub">총 예산</span>
+        <div class="relative w-[148px] shrink-0">
+          <Input
+            :model-value="budgetTotalText"
+            inputmode="numeric"
+            class="rounded-chip text-body h-11 pr-7 text-right font-bold"
+            @update:model-value="onBudgetTotalInput"
+          />
+          <span
+            class="text-body-sm absolute top-1/2 right-3 -translate-y-1/2 text-ink-mute"
+          >
+            원
+          </span>
+        </div>
       </div>
 
-      <div class="mt-3 flex items-center justify-between">
-        <h2 class="text-sm font-bold text-slate-900">카테고리별 배정</h2>
+      <button
+        v-if="totalChanged"
+        type="button"
+        class="text-body-sm text-brand mt-2 w-full py-1 text-right font-bold"
+        @click="matchTotalToSum"
+      >
+        배정 합계({{ won(assignedSum) }})로 맞추기
+      </button>
+
+      <div class="mt-5 mb-2.5 flex items-center justify-between px-1">
+        <h2 class="text-title font-bold -tracking-[0.01em] text-ink">
+          카테고리별 배정
+        </h2>
         <button
           type="button"
-          class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white"
+          class="bg-brand flex h-7 w-7 items-center justify-center rounded-full text-white transition-transform active:scale-95"
+          aria-label="카테고리 추가"
           @click="sheetOpen = true"
         >
-          ＋
+          <Plus :size="16" />
         </button>
       </div>
 
-      <div class="divide-y divide-slate-100">
+      <div
+        class="divide-line rounded-card bg-surface shadow-card divide-y px-[18px]"
+      >
         <WorkationBudgetItem
           v-for="category in categories"
           :key="category.id"
@@ -70,22 +98,23 @@
         />
       </div>
 
-      <div class="mt-4 border-t border-slate-100 pt-3 text-sm">
-        <div class="flex justify-between">
-          <span class="text-slate-500">배정 합계</span>
+      <!-- 합계가 총예산과 맞아야 저장된다. 남은 금액이 이 화면의 결론이다 -->
+      <div
+        class="rounded-card bg-surface shadow-card mt-3 px-[18px] py-4"
+        :class="matched ? '' : 'bg-danger/8'"
+      >
+        <div class="text-body-sm flex justify-between">
+          <span class="text-ink-sub">배정 합계</span>
           <span
             class="font-bold"
-            :class="[
-              matched ? 'text-slate-900' : 'text-red-500',
-              shaking ? 'shake' : '',
-            ]"
+            :class="[matched ? 'text-ink' : 'text-danger', shaking ? 'shake' : '']"
           >
             {{ won(assignedSum) }}
           </span>
         </div>
-        <div class="mt-1 flex justify-between">
-          <span class="text-slate-500">잔여</span>
-          <span :class="matched ? 'text-blue-600' : 'text-red-500'">
+        <div class="text-body-sm mt-2 flex justify-between">
+          <span class="text-ink-sub">잔여</span>
+          <span class="font-bold" :class="matched ? 'text-brand' : 'text-danger'">
             {{ won(remainAmount) }}
           </span>
         </div>
@@ -93,14 +122,17 @@
 
       <BaseButton
         variant="default"
-        class="mt-8 h-12 w-full rounded-xl text-base"
+        class="mt-8 w-full"
         :disabled="submitting"
         @click="submit"
       >
         {{ submitting ? '저장 중...' : '완료' }}
       </BaseButton>
 
-      <p v-if="guideMessage" class="mt-2 text-center text-xs text-slate-400">
+      <p
+        v-if="guideMessage"
+        class="text-body-sm mt-2.5 text-center text-ink-mute"
+      >
         {{ guideMessage }}
       </p>
     </template>
@@ -154,6 +186,8 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
+import { Plus } from '@lucide/vue';
+import { Input } from '@/components/ui/input';
 import BaseButton from '@/components/common/BaseButton.vue';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useWorkationStore } from '@/stores/workationStore';
@@ -226,6 +260,33 @@ const leaving = ref(false);
 
 const budgetTotal = computed(() => budgetTotals[budgetType.value]);
 const categories = computed(() => categoryMap[budgetType.value]);
+
+// 총액은 workations 에 저장된 값이라, 여기서 고치면 워케이션도 함께 수정해야 한다.
+// 처음 받은 값을 들고 있다가 바뀐 경우에만 수정 요청을 보낸다
+const originalTotals = reactive({ WORK: 0, PERSONAL: 0 });
+
+const totalsChanged = computed(() =>
+  TAB_VALUES.some((type) => budgetTotals[type] !== originalTotals[type]),
+);
+
+// 지금 보고 있는 탭의 총액이 바뀌었는지. 합계 맞추기 버튼을 띄울지 정한다
+const totalChanged = computed(
+  () => !matched.value && assignedSum.value > 0,
+);
+
+const budgetTotalText = computed(() =>
+  budgetTotal.value === 0 ? '' : budgetTotal.value.toLocaleString('ko-KR'),
+);
+
+const onBudgetTotalInput = (value) => {
+  const digits = String(value ?? '').replace(/[^\d]/g, '');
+  budgetTotals[budgetType.value] = digits === '' ? 0 : Number(digits);
+};
+
+// 배정한 만큼으로 총액을 맞춘다. 한 칸씩 고쳐 합계를 맞추는 것보다 빠르다
+const matchTotalToSum = () => {
+  budgetTotals[budgetType.value] = assignedSum.value;
+};
 
 const currentTabLabel = computed(
   () => TABS.value.find((tab) => tab.value === budgetType.value)?.label ?? '',
@@ -330,6 +391,7 @@ const loadBudgetStatus = async () => {
   budgets.forEach((budget) => {
     const type = budget.budgetType;
     budgetTotals[type] = Number(budget.budgetTotal ?? 0);
+    originalTotals[type] = budgetTotals[type];
     savedItems[type] = budget.items ?? [];
     alreadySet[type] = savedItems[type].length > 0;
   });
@@ -377,6 +439,7 @@ const saveDraft = () => {
     draft[value] = {
       categoryIds: categoryMap[value].map((category) => category.id),
       amounts: { ...amountMap[value] },
+      total: budgetTotals[value],
     };
   });
   localStorage.setItem(draftKey, JSON.stringify(draft));
@@ -397,6 +460,11 @@ const restoreDraft = () => {
       ),
     );
     amountMap[type] = { ...part.amounts };
+
+    // 저장 전에 고쳐 둔 총액도 되살린다. 없던 시절 임시본이면 서버 값을 그대로 쓴다
+    if (typeof part.total === 'number') {
+      budgetTotals[type] = part.total;
+    }
   });
 };
 
@@ -407,6 +475,8 @@ onMounted(async () => {
       ensureCards(),
       loadCategories('WORK'),
       loadCategories('PERSONAL'),
+      // 총액을 고치면 워케이션 수정 API 를 부르는데 제목·지역·기간이 함께 필요하다
+      workationStore.fetchCurrent(),
     ]);
     TAB_VALUES.forEach((value) => buildRows(value));
     restoreDraft();
@@ -438,6 +508,27 @@ const shake = () => {
   });
 };
 
+// 총액은 workations 에 있다. 수정 API 는 전체 필드를 받으므로
+// 기간·지역·제목은 지금 값을 그대로 실어 보낸다.
+// 기간이 바뀌지 않으므로 지출이 밀려나는 검증에는 걸리지 않는다
+const saveBudgetTotals = async () => {
+  const workation = workationStore.workation;
+  if (!workation) return;
+
+  await workationStore.updateWorkation(workationId, {
+    title: workation.title,
+    regionId: workation.region?.id,
+    startDate: workation.startDate,
+    endDate: workation.endDate,
+    businessBudgetTotal: budgetTotals.WORK,
+    personalBudgetTotal: budgetTotals.PERSONAL,
+  });
+
+  TAB_VALUES.forEach((type) => {
+    originalTotals[type] = budgetTotals[type];
+  });
+};
+
 const submit = async () => {
   if (submitting.value) return;
   if (!canSubmit.value) {
@@ -453,6 +544,12 @@ const submit = async () => {
 
   submitting.value = true;
   try {
+    // 총액을 고쳤으면 워케이션부터 갱신한다.
+    // 배정을 먼저 저장하면 아직 옛 총액이 남아 있어 서버 검증에 걸린다
+    if (totalsChanged.value) {
+      await saveBudgetTotals();
+    }
+
     // 예산 유형별로 따로 저장한다. 이미 배정된 유형은 수정으로 보낸다
     for (const type of TAB_VALUES) {
       const payload = buildPayload(type);

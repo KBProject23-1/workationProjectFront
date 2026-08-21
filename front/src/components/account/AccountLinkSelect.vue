@@ -36,24 +36,24 @@ function handleBack() {
 </script>
 
 <template>
-  <div class="flex flex-col w-full min-h-screen px-5 pt-4 pb-5 bg-white text-left">
+  <div class="flex flex-col w-full min-h-screen px-5 pt-4 pb-5 bg-canvas text-left">
     <div class="mb-6">
       <BaseHeader title="계좌 선택" @back="handleBack" />
     </div>
 
     <div class="mb-5 flex items-end justify-between">
       <div>
-        <h2 class="text-[20px] font-bold text-gray-900 leading-snug">
+        <h2 class="text-heading font-bold text-ink leading-snug">
           연동할 계좌를<br />선택해 주세요
         </h2>
-        <p class="text-[13px] font-medium text-gray-500 mt-1">
+        <p class="text-body-sm font-medium text-ink-sub mt-1">
           여러 개의 계좌를 한 번에 선택할 수 있어요
         </p>
       </div>
 
       <span
         v-if="selectedIds.length > 0"
-        class="text-[12px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg shrink-0"
+        class="text-body-sm font-bold text-brand bg-brand-weak px-2.5 py-1 rounded-chip shrink-0"
       >
         {{ selectedIds.length }}개 선택됨
       </span>
@@ -73,11 +73,11 @@ function handleBack() {
         class="flex flex-col items-center justify-center py-16 text-center"
       >
         <div
-          class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-3 text-gray-500"
+          class="w-12 h-12 rounded-sheet bg-canvas flex items-center justify-center mb-3 text-ink-sub"
         >
           <Landmark :size="24" />
         </div>
-        <p class="text-[14px] font-medium text-gray-500">
+        <p class="text-body font-medium text-ink-sub">
           연동 가능한 계좌가 없어요
         </p>
       </div>
@@ -86,7 +86,7 @@ function handleBack() {
     <div class="w-full pt-4 pb-2 mt-auto text-center">
       <BaseButton
         :disabled="selectedIds.length === 0 || isLoading"
-        class="w-full py-3.5 text-[15px] font-bold rounded-2xl shadow-xs"
+        class="w-full"
         @click="$emit('complete', selectedIds)"
       >
         {{

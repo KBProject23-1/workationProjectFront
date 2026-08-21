@@ -150,7 +150,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
+  <main class="flex min-h-screen flex-col bg-canvas px-5 pt-4 pb-8">
     <LoadingScreen
       v-if="loading"
       title="프로필을 불러오고 있어요"
@@ -169,7 +169,7 @@ onMounted(async () => {
       <!-- 프로필 사진 — 기존 내정보 화면과 동일한 아바타 -->
       <div class="flex justify-center">
         <div
-          class="flex h-20 w-20 items-center justify-center rounded-full bg-blue-50 text-[26px] font-extrabold text-blue-600"
+          class="flex h-20 w-20 items-center justify-center rounded-full bg-brand-weak text-[26px] font-bold text-brand"
         >
           {{ avatarInitial }}
         </div>
@@ -182,14 +182,14 @@ onMounted(async () => {
           <div class="mb-2 flex items-center justify-between">
             <label
               for="edit-nickname"
-              class="block text-[13px] font-bold text-slate-900"
+              class="block text-body-sm font-bold text-ink"
             >
               닉네임
             </label>
             <button
               v-if="!isNicknameEditable"
               type="button"
-              class="rounded-full border border-blue-600 px-3 py-1 text-xs font-semibold text-blue-600 transition-colors active:bg-blue-50"
+              class="rounded-full border border-brand px-3 py-1 text-body-sm font-semibold text-brand transition-colors active:bg-brand-weak"
               @click="enableNicknameEdit"
             >
               수정하기
@@ -204,7 +204,7 @@ onMounted(async () => {
             :disabled="!isNicknameEditable"
             :has-error="!!errors.nickname"
             :error-message="errors.nickname"
-            class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 text-[15px] font-medium text-slate-900 placeholder:text-slate-400 disabled:cursor-not-allowed"
+            class="h-12 rounded-card border-line bg-canvas px-4 text-body font-medium text-ink placeholder:text-ink-mute disabled:cursor-not-allowed"
             @update:model-value="errors.nickname = ''"
             @blur="errors.nickname = validateNickname(nickname)"
           />
@@ -214,14 +214,14 @@ onMounted(async () => {
           <div class="mb-2 flex items-center justify-between">
             <label
               for="edit-company-name"
-              class="block text-[13px] font-bold text-slate-900"
+              class="block text-body-sm font-bold text-ink"
             >
               소속 회사
             </label>
             <button
               v-if="!isCompanyEditable"
               type="button"
-              class="rounded-full border border-blue-600 px-3 py-1 text-xs font-semibold text-blue-600 transition-colors active:bg-blue-50"
+              class="rounded-full border border-brand px-3 py-1 text-body-sm font-semibold text-brand transition-colors active:bg-brand-weak"
               @click="enableCompanyEdit"
             >
               수정하기
@@ -236,7 +236,7 @@ onMounted(async () => {
             :disabled="!isCompanyEditable"
             :has-error="!!errors.companyName"
             :error-message="errors.companyName"
-            class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 text-[15px] font-medium text-slate-900 placeholder:text-slate-400 disabled:cursor-not-allowed"
+            class="h-12 rounded-card border-line bg-canvas px-4 text-body font-medium text-ink placeholder:text-ink-mute disabled:cursor-not-allowed"
             @update:model-value="errors.companyName = ''"
             @blur="errors.companyName = validateCompanyName(companyName)"
           />
@@ -249,7 +249,7 @@ onMounted(async () => {
       <div class="pt-8 text-center">
         <BaseButton
           :disabled="!canSave"
-          class="w-full py-3.5 text-[15px] font-bold rounded-2xl"
+          class="w-full"
           @click="handleSave"
         >
           {{ isSaving ? '저장 중...' : '확인' }}

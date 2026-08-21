@@ -1,13 +1,14 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
-    <div class="mb-4">
-      <BaseHeader
-        title="워케이션 정산기록"
-        @back="goBack"
-      />
+  <div class="bg-canvas flex min-h-screen flex-col px-4 pt-4 pb-8">
+    <div class="mb-4 px-1">
+      <BaseHeader title="워케이션 정산기록" @back="goBack" />
     </div>
 
-    <LoadingScreen v-if="loading" title="정산기록을 불러오고 있어요" :fullscreen="false" />
+    <LoadingScreen
+      v-if="loading"
+      title="정산기록을 불러오고 있어요"
+      :fullscreen="false"
+    />
 
     <BaseErrorState
       v-else-if="pageError"
@@ -16,33 +17,33 @@
     />
 
     <template v-else-if="records.length > 0">
-      <p class="mb-3 text-xs text-slate-400">
+      <p class="text-body-sm mb-3 px-1 text-ink-sub">
         정산을 마친 워케이션 {{ totalElements }}건
       </p>
 
-      <div class="space-y-2">
+      <div class="space-y-2.5">
         <button
           v-for="record in records"
           :key="record.id"
           type="button"
-          class="w-full rounded-xl border border-slate-200 px-4 py-3 text-left transition-colors active:bg-slate-50"
+          class="rounded-card bg-surface shadow-card w-full px-[18px] py-4 text-left transition-transform active:scale-[0.99]"
           @click="goDetail(record.id)"
         >
           <div class="flex items-start justify-between gap-2">
             <span class="min-w-0 flex-1">
-              <span class="block truncate text-sm font-bold text-slate-900">
+              <span class="text-body block truncate font-semibold text-ink">
                 {{ record.title }}
               </span>
-              <span class="mt-0.5 block text-xs text-slate-400">
+              <span class="text-body-sm mt-1 block text-ink-mute">
                 {{ record.region?.name }} · {{ dotDate(record.startDate) }} ~
                 {{ dotDate(record.endDate) }} ({{ dayCount(record) }}일)
               </span>
             </span>
-            <span class="shrink-0 text-slate-300">›</span>
+            <ChevronRight :size="16" class="text-ink-mute mt-0.5 shrink-0" />
           </div>
 
           <p
-            class="mt-3 border-t border-slate-100 pt-2.5 text-right text-xs text-slate-400"
+            class="border-line text-body-sm mt-3 border-t pt-3 text-right text-ink-sub"
           >
             {{ workLabel }} {{ won(record.businessSpentTotal) }} / 개인
             {{ won(record.personalSpentTotal) }}
@@ -53,7 +54,7 @@
       <button
         v-if="hasMore"
         type="button"
-        class="mt-4 w-full rounded-xl border border-slate-200 py-3 text-sm font-bold text-slate-500 disabled:opacity-50"
+        class="rounded-card bg-surface shadow-card text-body-sm mt-4 w-full py-3.5 font-bold text-ink-sub disabled:opacity-50"
         :disabled="loadingMore"
         @click="loadMore"
       >
@@ -73,6 +74,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { ChevronRight } from '@lucide/vue';
 import { useWorkationStore } from '@/stores/workationStore';
 import { useBudgetTypeLabel } from '@/composables/useBudgetTypeLabel';
 import { dotDate, won, daysBetween } from '@/components/workation/format';

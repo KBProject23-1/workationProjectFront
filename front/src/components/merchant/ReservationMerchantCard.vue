@@ -1,6 +1,6 @@
 <template>
   <article
-    class="flex gap-4 rounded-xl border border-slate-200 p-3"
+    class="flex gap-4 rounded-card border border-line p-3 bg-surface shadow-card"
     role="link"
     tabindex="0"
     :aria-label="`${merchant.name} 상세보기`"
@@ -9,7 +9,7 @@
     @keydown.space.prevent="$emit('select', merchant)"
   >
     <div
-      class="flex h-[116px] w-[116px] shrink-0 items-center justify-center overflow-hidden rounded-lg"
+      class="flex h-[116px] w-[116px] shrink-0 items-center justify-center overflow-hidden rounded-chip"
       :class="thumbnailClass"
     >
       <img
@@ -24,7 +24,7 @@
       <button
         type="button"
         class="absolute top-0 right-0 p-0"
-        :class="merchant.bookmarked ? 'text-blue-600' : 'text-slate-300'"
+        :class="merchant.bookmarked ? 'text-brand' : 'text-ink-mute'"
         :aria-label="merchant.bookmarked ? '북마크 해제' : '북마크 추가'"
         :aria-pressed="merchant.bookmarked"
         :disabled="merchant.bookmarkLoading"
@@ -35,25 +35,25 @@
         <Heart :size="18" :fill="merchant.bookmarked ? 'currentColor' : 'none'" />
       </button>
 
-      <h3 class="mr-9 truncate text-[15px] font-extrabold text-slate-900">
+      <h3 class="mr-9 truncate text-body font-bold text-ink">
         {{ merchant.name }}
       </h3>
-      <p class="mt-1 truncate text-[12px] text-slate-400">{{ merchant.address }}</p>
+      <p class="mt-1 truncate text-body-sm text-ink-mute">{{ merchant.address }}</p>
 
-      <p class="mt-2 text-[12px] font-bold text-slate-700">
-        <span class="text-amber-500">★</span>
+      <p class="mt-2 text-body-sm font-bold text-ink">
+        <span class="text-warn">★</span>
         {{ merchant.rating }}
-        <span class="font-medium text-slate-400">
+        <span class="font-medium text-ink-mute">
           · 리뷰 {{ merchant.reviewCount }}개
         </span>
       </p>
 
-      <p v-if="reservable" class="mt-1.5 text-[12px] font-semibold text-teal-600">
+      <p v-if="reservable" class="mt-1.5 text-body-sm font-semibold text-teal-600">
         예약 하루 전까지 무료 취소
       </p>
 
-      <p class="mt-1.5 text-right text-[12px] text-slate-500">
-        <strong class="text-[20px] font-extrabold text-slate-900">
+      <p class="mt-1.5 text-right text-body-sm text-ink-sub">
+        <strong class="text-heading font-bold text-ink">
           {{ Number(merchant.price ?? 0).toLocaleString() }}원
         </strong>
         {{ priceUnit }}
@@ -68,9 +68,9 @@ import { Heart } from '@lucide/vue';
 import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
 
 const THUMBNAIL_CLASSES = {
-  ACCOMMODATION: 'bg-blue-50',
+  ACCOMMODATION: 'bg-brand-weak',
   OFFICE: 'bg-emerald-50',
-  RESTAURANT: 'bg-amber-50',
+  RESTAURANT: 'bg-warn-weak',
   ACTIVITY: 'bg-violet-50',
 };
 
@@ -102,7 +102,7 @@ const reservable = computed(
 );
 
 const thumbnailClass = computed(
-  () => THUMBNAIL_CLASSES[props.merchant.category] ?? 'bg-slate-100',
+  () => THUMBNAIL_CLASSES[props.merchant.category] ?? 'bg-canvas',
 );
 
 const defaultThumbnail = computed(

@@ -242,7 +242,7 @@ function moveNext() {
     <BaseButton
       v-if="recommendationStore.mode === 'flow'"
       variant="default"
-      class="mt-5 h-12 w-full rounded-xl text-base"
+      class="mt-5 w-full"
       @click="moveNext"
     >
       {{ isLastCategory ? '추천 완료' : '다음 추천 보기' }}

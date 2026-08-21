@@ -211,7 +211,7 @@ async function goToMyInfo() {
 </script>
 
 <template>
-  <main class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
+  <main class="flex min-h-screen flex-col bg-canvas px-5 pt-4 pb-8">
     <!-- 이메일 변경(PATCH /users/me/email) 호출 중 로딩 -->
     <LoadingScreen
       v-if="isChanging"
@@ -225,26 +225,26 @@ async function goToMyInfo() {
       class="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center"
     >
       <div
-        class="flex h-20 w-20 items-center justify-center rounded-full bg-blue-50"
+        class="flex h-20 w-20 items-center justify-center rounded-full bg-brand-weak"
       >
-        <CheckCircle2 :size="44" :stroke-width="2" class="text-blue-600" />
+        <CheckCircle2 :size="44" :stroke-width="2" class="text-brand" />
       </div>
 
       <h2
-        class="mt-6 text-[22px] font-extrabold leading-snug tracking-tight text-slate-900"
+        class="mt-6 text-display font-bold leading-snug tracking-tight text-ink"
       >
         이메일이 변경되었습니다
       </h2>
-      <p class="mt-2 text-[13px] font-medium leading-relaxed text-slate-500">
+      <p class="mt-2 text-body-sm font-medium leading-relaxed text-ink-sub">
         변경된 이메일
       </p>
-      <p class="mt-1 text-[15px] font-bold text-slate-900">
+      <p class="mt-1 text-body font-bold text-ink">
         {{ changedEmail }}
       </p>
 
       <div class="mt-10 w-full">
         <BaseButton
-          class="w-full rounded-2xl py-3.5 text-[15px] font-bold"
+          class="w-full"
           @click="goToMyInfo"
         >
           확인
@@ -263,7 +263,7 @@ async function goToMyInfo() {
       </div>
 
       <!-- 안내 문구 -->
-      <p class="text-[13px] font-medium leading-relaxed text-slate-500">
+      <p class="text-body-sm font-medium leading-relaxed text-ink-sub">
         새로운 이메일을 인증해주세요
       </p>
 
@@ -271,7 +271,7 @@ async function goToMyInfo() {
       <div class="mt-7">
         <label
           for="email-change-email"
-          class="mb-2 block text-[13px] font-bold text-slate-900"
+          class="mb-2 block text-body-sm font-bold text-ink"
         >
           새 이메일
         </label>
@@ -284,7 +284,7 @@ async function goToMyInfo() {
           :disabled="isCodeSent"
           :has-error="!!emailError"
           :error-message="emailError"
-          class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 text-[15px] font-medium text-slate-900 placeholder:text-slate-400"
+          class="h-12 rounded-card border-line bg-canvas px-4 text-body font-medium text-ink placeholder:text-ink-mute"
           @update:model-value="emailError = ''"
           @blur="emailError = validateEmail(email)"
           @keyup.enter="handleSendCode"
@@ -295,7 +295,7 @@ async function goToMyInfo() {
       <div class="pt-6 text-center">
         <BaseButton
           :disabled="!canSendCode"
-          class="w-full rounded-2xl py-3.5 text-[15px] font-bold"
+          class="w-full"
           @click="handleSendCode"
         >
           {{ sendButtonLabel }}
@@ -307,7 +307,7 @@ async function goToMyInfo() {
         <div class="mt-8">
           <label
             for="email-change-code"
-            class="mb-2 block text-[13px] font-bold text-slate-900"
+            class="mb-2 block text-body-sm font-bold text-ink"
           >
             인증번호
           </label>
@@ -320,7 +320,7 @@ async function goToMyInfo() {
               placeholder="인증번호를 입력해주세요"
               :has-error="!!codeError"
               :error-message="codeError"
-              class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 pr-16 text-[15px] font-medium text-slate-900 placeholder:text-slate-400"
+              class="h-12 rounded-card border-line bg-canvas px-4 pr-16 text-body font-medium text-ink placeholder:text-ink-mute"
               @update:model-value="
                 verificationCode = String($event).replace(/\D/g, '')
               "
@@ -330,7 +330,7 @@ async function goToMyInfo() {
             <!-- 카운트다운 — 인증번호 입력칸 안에 표시 -->
             <span
               v-if="remainingSeconds > 0"
-              class="pointer-events-none absolute right-4 top-6 -translate-y-1/2 text-[13px] font-bold tabular-nums text-blue-600"
+              class="pointer-events-none absolute right-4 top-6 -translate-y-1/2 text-body-sm font-bold tabular-nums text-brand"
             >
               {{ remainingDisplay }}
             </span>
@@ -343,7 +343,7 @@ async function goToMyInfo() {
         <div class="pt-8 text-center">
           <BaseButton
             :disabled="!canConfirm"
-            class="w-full rounded-2xl py-3.5 text-[15px] font-bold"
+            class="w-full"
             @click="handleConfirmCode"
           >
             {{ isVerifying ? '확인 중...' : '확인' }}
