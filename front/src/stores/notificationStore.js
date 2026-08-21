@@ -136,16 +136,12 @@ export const useNotificationStore = defineStore('notification', {
      * 성공 시 현재 목록의 isRead 를 모두 true 로 변경 (목록 재조회 없음)
      */
     async markAllAsRead() {
-      try {
-        await markAllReadApi();
-        // 현재 화면에 표시된 알림들의 isRead 를 true 로 변경
-        this.notifications.forEach((n) => {
-          n.isRead = true;
-        });
-        this.unreadCount = 0;
-      } catch (err) {
-        throw err;
-      }
+      await markAllReadApi();
+      // 현재 화면에 표시된 알림들의 isRead 를 true 로 변경
+      this.notifications.forEach((n) => {
+        n.isRead = true;
+      });
+      this.unreadCount = 0;
     },
 
     /**
