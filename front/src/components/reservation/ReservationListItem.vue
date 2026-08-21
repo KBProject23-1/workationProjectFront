@@ -41,9 +41,15 @@ const startDate = computed(() => parseDateTime(props.reservation.startDate));
 const endDate = computed(() => parseDateTime(props.reservation.endDate));
 const canceledAt = computed(() => parseDateTime(props.reservation.canceledAt));
 const isCanceled = computed(() => props.reservation.status === 'CANCELED');
-const showFreeCancellation = computed(
-  () => props.reservation.status === 'CONFIRMED',
-);
+const isConfirmed = computed(() => props.reservation.status === 'CONFIRMED');
+
+// 목록 API가 계산한 취소 가능 여부에 따른 예약 정책 문구
+const cancellationPolicyLabel = computed(() => {
+  if (!isConfirmed.value) return '';
+  return props.reservation.cancelable === true
+    ? '이용 시작일 전날까지 무료 취소 가능합니다.'
+    : '이용 당일부터는 취소가 불가능합니다.';
+});
 
 const dateRangeLabel = computed(() => {
   const startLabel = formatKoreanDate(startDate.value);
@@ -85,9 +91,6 @@ const reservationCompositionLabel = computed(() => {
 });
 
 const amountLabel = computed(() => formatAmount(props.reservation.totalAmount));
-const refundAmountLabel = computed(() =>
-  formatAmount(props.reservation.refundAmount),
-);
 
 // 백엔드 예약 상태를 화면 명세의 상태명과 배지 색상으로 변환
 const statusLabel = computed(() => {
@@ -151,27 +154,22 @@ const statusClass = computed(() => {
       </p>
     </div>
 
-    <div v-if="isCanceled" class="mt-3 flex items-end justify-between gap-3">
-      <div class="min-w-0">
+    <div v-if="isCanceled" class="mt-3 flex justify-end">
+      <div class="min-w-0 text-right">
         <p class="text-[11px] text-slate-400">취소 일시</p>
         <p class="mt-0.5 truncate text-[11px] font-medium text-slate-600">
           {{ canceledAtLabel }}
-        </p>
-      </div>
-      <div class="shrink-0 text-right">
-        <p class="text-[11px] text-slate-400">환불액</p>
-        <p class="mt-0.5 text-[17px] font-extrabold leading-none text-rose-500">
-          {{ refundAmountLabel }}
         </p>
       </div>
     </div>
 
     <div v-else class="mt-3 flex items-end justify-between gap-3">
       <p
-        v-if="showFreeCancellation"
-        class="text-[11px] font-semibold text-primary"
+        v-if="cancellationPolicyLabel"
+        class="text-[11px] font-semibold"
+        :class="reservation.cancelable === true ? 'text-primary' : 'text-rose-500'"
       >
-        예약 하루 전까지 무료 취소
+        {{ cancellationPolicyLabel }}
       </p>
       <div class="ml-auto shrink-0 text-right">
         <p class="text-[11px] text-slate-400">결제 금액</p>

@@ -223,7 +223,11 @@ const toggleScheduleRange = async () => {
 // 삭제는 스케줄러가 아니라 각 상세에서 한다
 const goScheduleItem = (item) => {
   if (item.itemType === 'RESERVATION') {
-    router.push(`/reservations/${item.reservationId}`);
+    router.push({
+      name: 'ReservationDetail',
+      params: { reservationId: item.reservationId },
+      query: { from: 'workation' },
+    });
     return;
   }
   router.push(

@@ -352,7 +352,11 @@ const goMerchant = () => {
 
 const goItem = (item) => {
   if (item.itemType === 'RESERVATION') {
-    router.push(`/reservations/${item.reservationId}`);
+    router.push({
+      name: 'ReservationDetail',
+      params: { reservationId: item.reservationId },
+      query: { from: 'workation' },
+    });
     return;
   }
   router.push(`/workation/${workationId}/schedules/${item.scheduleId}`);
