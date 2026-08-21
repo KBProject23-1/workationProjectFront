@@ -8,12 +8,12 @@
   >
     <div class="h-[104px] bg-brand-weak">
       <img
-        :src="thumbnailUrl || defaultThumbnail"
+        :src="imageSource"
         :alt="name"
         class="h-full w-full object-cover"
         loading="lazy"
         decoding="async"
-        @error="onImageError"
+        @error="handleImageError"
       />
     </div>
 
@@ -41,7 +41,7 @@
 <script setup>
 import { computed } from 'vue';
 import { shortWon } from '@/components/workation/format';
-import defaultThumbnail from '@/assets/images/merchant-default.webp';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 // merchants.category 는 네 가지뿐이다
 const CATEGORY_LABEL = {
@@ -53,8 +53,10 @@ const CATEGORY_LABEL = {
 
 const props = defineProps({
   name: { type: String, required: true },
-  thumbnailUrl: { type: String, default: '' },
+  merchantId: { type: [String, Number], default: null },
   category: { type: String, default: '' },
+  activityType: { type: String, default: '' },
+  thumbnailUrl: { type: String, default: '' },
   rating: { type: [String, Number], default: null },
   price: { type: [String, Number], default: null },
   // 상세로 보낼 수 있을 때만 버튼으로 만든다.
@@ -64,12 +66,12 @@ const props = defineProps({
 
 defineEmits(['select']);
 
-// thumbnail_url 이 있어도 링크가 끊겨 있을 수 있다. 그때도 기본 이미지로 돌린다
-const onImageError = (event) => {
-  if (event.target.src !== defaultThumbnail) {
-    event.target.src = defaultThumbnail;
-  }
-};
+const { imageSource, handleImageError } = useMerchantImage({
+  thumbnailUrl: () => props.thumbnailUrl,
+  category: () => props.category,
+  merchantId: () => props.merchantId,
+  activityType: () => props.activityType,
+});
 
 const ratingText = computed(() => {
   if (props.rating === null || props.rating === '') return '';

@@ -210,6 +210,7 @@ function moveNext() {
         v-for="(item, index) in recommendationItems"
         :key="item.merchantId"
         :item="item"
+        :category="category.type"
         :ranking="item.ranking ?? index + 1"
         :bookmarked="
           item.bookmarked ||

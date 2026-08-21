@@ -1,7 +1,8 @@
 <script setup>
 import { Heart, MapPin } from '@lucide/vue';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
-defineProps({
+const props = defineProps({
   bookmark: {
     type: Object,
     required: true,
@@ -9,11 +10,22 @@ defineProps({
 });
 
 defineEmits(['remove', 'details']);
+
+const { imageSource, handleImageError } = useMerchantImage({
+  thumbnailUrl: () => props.bookmark.thumbnailUrl,
+  category: () => props.bookmark.category,
+  merchantId: () => props.bookmark.merchantId,
+  activityType: () => props.bookmark.activityType,
+});
 </script>
 
 <template>
   <article class="place-card">
-    <img :src="bookmark.thumbnailUrl" :alt="`${bookmark.name} 대표 이미지`" />
+    <img
+      :src="imageSource"
+      :alt="`${bookmark.name} 대표 이미지`"
+      @error="handleImageError"
+    />
     <div class="place-info">
       <h2>{{ bookmark.name }}</h2>
       <p class="rating"><span>★</span> {{ bookmark.rating }}</p>
