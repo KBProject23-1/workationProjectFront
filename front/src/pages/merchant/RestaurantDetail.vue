@@ -11,7 +11,7 @@ import ScheduleRegistrationPanel from '@/components/schedule/ScheduleRegistratio
 import { useScheduleRegistration } from '@/composables/useScheduleRegistration';
 import { useRestaurantStore } from '@/stores/merchant/restaurantStore';
 import { useErrorToast } from '@/composables/useErrorToast';
-import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 const restaurantStore = useRestaurantStore();
 const route = useRoute();
@@ -19,11 +19,11 @@ const router = useRouter();
 const { restaurant, isLoading, isBookmarkLoading, error } =
   storeToRefs(restaurantStore);
 const { showError } = useErrorToast();
-const heroImageLoadFailed = ref(false);
-const defaultThumbnail = computed(() => getMerchantDefaultImage({
+const { imageSource, handleImageError, resetImageError } = useMerchantImage({
+  thumbnailUrl: () => restaurant.value.thumbnailUrl,
   category: 'RESTAURANT',
-  merchantId: restaurant.value.merchantId,
-}));
+  merchantId: () => restaurant.value.merchantId,
+});
 const isDescriptionOpen = ref(false);
 
 const formattedDescription = computed(() =>
@@ -33,7 +33,7 @@ const formattedDescription = computed(() =>
 );
 
 const fetchRestaurant = async () => {
-  heroImageLoadFailed.value = false;
+  resetImageError();
   await restaurantStore.fetchRestaurant(Number(route.params.merchantId));
 };
 
@@ -86,11 +86,9 @@ const goReviews = () => {
         <div class="bg-brand-weak relative h-[190px]">
           <img
             class="h-full w-full object-cover"
-            :src="restaurant.thumbnailUrl && !heroImageLoadFailed
-              ? restaurant.thumbnailUrl
-              : defaultThumbnail"
+            :src="imageSource"
             :alt="`${restaurant.merchantName} 대표 이미지`"
-            @error="heroImageLoadFailed = true"
+            @error="handleImageError"
           />
 
           <button

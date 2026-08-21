@@ -13,10 +13,10 @@
       :class="thumbnailClass"
     >
       <img
-        :src="thumbnailSource"
+        :src="imageSource"
         :alt="`${merchant.name} 대표 이미지`"
         class="h-full w-full object-cover"
-        @error="imageLoadFailed = true"
+        @error="handleImageError"
       />
     </div>
 
@@ -63,9 +63,9 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 import { Heart } from '@lucide/vue';
-import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 const THUMBNAIL_CLASSES = {
   ACCOMMODATION: 'bg-brand-weak',
@@ -86,14 +86,12 @@ const props = defineProps({
 
 defineEmits(['select', 'toggle-bookmark']);
 
-const imageLoadFailed = ref(false);
-
-watch(
-  () => [props.merchant.thumbnailUrl, props.merchant.category],
-  () => {
-    imageLoadFailed.value = false;
-  },
-);
+const { imageSource, handleImageError } = useMerchantImage({
+  thumbnailUrl: () => props.merchant.thumbnailUrl,
+  category: () => props.merchant.category,
+  merchantId: () => props.merchant.merchantId,
+  activityType: () => props.merchant.activityType,
+});
 
 const reservable = computed(
   () =>
@@ -103,20 +101,6 @@ const reservable = computed(
 
 const thumbnailClass = computed(
   () => THUMBNAIL_CLASSES[props.merchant.category] ?? 'bg-canvas',
-);
-
-const defaultThumbnail = computed(
-  () => getMerchantDefaultImage({
-    category: props.merchant.category,
-    merchantId: props.merchant.merchantId,
-    activityType: props.merchant.activityType,
-  }),
-);
-
-const thumbnailSource = computed(
-  () => props.merchant.thumbnailUrl && !imageLoadFailed.value
-    ? props.merchant.thumbnailUrl
-    : defaultThumbnail.value,
 );
 
 const priceUnit = computed(() => PRICE_UNITS[props.merchant.category] ?? '');

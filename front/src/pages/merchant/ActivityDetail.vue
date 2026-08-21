@@ -11,7 +11,7 @@ import ScheduleRegistrationPanel from '@/components/schedule/ScheduleRegistratio
 import { useScheduleRegistration } from '@/composables/useScheduleRegistration';
 import { useActivityStore } from '@/stores/merchant/activityStore';
 import { useErrorToast } from '@/composables/useErrorToast';
-import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 const activityStore = useActivityStore();
 const route = useRoute();
@@ -19,12 +19,12 @@ const router = useRouter();
 const { activity, isLoading, isBookmarkLoading, error } =
   storeToRefs(activityStore);
 const { showError } = useErrorToast();
-const heroImageLoadFailed = ref(false);
-const defaultThumbnail = computed(() => getMerchantDefaultImage({
+const { imageSource, handleImageError, resetImageError } = useMerchantImage({
+  thumbnailUrl: () => activity.value.thumbnailUrl,
   category: 'ACTIVITY',
-  merchantId: activity.value.merchantId,
-  activityType: activity.value.activityType,
-}));
+  merchantId: () => activity.value.merchantId,
+  activityType: () => activity.value.activityType,
+});
 const isDescriptionOpen = ref(false);
 
 const formattedDescription = computed(() =>
@@ -34,7 +34,7 @@ const formattedDescription = computed(() =>
 );
 
 const fetchActivity = async () => {
-  heroImageLoadFailed.value = false;
+  resetImageError();
   await activityStore.fetchActivity(Number(route.params.merchantId));
 };
 
@@ -87,11 +87,9 @@ const goReviews = () => {
         <div class="bg-brand-weak relative h-[190px]">
           <img
             class="h-full w-full object-cover"
-            :src="activity.thumbnailUrl && !heroImageLoadFailed
-              ? activity.thumbnailUrl
-              : defaultThumbnail"
+            :src="imageSource"
             :alt="`${activity.merchantName} 대표 이미지`"
-            @error="heroImageLoadFailed = true"
+            @error="handleImageError"
           />
 
           <button

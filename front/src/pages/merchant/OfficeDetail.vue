@@ -12,7 +12,7 @@ import ReservationDateModal from '@/components/reservation/ReservationDateModal.
 import ReservationOccupancyModal from '@/components/reservation/ReservationOccupancyModal.vue';
 import { useOfficeStore } from '@/stores/merchant/officeStore';
 import { useErrorToast } from '@/composables/useErrorToast';
-import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 const officeStore = useOfficeStore();
 const route = useRoute();
@@ -35,11 +35,11 @@ const { showError } = useErrorToast();
 const dateModalMode = ref('');
 const isOccupancyModalOpen = ref(false);
 const isDescriptionOpen = ref(false);
-const heroImageLoadFailed = ref(false);
-const defaultThumbnail = computed(() => getMerchantDefaultImage({
+const { imageSource, handleImageError, resetImageError } = useMerchantImage({
+  thumbnailUrl: () => office.value.thumbnailUrl,
   category: 'OFFICE',
-  merchantId: office.value.merchantId,
-}));
+  merchantId: () => office.value.merchantId,
+});
 
 const PRODUCT_TYPE_LABELS = {
   OFFICE_SEAT: '좌석',
@@ -79,7 +79,7 @@ const formattedDescription = computed(() =>
 );
 
 const fetchOffice = async () => {
-  heroImageLoadFailed.value = false;
+  resetImageError();
   await officeStore.fetchOffice(Number(route.params.merchantId));
 };
 
@@ -166,11 +166,9 @@ onMounted(async () => {
           <div class="bg-brand-weak relative h-[190px]">
             <img
               class="h-full w-full object-cover"
-              :src="office.thumbnailUrl && !heroImageLoadFailed
-                ? office.thumbnailUrl
-                : defaultThumbnail"
+              :src="imageSource"
               :alt="`${office.name} 대표 이미지`"
-              @error="heroImageLoadFailed = true"
+              @error="handleImageError"
             />
 
             <button

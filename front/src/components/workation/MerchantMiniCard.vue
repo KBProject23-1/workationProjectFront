@@ -8,12 +8,12 @@
   >
     <div class="h-[104px] bg-brand-weak">
       <img
-        :src="thumbnailSource"
+        :src="imageSource"
         :alt="name"
         class="h-full w-full object-cover"
         loading="lazy"
         decoding="async"
-        @error="onImageError"
+        @error="handleImageError"
       />
     </div>
 
@@ -39,9 +39,9 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 import { shortWon } from '@/components/workation/format';
-import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 // merchants.category 는 네 가지뿐이다
 const CATEGORY_LABEL = {
@@ -66,31 +66,12 @@ const props = defineProps({
 
 defineEmits(['select']);
 
-const imageLoadFailed = ref(false);
-const defaultThumbnail = computed(
-  () => getMerchantDefaultImage({
-    category: props.category,
-    merchantId: props.merchantId,
-    activityType: props.activityType,
-  }),
-);
-const thumbnailSource = computed(
-  () => props.thumbnailUrl && !imageLoadFailed.value
-    ? props.thumbnailUrl
-    : defaultThumbnail.value,
-);
-
-watch(
-  () => [props.thumbnailUrl, props.category, props.activityType],
-  () => {
-    imageLoadFailed.value = false;
-  },
-);
-
-// thumbnail_url 링크 오류 시 카테고리별 기본 이미지 표시
-const onImageError = () => {
-  imageLoadFailed.value = true;
-};
+const { imageSource, handleImageError } = useMerchantImage({
+  thumbnailUrl: () => props.thumbnailUrl,
+  category: () => props.category,
+  merchantId: () => props.merchantId,
+  activityType: () => props.activityType,
+});
 
 const ratingText = computed(() => {
   if (props.rating === null || props.rating === '') return '';

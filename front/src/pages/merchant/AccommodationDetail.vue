@@ -12,7 +12,7 @@ import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import { useAccommodationStore } from '@/stores/merchant/accommodationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
-import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 const accommodationStore = useAccommodationStore();
 const route = useRoute();
@@ -34,11 +34,11 @@ const { showError } = useErrorToast();
 const dateModalMode = ref('');
 const isOccupancyModalOpen = ref(false);
 const isDescriptionOpen = ref(false);
-const heroImageLoadFailed = ref(false);
-const defaultThumbnail = computed(() => getMerchantDefaultImage({
+const { imageSource, handleImageError, resetImageError } = useMerchantImage({
+  thumbnailUrl: () => accommodation.value.thumbnailUrl,
   category: 'ACCOMMODATION',
-  merchantId: accommodation.value.merchantId,
-}));
+  merchantId: () => accommodation.value.merchantId,
+});
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -73,7 +73,7 @@ const formattedDescription = computed(() =>
 );
 
 const fetchAccommodation = async () => {
-  heroImageLoadFailed.value = false;
+  resetImageError();
   await accommodationStore.fetchAccommodation(Number(route.params.merchantId));
 };
 
@@ -161,11 +161,9 @@ onMounted(async () => {
           <div class="bg-brand-weak relative h-[190px]">
             <img
               class="h-full w-full object-cover"
-              :src="accommodation.thumbnailUrl && !heroImageLoadFailed
-                ? accommodation.thumbnailUrl
-                : defaultThumbnail"
+              :src="imageSource"
               :alt="`${accommodation.name} 대표 이미지`"
-              @error="heroImageLoadFailed = true"
+              @error="handleImageError"
             />
 
             <button

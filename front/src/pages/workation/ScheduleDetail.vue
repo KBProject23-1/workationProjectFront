@@ -30,12 +30,10 @@
           @click="goMerchant"
         >
           <img
-            :src="detail.thumbnailUrl && !imageLoadFailed
-              ? detail.thumbnailUrl
-              : defaultThumbnail"
+            :src="imageSource"
             :alt="detail.merchantName"
             class="bg-canvas h-[202px] w-full object-cover"
-            @error="imageLoadFailed = true"
+            @error="handleImageError"
           />
 
           <div class="flex items-center justify-between gap-3 px-[18px] py-4">
@@ -152,7 +150,7 @@ import { getSchedules } from '@/api/schedule';
 import { hourMinute, shortRange, weekday } from '@/components/workation/format';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import ScheduleTimePicker from '@/components/workation/ScheduleTimePicker.vue';
-import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 const CATEGORY_LABELS = {
   RESTAURANT: '음식점',
@@ -183,7 +181,6 @@ const confirmOpen = ref(false);
 const timePickerOpen = ref(false);
 const errorMessage = ref('');
 const sameDayItems = ref([]);
-const imageLoadFailed = ref(false);
 
 const unavailableTimes = computed(() => [
   ...new Set(
@@ -195,11 +192,12 @@ const unavailableTimes = computed(() => [
 ]);
 
 const detail = computed(() => scheduleStore.detail);
-const defaultThumbnail = computed(() => getMerchantDefaultImage({
-  category: detail.value?.merchantCategory,
-  merchantId: detail.value?.merchantId,
-  activityType: detail.value?.activityType,
-}));
+const { imageSource, handleImageError, resetImageError } = useMerchantImage({
+  thumbnailUrl: () => detail.value?.thumbnailUrl,
+  category: () => detail.value?.merchantCategory,
+  merchantId: () => detail.value?.merchantId,
+  activityType: () => detail.value?.activityType,
+});
 
 // scheduledAt 은 2026-08-15T18:00:00 형태로 온다
 const visitDate = computed(() => detail.value?.scheduledAt?.slice(0, 10) ?? '');
@@ -275,7 +273,7 @@ const loadSameDay = async () => {
 const load = async () => {
   loading.value = true;
   errorMessage.value = '';
-  imageLoadFailed.value = false;
+  resetImageError();
   try {
     await scheduleStore.fetchDetail(workationId, scheduleId.value);
     await loadSameDay();

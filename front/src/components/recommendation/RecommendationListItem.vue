@@ -1,7 +1,6 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
 import { Heart, MapPin } from '@lucide/vue';
-import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 const props = defineProps({
   item: {
@@ -28,28 +27,11 @@ const props = defineProps({
 
 defineEmits(['detail', 'bookmark']);
 
-const imageLoadFailed = ref(false);
-
-watch(
-  () => [props.item.thumbnailUrl, props.item.imageUrl, props.category],
-  () => {
-    imageLoadFailed.value = false;
-  },
-);
-
-const defaultThumbnail = computed(
-  () => getMerchantDefaultImage({
-    category: props.category,
-    merchantId: props.item.merchantId,
-    activityType: props.item.activityType,
-  }),
-);
-
-const thumbnailSource = computed(() => {
-  const remoteThumbnail = props.item.thumbnailUrl || props.item.imageUrl;
-  return remoteThumbnail && !imageLoadFailed.value
-    ? remoteThumbnail
-    : defaultThumbnail.value;
+const { imageSource, handleImageError } = useMerchantImage({
+  thumbnailUrl: () => props.item.thumbnailUrl || props.item.imageUrl,
+  category: () => props.category,
+  merchantId: () => props.item.merchantId,
+  activityType: () => props.item.activityType,
 });
 </script>
 
@@ -57,9 +39,9 @@ const thumbnailSource = computed(() => {
   <article class="result-card">
     <div class="ranking">{{ ranking }}</div>
     <img
-      :src="thumbnailSource"
+      :src="imageSource"
       :alt="`${item.name} 대표 이미지`"
-      @error="imageLoadFailed = true"
+      @error="handleImageError"
     />
 
     <div class="result-content">
