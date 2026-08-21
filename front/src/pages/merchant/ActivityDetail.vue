@@ -145,7 +145,7 @@ const goReviews = () => {
         class="rounded-card bg-surface shadow-card mt-3 px-[18px] py-4"
       >
         <p
-          class="text-body whitespace-pre-line leading-relaxed text-ink-sub"
+          class="description-copy text-body leading-relaxed text-ink-sub"
           :class="{ 'description-clamp': !isDescriptionOpen }"
         >
           {{ formattedDescription }}
@@ -193,11 +193,16 @@ const goReviews = () => {
   </main>
 </template>
 <style scoped>
+.description-copy {
+  white-space: pre-line;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
 .description-clamp {
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
-  white-space: normal;
 }
 </style>
