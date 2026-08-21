@@ -11,6 +11,7 @@ import ScheduleRegistrationPanel from '@/components/schedule/ScheduleRegistratio
 import { useScheduleRegistration } from '@/composables/useScheduleRegistration';
 import { useRestaurantStore } from '@/stores/merchant/restaurantStore';
 import { useErrorToast } from '@/composables/useErrorToast';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 const restaurantStore = useRestaurantStore();
 const route = useRoute();
@@ -18,6 +19,11 @@ const router = useRouter();
 const { restaurant, isLoading, isBookmarkLoading, error } =
   storeToRefs(restaurantStore);
 const { showError } = useErrorToast();
+const { imageSource, handleImageError, resetImageError } = useMerchantImage({
+  thumbnailUrl: () => restaurant.value.thumbnailUrl,
+  category: 'RESTAURANT',
+  merchantId: () => restaurant.value.merchantId,
+});
 const isDescriptionOpen = ref(false);
 
 const formattedDescription = computed(() =>
@@ -27,6 +33,7 @@ const formattedDescription = computed(() =>
 );
 
 const fetchRestaurant = async () => {
+  resetImageError();
   await restaurantStore.fetchRestaurant(Number(route.params.merchantId));
 };
 
@@ -78,10 +85,10 @@ const goReviews = () => {
       <section class="rounded-sheet bg-surface shadow-card overflow-hidden">
         <div class="bg-brand-weak relative h-[190px]">
           <img
-            v-if="restaurant.thumbnailUrl"
             class="h-full w-full object-cover"
-            :src="restaurant.thumbnailUrl"
+            :src="imageSource"
             :alt="`${restaurant.merchantName} 대표 이미지`"
+            @error="handleImageError"
           />
 
           <button
@@ -137,7 +144,7 @@ const goReviews = () => {
         class="rounded-card bg-surface shadow-card mt-3 px-[18px] py-4"
       >
         <p
-          class="text-body whitespace-pre-line leading-relaxed text-ink-sub"
+          class="description-copy text-body leading-relaxed text-ink-sub"
           :class="{ 'description-clamp': !isDescriptionOpen }"
         >
           {{ formattedDescription }}
@@ -193,13 +200,17 @@ const goReviews = () => {
     />
   </main>
 </template>
-
 <style scoped>
+.description-copy {
+  white-space: pre-line;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
 .description-clamp {
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
-  white-space: normal;
 }
 </style>

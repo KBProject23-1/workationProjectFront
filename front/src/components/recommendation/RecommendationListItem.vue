@@ -1,9 +1,14 @@
 <script setup>
 import { Heart, MapPin } from '@lucide/vue';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
-defineProps({
+const props = defineProps({
   item: {
     type: Object,
+    required: true,
+  },
+  category: {
+    type: String,
     required: true,
   },
   ranking: {
@@ -21,17 +26,23 @@ defineProps({
 });
 
 defineEmits(['detail', 'bookmark']);
+
+const { imageSource, handleImageError } = useMerchantImage({
+  thumbnailUrl: () => props.item.thumbnailUrl || props.item.imageUrl,
+  category: () => props.category,
+  merchantId: () => props.item.merchantId,
+  activityType: () => props.item.activityType,
+});
 </script>
 
 <template>
   <article class="result-card">
     <div class="ranking">{{ ranking }}</div>
     <img
-      v-if="item.thumbnailUrl || item.imageUrl"
-      :src="item.thumbnailUrl || item.imageUrl"
+      :src="imageSource"
       :alt="`${item.name} 대표 이미지`"
+      @error="handleImageError"
     />
-    <div v-else class="image-placeholder" aria-hidden="true"></div>
 
     <div class="result-content">
       <div class="result-title-row">
@@ -88,17 +99,12 @@ defineEmits(['detail', 'bookmark']);
   box-shadow: 0 6px 18px rgb(48 135 237 / 10%);
 }
 
-.result-card > img,
-.image-placeholder {
+.result-card > img {
   width: 90px;
   min-width: 90px;
   height: 112px;
   border-radius: 8px;
   object-fit: cover;
-}
-
-.image-placeholder {
-  background: #edf3fa;
 }
 
 .ranking {

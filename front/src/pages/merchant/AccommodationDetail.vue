@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { Bed, Heart, MapPin, Phone, Star } from '@lucide/vue';
+import { Heart, MapPin, Phone, Star } from '@lucide/vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import ReservationOccupancyModal from '@/components/reservation/ReservationOccupancyModal.vue';
 import AccommodationProductCard from '@/components/merchant/AccommodationProductCard.vue';
@@ -12,6 +12,7 @@ import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import { useAccommodationStore } from '@/stores/merchant/accommodationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 const accommodationStore = useAccommodationStore();
 const route = useRoute();
@@ -33,7 +34,11 @@ const { showError } = useErrorToast();
 const dateModalMode = ref('');
 const isOccupancyModalOpen = ref(false);
 const isDescriptionOpen = ref(false);
-const heroImageLoadFailed = ref(false);
+const { imageSource, handleImageError, resetImageError } = useMerchantImage({
+  thumbnailUrl: () => accommodation.value.thumbnailUrl,
+  category: 'ACCOMMODATION',
+  merchantId: () => accommodation.value.merchantId,
+});
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -68,7 +73,7 @@ const formattedDescription = computed(() =>
 );
 
 const fetchAccommodation = async () => {
-  heroImageLoadFailed.value = false;
+  resetImageError();
   await accommodationStore.fetchAccommodation(Number(route.params.merchantId));
 };
 
@@ -155,22 +160,11 @@ onMounted(async () => {
         <section class="rounded-sheet bg-surface shadow-card overflow-hidden">
           <div class="bg-brand-weak relative h-[190px]">
             <img
-              v-if="accommodation.thumbnailUrl && !heroImageLoadFailed"
               class="h-full w-full object-cover"
-              :src="accommodation.thumbnailUrl"
+              :src="imageSource"
               :alt="`${accommodation.name} 대표 이미지`"
-              @error="heroImageLoadFailed = true"
+              @error="handleImageError"
             />
-
-            <!-- 사진이 없거나 링크가 끊긴 경우 -->
-            <div
-              v-else
-              class="text-brand/40 flex h-full w-full items-center justify-center"
-              role="img"
-              aria-label="숙소 기본 이미지"
-            >
-              <Bed :size="48" />
-            </div>
 
             <button
               type="button"
@@ -221,7 +215,7 @@ onMounted(async () => {
         <section class="rounded-card bg-surface shadow-card mt-3 px-[18px] py-4">
           <div v-if="accommodation.description">
             <p
-              class="text-body whitespace-pre-line leading-relaxed text-ink-sub"
+              class="description-copy text-body leading-relaxed text-ink-sub"
               :class="{ 'description-clamp': !isDescriptionOpen }"
             >
               {{ formattedDescription }}
@@ -363,13 +357,17 @@ onMounted(async () => {
     />
   </main>
 </template>
-
 <style scoped>
+.description-copy {
+  white-space: pre-line;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
 .description-clamp {
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
-  white-space: normal;
 }
 </style>

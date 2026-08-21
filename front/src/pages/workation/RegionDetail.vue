@@ -133,8 +133,10 @@
             v-for="merchant in merchants"
             :key="merchant.merchantId"
             :name="merchant.name"
-            :thumbnail-url="merchant.thumbnailUrl"
+            :merchant-id="merchant.merchantId"
             :category="merchant.category"
+            :activity-type="merchant.activityType"
+            :thumbnail-url="merchant.thumbnailUrl"
             :rating="merchant.rating"
             :price="merchant.price"
             clickable

@@ -112,8 +112,10 @@
             v-for="bookmark in bookmarks"
             :key="bookmark.bookmarkId"
             :name="bookmark.name"
-            :thumbnail-url="bookmark.thumbnailUrl"
+            :merchant-id="bookmark.merchantId"
             :category="bookmark.category"
+            :activity-type="bookmark.activityType"
+            :thumbnail-url="bookmark.thumbnailUrl"
             :rating="bookmark.rating"
             :price="bookmark.price"
             clickable
@@ -155,8 +157,10 @@
           v-for="merchant in merchants"
           :key="merchant.merchantId"
           :name="merchant.name"
-          :thumbnail-url="merchant.thumbnailUrl"
+          :merchant-id="merchant.merchantId"
           :category="merchant.category"
+          :activity-type="merchant.activityType"
+          :thumbnail-url="merchant.thumbnailUrl"
           :rating="merchant.rating"
           :price="merchant.price"
           clickable
