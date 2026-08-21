@@ -201,7 +201,7 @@ onMounted(async () => {
             <div class="border-line mt-3.5 flex items-center justify-between gap-3 border-t pt-3.5">
               <p class="text-body flex items-center gap-1.5 font-bold text-ink">
                 <Star :size="15" class="text-warn" fill="currentColor" />
-                {{ accommodation.rating }}
+                {{ Number(accommodation.rating ?? 0).toFixed(1) }}
                 <span class="text-body-sm font-medium text-ink-mute">
                   리뷰 {{ accommodation.reviewCount }}개
                 </span>

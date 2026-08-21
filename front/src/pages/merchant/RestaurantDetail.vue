@@ -116,7 +116,7 @@ const goReviews = () => {
           >
             <p class="text-body flex items-center gap-1.5 font-bold text-ink">
               <Star :size="15" class="text-warn" fill="currentColor" />
-              {{ restaurant.rating }}
+              {{ Number(restaurant.rating ?? 0).toFixed(1) }}
               <span class="text-body-sm font-medium text-ink-mute">
                 리뷰 {{ restaurant.reviewCount }}개
               </span>
