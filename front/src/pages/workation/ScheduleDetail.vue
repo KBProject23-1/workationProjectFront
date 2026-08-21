@@ -159,7 +159,6 @@ import {
   Ticket,
   UtensilsCrossed,
 } from '@lucide/vue';
-import BaseButton from '@/components/common/BaseButton.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import { useScheduleStore } from '@/stores/scheduleStore';

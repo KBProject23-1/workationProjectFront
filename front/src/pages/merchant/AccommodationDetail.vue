@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { Bed, Heart, MapPin, Phone, Star } from '@lucide/vue';
@@ -67,9 +67,9 @@ const formattedDescription = computed(() =>
     .trim(),
 );
 
-const fetchAccommodation = async () => {
+const fetchAccommodation = async (showLoading = true) => {
   heroImageLoadFailed.value = false;
-  await accommodationStore.fetchAccommodation(Number(route.params.merchantId));
+  await accommodationStore.fetchAccommodation(Number(route.params.merchantId), { showLoading });
 };
 
 const applyRouteConditions = () => {
@@ -89,15 +89,22 @@ const applyRouteConditions = () => {
   }
 };
 
-const selectDate = async (value) => {
-  accommodationStore.setDate(dateModalMode.value, value);
+const selectDateRange = async ({ startDate, endDate }) => {
+  const scrollY = window.scrollY;
+  accommodationStore.setDate('checkIn', startDate);
+  accommodationStore.setDate('checkOut', endDate);
   dateModalMode.value = '';
-  await fetchAccommodation();
+  await fetchAccommodation(false);
+  await nextTick();
+  window.scrollTo({ top: scrollY });
 };
 
 const closeOccupancyModal = async () => {
+  const scrollY = window.scrollY;
   isOccupancyModalOpen.value = false;
-  await fetchAccommodation();
+  await fetchAccommodation(false);
+  await nextTick();
+  window.scrollTo({ top: scrollY });
 };
 
 const toggleBookmark = async () => {
@@ -281,7 +288,7 @@ onMounted(async () => {
             <button
               type="button"
               class="rounded-chip bg-surface shadow-card flex h-[58px] flex-col items-center justify-center px-2 text-center"
-              @click="dateModalMode = 'checkIn'"
+              @click="dateModalMode = 'range'"
             >
               <span class="text-caption text-ink-mute">체크인</span>
               <span class="text-body-sm mt-1 truncate font-bold text-ink">
@@ -291,7 +298,7 @@ onMounted(async () => {
             <button
               type="button"
               class="rounded-chip bg-surface shadow-card flex h-[58px] flex-col items-center justify-center px-2 text-center"
-              @click="dateModalMode = 'checkOut'"
+              @click="dateModalMode = 'range'"
             >
               <span class="text-caption text-ink-mute">체크아웃</span>
               <span class="text-body-sm mt-1 truncate font-bold text-ink">
@@ -350,9 +357,10 @@ onMounted(async () => {
     <ReservationDateModal
       v-if="dateModalMode"
       :mode="dateModalMode"
+      range
       :check-in="checkIn"
       :check-out="checkOut"
-      @select="selectDate"
+      @select-range="selectDateRange"
       @close="dateModalMode = ''"
     />
     <ReservationOccupancyModal

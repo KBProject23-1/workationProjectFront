@@ -81,12 +81,16 @@
             placeholder="시작일"
             :disabled="startDateLocked"
             class="flex-1"
+            manual
+            @open="periodDateMode = 'range'"
           />
           <span class="shrink-0 text-ink-mute">~</span>
           <WorkationDateInput
             v-model="form.endDate"
             placeholder="종료일"
             class="flex-1"
+            manual
+            @open="periodDateMode = 'range'"
           />
         </div>
       </WorkationFormField>
@@ -210,6 +214,17 @@
       @confirm="goReservations"
       @cancel="goHome"
     />
+    <ReservationDateModal
+      v-if="periodDateMode"
+      :mode="periodDateMode"
+      range
+      :check-in="form.startDate"
+      :check-out="form.endDate"
+      start-label="시작일"
+      end-label="종료일"
+      @select-range="selectPeriodRange"
+      @close="periodDateMode = ''"
+    />
   </div>
 </template>
 
@@ -234,6 +249,7 @@ import { useSurveyStore } from '@/stores/surveyStore';
 import WorkationFormField from '@/components/workation/WorkationFormField.vue';
 import { daysBetween, SURVEY_CARD_TONES, selectedOptionsText } from '@/components/workation/format';
 import WorkationDateInput from '@/components/workation/WorkationDateInput.vue';
+import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 
 const route = useRoute();
@@ -271,6 +287,7 @@ const isEdit = Boolean(workationId);
 const pageTitle = isEdit ? '워케이션 일정 수정하기' : '워케이션 일정 등록하기';
 
 const submitting = ref(false);
+const periodDateMode = ref('');
 
 // 기간 축소로 밀려나는 지출이 있을 때 확인받는다
 const outOfPeriodOpen = ref(false);
@@ -369,6 +386,12 @@ const errors = reactive({
   businessBudgetTotal: '',
   personalBudgetTotal: '',
 });
+
+const selectPeriodRange = ({ startDate, endDate }) => {
+  form.startDate = startDate;
+  form.endDate = endDate;
+  periodDateMode.value = '';
+};
 
 const loadRegions = async () => {
   try {

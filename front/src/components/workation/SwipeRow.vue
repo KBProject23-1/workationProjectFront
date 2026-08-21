@@ -5,7 +5,7 @@
   -->
   <div
     ref="row"
-    class="swipe-row flex snap-x snap-mandatory gap-2.5 overflow-x-auto pb-1"
+    class="swipe-row flex snap-x snap-proximity gap-2.5 overflow-x-auto pb-1"
     @wheel="onWheel"
   >
     <slot />
@@ -46,6 +46,7 @@ const onWheel = (event) => {
   -ms-overflow-style: none;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 .swipe-row::-webkit-scrollbar {

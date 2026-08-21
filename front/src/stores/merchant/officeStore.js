@@ -53,8 +53,8 @@ export const useOfficeStore = defineStore('office', {
     },
   },
   actions: {
-    async fetchOffice(merchantId) {
-      this.isLoading = true;
+    async fetchOffice(merchantId, { showLoading = true } = {}) {
+      if (showLoading) this.isLoading = true;
       this.error = null;
 
       try {
@@ -93,7 +93,7 @@ export const useOfficeStore = defineStore('office', {
       } catch (error) {
         this.error = error.message;
       } finally {
-        this.isLoading = false;
+        if (showLoading) this.isLoading = false;
       }
     },
     setDate(mode, value) {

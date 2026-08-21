@@ -54,8 +54,8 @@ export const useAccommodationStore = defineStore('accommodation', {
     },
   },
   actions: {
-    async fetchAccommodation(merchantId) {
-      this.isLoading = true;
+    async fetchAccommodation(merchantId, { showLoading = true } = {}) {
+      if (showLoading) this.isLoading = true;
       this.error = null;
 
       try {
@@ -95,7 +95,7 @@ export const useAccommodationStore = defineStore('accommodation', {
       } catch (error) {
         this.error = error.message;
       } finally {
-        this.isLoading = false;
+        if (showLoading) this.isLoading = false;
       }
     },
     setDate(mode, value) {

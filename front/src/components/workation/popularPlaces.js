@@ -110,15 +110,13 @@ export const fetchPopularPlaces = async ({ regionId, size = 10 } = {}) => {
     });
     const places = contentOf(withDates);
     if (places.length > 0) return rank(places, size);
-  } catch (error) {
+  } catch {
     // 조회 실패는 화면을 막을 일이 아니지만, 원인은 남겨야 한다
-    console.warn('[popularPlaces] 기간 조회 실패', error.message);
   }
 
   // 하나가 실패해도 성공한 업종만이라도 보여준다
-  const collect = (result, label) => {
+  const collect = (result) => {
     if (result.status === 'fulfilled') return contentOf(result.value);
-    console.warn(`[popularPlaces] ${label} 조회 실패`, result.reason?.message);
     return [];
   };
 
@@ -126,7 +124,7 @@ export const fetchPopularPlaces = async ({ regionId, size = 10 } = {}) => {
     getMerchants({ ...base, category: 'RESTAURANT' }),
     getMerchants({ ...base, category: 'ACTIVITY' }),
   ]);
-  const places = [...collect(restaurants, '음식점'), ...collect(activities, '여가')];
+  const places = [...collect(restaurants), ...collect(activities)];
 
   return rank(places, size);
 };
