@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { Heart, MapPin, Star } from '@lucide/vue';
@@ -18,6 +18,13 @@ const router = useRouter();
 const { restaurant, isLoading, isBookmarkLoading, error } =
   storeToRefs(restaurantStore);
 const { showError } = useErrorToast();
+const isDescriptionOpen = ref(false);
+
+const formattedDescription = computed(() =>
+  String(restaurant.value.description ?? '')
+    .replace(/\s*(?=\[[^\]]+\])/g, '\n')
+    .trim(),
+);
 
 const fetchRestaurant = async () => {
   await restaurantStore.fetchRestaurant(Number(route.params.merchantId));
@@ -129,9 +136,20 @@ const goReviews = () => {
         v-if="restaurant.description"
         class="rounded-card bg-surface shadow-card mt-3 px-[18px] py-4"
       >
-        <p class="text-body leading-relaxed text-ink-sub">
-          {{ restaurant.description }}
+        <p
+          class="text-body whitespace-pre-line leading-relaxed text-ink-sub"
+          :class="{ 'description-clamp': !isDescriptionOpen }"
+        >
+          {{ formattedDescription }}
         </p>
+        <button
+          type="button"
+          class="text-body-sm text-brand mt-2 font-bold"
+          :aria-expanded="isDescriptionOpen"
+          @click="isDescriptionOpen = !isDescriptionOpen"
+        >
+          {{ isDescriptionOpen ? '상세정보 접기' : '상세정보 더보기' }}
+        </button>
       </section>
 
       <section
@@ -175,3 +193,13 @@ const goReviews = () => {
     />
   </main>
 </template>
+
+<style scoped>
+.description-clamp {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  white-space: normal;
+}
+</style>

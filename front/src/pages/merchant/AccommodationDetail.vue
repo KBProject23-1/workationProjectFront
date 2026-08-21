@@ -32,6 +32,7 @@ const { showError } = useErrorToast();
 
 const dateModalMode = ref('');
 const isOccupancyModalOpen = ref(false);
+const isDescriptionOpen = ref(false);
 const heroImageLoadFailed = ref(false);
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
@@ -58,6 +59,12 @@ const isConditionOpen = ref(!enteredWithConditions);
 const conditionSummary = computed(
   () =>
     `${displayDate(checkIn.value)} ~ ${displayDate(checkOut.value)} · ${roomCount.value}개 · ${guestCount.value}명`,
+);
+
+const formattedDescription = computed(() =>
+  String(accommodation.value.description ?? '')
+    .replace(/\s*(?=\[[^\]]+\])/g, '\n')
+    .trim(),
 );
 
 const fetchAccommodation = async () => {
@@ -212,9 +219,22 @@ onMounted(async () => {
 
         <!-- 소개와 연락처 -->
         <section class="rounded-card bg-surface shadow-card mt-3 px-[18px] py-4">
-          <p v-if="accommodation.description" class="text-body leading-relaxed text-ink-sub">
-            {{ accommodation.description }}
-          </p>
+          <div v-if="accommodation.description">
+            <p
+              class="text-body whitespace-pre-line leading-relaxed text-ink-sub"
+              :class="{ 'description-clamp': !isDescriptionOpen }"
+            >
+              {{ formattedDescription }}
+            </p>
+            <button
+              type="button"
+              class="text-body-sm text-brand mt-2 font-bold"
+              :aria-expanded="isDescriptionOpen"
+              @click="isDescriptionOpen = !isDescriptionOpen"
+            >
+              {{ isDescriptionOpen ? '상세정보 접기' : '상세정보 더보기' }}
+            </button>
+          </div>
 
           <div
             class="border-line text-body-sm flex items-center gap-1.5 text-ink-mute"
@@ -343,3 +363,13 @@ onMounted(async () => {
     />
   </main>
 </template>
+
+<style scoped>
+.description-clamp {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  white-space: normal;
+}
+</style>

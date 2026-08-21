@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { Heart, MapPin, Star } from '@lucide/vue';
@@ -18,6 +18,13 @@ const router = useRouter();
 const { activity, isLoading, isBookmarkLoading, error } =
   storeToRefs(activityStore);
 const { showError } = useErrorToast();
+const isDescriptionOpen = ref(false);
+
+const formattedDescription = computed(() =>
+  String(activity.value.description ?? '')
+    .replace(/\s*(?=\[[^\]]+\])/g, '\n')
+    .trim(),
+);
 
 const fetchActivity = async () => {
   await activityStore.fetchActivity(Number(route.params.merchantId));
@@ -129,9 +136,20 @@ const goReviews = () => {
         v-if="activity.description"
         class="rounded-card bg-surface shadow-card mt-3 px-[18px] py-4"
       >
-        <p class="text-body leading-relaxed text-ink-sub">
-          {{ activity.description }}
+        <p
+          class="text-body whitespace-pre-line leading-relaxed text-ink-sub"
+          :class="{ 'description-clamp': !isDescriptionOpen }"
+        >
+          {{ formattedDescription }}
         </p>
+        <button
+          type="button"
+          class="text-body-sm text-brand mt-2 font-bold"
+          :aria-expanded="isDescriptionOpen"
+          @click="isDescriptionOpen = !isDescriptionOpen"
+        >
+          {{ isDescriptionOpen ? '상세정보 접기' : '상세정보 더보기' }}
+        </button>
       </section>
 
       <!-- 예약이 아니라 방문 계획이라 날짜와 시간만 정한다 -->
@@ -166,3 +184,13 @@ const goReviews = () => {
     />
   </main>
 </template>
+
+<style scoped>
+.description-clamp {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  white-space: normal;
+}
+</style>
