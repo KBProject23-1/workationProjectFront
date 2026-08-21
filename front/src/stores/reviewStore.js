@@ -33,7 +33,8 @@ export const useReviewStore = defineStore('review', {
     ratingDistribution: {}, reviews: [], page: 1, totalPages: 1,
     isLoading: false, error: null, reviewDetail: null, isDetailLoading: false,
     detailError: null, myReviews: [], myReviewCategory: 'ALL', myReviewPage: 1,
-    myReviewTotalPages: 1, isMyReviewsLoading: false, myReviewsError: null,
+    myReviewTotalPages: 1, myReviewHasNext: false, isMyReviewsLoading: false,
+    isMyReviewsLoadingMore: false, myReviewsError: null,
     reviewFormMerchant: null, isReviewSaving: false, reviewSaveError: null,
     savedReview: null, isReviewDeleting: false, reviewDeleteError: null,
   }),
@@ -62,24 +63,44 @@ export const useReviewStore = defineStore('review', {
       try {
         const { data } = await getReviewDetails(reviewId);
         if (!data?.reviewId || !data.merchant) throw new Error('리뷰 상세 응답 형식이 올바르지 않습니다.');
-        this.reviewDetail = { ...data, imageUrl: resolveReviewImageUrl(data.imageUrl) };
+        this.reviewDetail = {
+          ...data,
+          imageUrl: resolveReviewImageUrl(data.imageUrl),
+          merchant: {
+            ...data.merchant,
+            thumbnailUrl: resolveReviewImageUrl(data.merchant.thumbnailUrl),
+          },
+        };
       } catch (error) { this.detailError = error.message; } finally { this.isDetailLoading = false; }
     },
-    async fetchMyReviews(category = 'ALL', page = 1) {
-      this.isMyReviewsLoading = true; this.myReviewsError = null; this.myReviewCategory = category;
+    async fetchMyReviews(category = 'ALL', page = 1, append = false) {
+      if (append) {
+        if (this.isMyReviewsLoading || this.isMyReviewsLoadingMore || !this.myReviewHasNext) return;
+        this.isMyReviewsLoadingMore = true;
+      } else {
+        this.isMyReviewsLoading = true;
+        this.myReviews = [];
+      }
+      this.myReviewsError = null; this.myReviewCategory = category;
       try {
         const { data } = await getMyReviews({ category, page: page - 1, size: PAGE_SIZE });
         if (!Array.isArray(data?.content)) throw new Error('내 리뷰 목록 응답 형식이 올바르지 않습니다.');
-        this.myReviews = data.content.map((review) => ({
-          ...review, category: review.merchantCategory, imageUrl: resolveReviewImageUrl(review.imageUrl),
+        const reviews = data.content.map((review) => ({
+          ...review,
+          category: review.merchantCategory,
+          imageUrl: resolveReviewImageUrl(review.imageUrl),
+          merchantThumbnailUrl: resolveReviewImageUrl(review.merchantThumbnailUrl),
         }));
+        this.myReviews = append ? [...this.myReviews, ...reviews] : reviews;
         this.myReviewPage = data.page + 1;
         this.myReviewTotalPages = Math.max(1, data.totalPages);
-      } catch (error) { this.myReviewsError = error.message; } finally { this.isMyReviewsLoading = false; }
+        this.myReviewHasNext = this.myReviewPage < this.myReviewTotalPages;
+      } catch (error) { this.myReviewsError = error.message; }
+      finally { this.isMyReviewsLoading = false; this.isMyReviewsLoadingMore = false; }
     },
-    setMyReviewPage(page) {
-      if (page < 1 || page > this.myReviewTotalPages || page === this.myReviewPage) return;
-      this.fetchMyReviews(this.myReviewCategory, page);
+    loadMoreMyReviews() {
+      if (!this.myReviewHasNext) return;
+      return this.fetchMyReviews(this.myReviewCategory, this.myReviewPage + 1, true);
     },
     async prepareReviewForm({ mode, reviewId, sourceType, sourceId }) {
       this.reviewSaveError = null; this.savedReview = null; this.reviewFormMerchant = null;

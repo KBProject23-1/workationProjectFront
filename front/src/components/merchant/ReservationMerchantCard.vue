@@ -42,7 +42,7 @@
 
       <p class="mt-2 text-body-sm font-bold text-ink">
         <span class="text-warn">★</span>
-        {{ merchant.rating }}
+        {{ Number(merchant.rating ?? 0).toFixed(1) }}
         <span class="font-medium text-ink-mute">
           · 리뷰 {{ merchant.reviewCount }}개
         </span>
@@ -52,7 +52,7 @@
         예약 하루 전까지 무료 취소
       </p>
 
-      <p class="mt-1.5 text-right text-body-sm text-ink-sub">
+      <p v-if="showPrice" class="mt-1.5 text-right text-body-sm text-ink-sub">
         <strong class="text-heading font-bold text-ink">
           {{ Number(merchant.price ?? 0).toLocaleString() }}원{{ priceSuffix }}
         </strong>
@@ -82,6 +82,7 @@ const PRICE_UNITS = {
 
 const props = defineProps({
   merchant: { type: Object, required: true },
+  showPrice: { type: Boolean, default: true },
 });
 
 defineEmits(['select', 'toggle-bookmark']);

@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { MapPin } from '@lucide/vue';
+import { Bed, Building2, MapPin, Ticket, UtensilsCrossed } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { useReviewStore } from '@/stores/reviewStore';
@@ -16,6 +16,19 @@ const reviewStore = useReviewStore();
 const { reviewDetail, isDetailLoading, detailError, isReviewDeleting, reviewDeleteError } = storeToRefs(reviewStore);
 const reviewId = computed(() => Number(route.params.reviewId));
 const hasReviewImage = computed(() => Boolean(reviewDetail.value?.imageUrl));
+const merchantThumbnailLoadFailed = ref(false);
+const merchantCategoryIcons = {
+  ACCOMMODATION: Bed,
+  OFFICE: Building2,
+  RESTAURANT: UtensilsCrossed,
+  ACTIVITY: Ticket,
+};
+const merchantCategoryIcon = computed(
+  () => merchantCategoryIcons[reviewDetail.value?.merchant?.category] ?? Ticket,
+);
+const hasMerchantThumbnail = computed(
+  () => Boolean(reviewDetail.value?.merchant?.thumbnailUrl) && !merchantThumbnailLoadFailed.value,
+);
 const isDeleteModalOpen = ref(false);
 const isModifyPeriodExpired = computed(() => {
   if (reviewDetail.value?.reservationEndDate) {
@@ -63,9 +76,19 @@ async function confirmDelete() {
 
     <div v-else-if="reviewDetail" class="review-content">
       <section class="merchant-summary" aria-label="가맹점 정보">
-        <div class="room-image" role="img" aria-label="호텔 객실 이미지">
-          <span class="wall"></span><span class="window"></span>
-          <span class="bed"></span><span class="table"></span>
+        <div class="merchant-thumbnail">
+          <img
+            v-if="hasMerchantThumbnail"
+            :src="reviewDetail.merchant.thumbnailUrl"
+            :alt="`${reviewDetail.merchant.merchantName} 썸네일`"
+            @error="merchantThumbnailLoadFailed = true"
+          />
+          <component
+            :is="merchantCategoryIcon"
+            v-else
+            class="merchant-thumbnail-placeholder"
+            aria-label="가맹점 이미지 없음"
+          />
         </div>
         <div class="merchant-info">
           <h2>{{ reviewDetail.merchant.merchantName }}</h2>
@@ -133,12 +156,9 @@ async function confirmDelete() {
 button { font:inherit; }
 .review-content { display:flex; flex-direction:column; }
 .merchant-summary { display:flex; align-items:flex-start; gap:14px; }
-.room-image { position:relative; width:96px; height:94px; flex:none; overflow:hidden; border-radius:8px; background:#b99573; }
-.wall { position:absolute; inset:0 0 46%; background:linear-gradient(125deg,#4b4239 0 36%,#d6d4ce 36% 52%,#b7c5cd 52% 100%); }
-.window { position:absolute; top:9%; right:4%; width:43%; height:40%; border:3px solid #332f2b; background:linear-gradient(145deg,#9eb8c4,#dbe3e5); }
-.bed { position:absolute; left:13%; bottom:12%; width:68%; height:34%; border:5px solid #f7f3ed; border-radius:3px; background:#e8e0d6; transform:skewX(-7deg); }
-.bed::before { content:''; position:absolute; left:8%; top:-13px; width:34%; height:12px; border-radius:3px; background:#fff; }
-.table { position:absolute; right:5%; bottom:12%; width:13%; height:28%; background:#594838; }
+.merchant-thumbnail { display:flex; width:96px; min-width:96px; max-width:96px; height:94px; min-height:94px; max-height:94px; flex:0 0 96px; align-items:center; justify-content:center; overflow:hidden; border-radius:8px; background:#edf3fa; color:#60a5fa; }
+.merchant-thumbnail img { display:block; width:96px; min-width:96px; max-width:96px; height:94px; min-height:94px; max-height:94px; object-fit:cover; object-position:center; }
+.merchant-thumbnail-placeholder { width:32px; height:32px; }
 .merchant-info { min-width:0; padding-top:7px; }
 .merchant-info h2 { margin:0 0 8px; font-size:16px; font-weight:800; }
 .merchant-info p { display:flex; align-items:center; gap:3px; margin:0 0 7px; color:#7c8ca3; font-size:12px; white-space:nowrap; }
