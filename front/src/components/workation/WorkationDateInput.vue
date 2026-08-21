@@ -7,7 +7,7 @@
         disabled ? 'text-ink-mute' : modelValue ? 'text-ink' : 'text-ink-mute'
       "
       :disabled="disabled"
-      @click="openPicker"
+      @click="handleClick"
     >
       <span class="truncate">{{ displayText }}</span>
 
@@ -27,6 +27,7 @@
 
     <!-- 값과 달력은 네이티브 input 이 담당하고 화면에는 위 버튼만 보여준다 -->
     <input
+      v-if="!manual"
       ref="dateInput"
       type="date"
       class="pointer-events-none absolute inset-0 h-full w-full opacity-0"
@@ -43,9 +44,10 @@ const props = defineProps({
   modelValue: { type: String, default: '' },
   placeholder: { type: String, default: '날짜 선택' },
   disabled: { type: Boolean, default: false },
+  manual: { type: Boolean, default: false },
 });
 
-defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'open']);
 
 const dateInput = ref(null);
 
@@ -70,5 +72,14 @@ const openPicker = () => {
     return;
   }
   input.focus();
+};
+
+const handleClick = () => {
+  if (props.disabled) return;
+  if (props.manual) {
+    emit('open');
+    return;
+  }
+  openPicker();
 };
 </script>

@@ -80,7 +80,7 @@
               <button
                 type="button"
                 class="flex h-[50px] flex-col items-center justify-center rounded-chip border border-line px-2 text-center"
-                @click="dateModalMode = 'checkIn'"
+                @click="dateModalMode = 'range'"
               >
                 <span class="text-caption text-ink-mute">
                   {{ category === 'OFFICE' ? '이용 시작일' : '체크인' }}
@@ -92,7 +92,7 @@
               <button
                 type="button"
                 class="flex h-[50px] flex-col items-center justify-center rounded-chip border border-line px-2 text-center"
-                @click="dateModalMode = 'checkOut'"
+                @click="dateModalMode = 'range'"
               >
                 <span class="text-caption text-ink-mute">
                   {{ category === 'OFFICE' ? '이용 종료일' : '체크아웃' }}
@@ -285,9 +285,10 @@
     <ReservationDateModal
       v-if="dateModalMode"
       :mode="dateModalMode"
+      range
       :check-in="checkIn"
       :check-out="checkOut"
-      @select="selectDate"
+      @select-range="selectDateRange"
       @close="dateModalMode = ''"
     />
 
@@ -428,8 +429,9 @@ const displayDate = (value) => {
   return `${month}.${day} (${DAY_NAMES[date.getDay()]})`;
 };
 
-const selectDate = (value) => {
-  merchantStore.setDate(dateModalMode.value, value);
+const selectDateRange = ({ startDate, endDate }) => {
+  merchantStore.setDate('checkIn', startDate);
+  merchantStore.setDate('checkOut', endDate);
   dateModalMode.value = '';
 };
 

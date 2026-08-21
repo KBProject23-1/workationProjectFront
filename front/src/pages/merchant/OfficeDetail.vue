@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { Heart, MapPin, Phone, Star } from '@lucide/vue';
@@ -78,9 +78,9 @@ const formattedDescription = computed(() =>
     .trim(),
 );
 
-const fetchOffice = async () => {
+const fetchOffice = async (showLoading = true) => {
   resetImageError();
-  await officeStore.fetchOffice(Number(route.params.merchantId));
+  await officeStore.fetchOffice(Number(route.params.merchantId), { showLoading });
 };
 
 const applyRouteConditions = () => {
@@ -100,15 +100,22 @@ const applyRouteConditions = () => {
   }
 };
 
-const selectDate = async (value) => {
-  officeStore.setDate(dateModalMode.value, value);
+const selectDateRange = async ({ startDate: selectedStartDate, endDate: selectedEndDate }) => {
+  const scrollY = window.scrollY;
+  officeStore.setDate('checkIn', selectedStartDate);
+  officeStore.setDate('checkOut', selectedEndDate);
   dateModalMode.value = '';
-  await fetchOffice();
+  await fetchOffice(false);
+  await nextTick();
+  window.scrollTo({ top: scrollY });
 };
 
 const closeOccupancyModal = async () => {
+  const scrollY = window.scrollY;
   isOccupancyModalOpen.value = false;
-  await fetchOffice();
+  await fetchOffice(false);
+  await nextTick();
+  window.scrollTo({ top: scrollY });
 };
 
 const toggleBookmark = async () => {
@@ -284,7 +291,7 @@ onMounted(async () => {
             <button
               type="button"
               class="rounded-chip bg-surface shadow-card flex h-[58px] flex-col items-center justify-center px-2 text-center"
-              @click="dateModalMode = 'checkIn'"
+              @click="dateModalMode = 'range'"
             >
               <span class="text-caption text-ink-mute">이용 시작일</span>
               <span class="text-body-sm mt-1 truncate font-bold text-ink">
@@ -294,7 +301,7 @@ onMounted(async () => {
             <button
               type="button"
               class="rounded-chip bg-surface shadow-card flex h-[58px] flex-col items-center justify-center px-2 text-center"
-              @click="dateModalMode = 'checkOut'"
+              @click="dateModalMode = 'range'"
             >
               <span class="text-caption text-ink-mute">이용 종료일</span>
               <span class="text-body-sm mt-1 truncate font-bold text-ink">
@@ -352,11 +359,12 @@ onMounted(async () => {
     <ReservationDateModal
       v-if="dateModalMode"
       :mode="dateModalMode"
+      range
       :check-in="startDate"
       :check-out="endDate"
       start-label="이용 시작일"
       end-label="이용 종료일"
-      @select="selectDate"
+      @select-range="selectDateRange"
       @close="dateModalMode = ''"
     />
     <ReservationOccupancyModal
