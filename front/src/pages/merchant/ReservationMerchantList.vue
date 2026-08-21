@@ -321,7 +321,6 @@ import BaseHeader from '@/components/common/BaseHeader.vue';
 import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import BaseEmptyState from '@/components/common/BaseEmptyState.vue';
 import ReservationDateModal from '@/components/reservation/ReservationDateModal.vue';
-import ReservationGuestModal from '@/components/reservation/ReservationGuestModal.vue';
 import ReservationOccupancyModal from '@/components/reservation/ReservationOccupancyModal.vue';
 import ReservationMerchantCard from '@/components/merchant/ReservationMerchantCard.vue';
 import FilterChipGroup from '@/components/merchant/FilterChipGroup.vue';
