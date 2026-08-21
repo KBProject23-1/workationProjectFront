@@ -56,7 +56,7 @@
 
       <p class="mt-1.5 text-right text-body-sm text-ink-sub">
         <strong class="text-heading font-bold text-ink">
-          {{ Number(merchant.price ?? 0).toLocaleString() }}원
+          {{ Number(merchant.price ?? 0).toLocaleString() }}원{{ priceSuffix }}
         </strong>
         {{ priceUnit }}
       </p>
@@ -122,4 +122,8 @@ const iconClass = computed(
 );
 
 const priceUnit = computed(() => PRICE_UNITS[props.merchant.category] ?? '');
+
+const priceSuffix = computed(() =>
+  props.merchant.category === 'RESTAURANT' ? '~' : '',
+);
 </script>
