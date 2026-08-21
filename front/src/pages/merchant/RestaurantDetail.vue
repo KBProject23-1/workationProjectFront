@@ -24,6 +24,13 @@ const defaultThumbnail = computed(() => getMerchantDefaultImage({
   category: 'RESTAURANT',
   merchantId: restaurant.value.merchantId,
 }));
+const isDescriptionOpen = ref(false);
+
+const formattedDescription = computed(() =>
+  String(restaurant.value.description ?? '')
+    .replace(/\s*(?=\[[^\]]+\])/g, '\n')
+    .trim(),
+);
 
 const fetchRestaurant = async () => {
   heroImageLoadFailed.value = false;
@@ -138,9 +145,20 @@ const goReviews = () => {
         v-if="restaurant.description"
         class="rounded-card bg-surface shadow-card mt-3 px-[18px] py-4"
       >
-        <p class="text-body leading-relaxed text-ink-sub">
-          {{ restaurant.description }}
+        <p
+          class="text-body whitespace-pre-line leading-relaxed text-ink-sub"
+          :class="{ 'description-clamp': !isDescriptionOpen }"
+        >
+          {{ formattedDescription }}
         </p>
+        <button
+          type="button"
+          class="text-body-sm text-brand mt-2 font-bold"
+          :aria-expanded="isDescriptionOpen"
+          @click="isDescriptionOpen = !isDescriptionOpen"
+        >
+          {{ isDescriptionOpen ? '상세정보 접기' : '상세정보 더보기' }}
+        </button>
       </section>
 
       <section
@@ -185,11 +203,11 @@ const goReviews = () => {
   </main>
 </template>
 <style scoped>
-@import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
-.restaurant-page { min-height:min(871px,100vh); padding-bottom:22px; color:#111827; background:#fff; font-family:'SUIT Variable','SUIT',sans-serif; } button { font:inherit; }
-.hero-image { position:relative; height:175px; margin:0 16px 16px; overflow:hidden; border-radius:22px; background:#b4d3fb; }
-.hero-image > img { width:100%; height:100%; object-fit:cover; }
-.bookmark-button:disabled { cursor:wait; opacity:.55; }
-.restaurant-info { position:relative; margin:0 16px; padding:20px; border:1.5px solid #dbe3ee; border-radius:20px; background:#fff; }.bookmark-button { position:absolute; top:17px; right:18px; padding:0; color:#88a0bf; border:0; background:transparent; cursor:pointer; transition:color .16s ease,transform .16s ease; }.bookmark-button:hover { color:#3087ed; transform:scale(1.1); }.bookmark-button.bookmarked { color:#3087ed; }.restaurant-info h2 { margin:0 42px 8px 0; font-size:22px; }.description { margin:0 0 9px; color:#687587; font-size:12px; line-height:1.5; }.address { display:flex; align-items:center; gap:4px; margin:0; color:#8592a2; font-size:12px; }.divider { height:1px; margin:12px 0; background:#e3e8ee; }.rating { margin:0; font-size:16px; font-weight:800; }.rating span { color:#ff8a00; }.price { height:32px; display:flex; align-items:center; justify-content:space-between; margin-top:12px; padding:0 16px; border:1px solid #e4e9ef; border-radius:999px; background:#f8fafc; }.price span { color:#7b8794; font-size:12px; }.price strong { font-size:16px; }
-.review-section { padding:20px 12px 0; }.review-header { display:flex; align-items:center; justify-content:space-between; margin:0 4px 10px; }.review-section h3 { margin:0; font-size:16px; }.review-section h3 span { color:#7b8794; }.review-button { flex:none; padding:5px 10px; border:1px solid #3087ed; border-radius:999px; color:#3087ed; background:#fff; font-size:12px; font-weight:800; }.review-list { display:flex; flex-direction:column; gap:10px; padding:8px; border:1.5px solid #dbe3ee; border-radius:20px; background:#f8fbff; }
+.description-clamp {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  white-space: normal;
+}
 </style>
