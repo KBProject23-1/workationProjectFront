@@ -13,6 +13,7 @@ const props = defineProps({
   totalAmount: { type: [Number, String], default: null },
   cancelFee: { type: [Number, String], default: null },
   refundAmount: { type: [Number, String], default: null },
+  refundAmountLabel: { type: String, default: '최종 환불 금액' },
   paymentMethod: { type: String, default: '-' },
   showPaymentMethod: { type: Boolean, default: true },
   highlighted: { type: Boolean, default: false },
@@ -98,7 +99,9 @@ const summaryClass = computed(() =>
         </dd>
       </div>
       <div class="flex items-start justify-between gap-4">
-        <dt class="text-body-sm font-medium text-ink-mute">최종 환불 금액</dt>
+        <dt class="text-body-sm font-medium text-ink-mute">
+          {{ refundAmountLabel }}
+        </dt>
         <dd class="text-right text-body-sm font-bold text-ink">
           {{ formatAmount(refundAmount) }}
         </dd>

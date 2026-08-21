@@ -12,6 +12,7 @@ const reservationStore = useReservationStore();
 
 const reservationId = computed(() => Number(route.params.reservationId));
 const detail = computed(() => reservationStore.reservationDetail);
+const isFromWorkation = computed(() => route.query.from === 'workation');
 
 const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -76,8 +77,12 @@ const merchantCategoryByProductType = {
   MEETING_ROOM: 'OFFICE',
 };
 
-// 예약 상세에서 예약/이용 완료 목록 탭으로 이동 처리
+// 워케이션 일정과 예약 목록의 상세 진입 출처에 따른 뒤로가기 처리
 function goBack() {
+  if (isFromWorkation.value) {
+    router.push({ name: 'WorkationHome' });
+    return;
+  }
   router.push({ name: 'ReservationList', query: { tab: 'reservation' } });
 }
 

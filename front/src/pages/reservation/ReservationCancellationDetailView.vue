@@ -129,6 +129,7 @@ onMounted(fetchCancellationDetail);
         :total-amount="cancellation.totalAmount"
         :cancel-fee="cancellation.cancelFee"
         :refund-amount="cancellation.refundAmount"
+        refund-amount-label="결제 취소 금액"
         :show-payment-method="false"
         highlighted
       />

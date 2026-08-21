@@ -63,7 +63,7 @@ onMounted(() => {
   <div class="flex min-h-screen w-full flex-col bg-canvas">
     <div class="px-5 pt-4">
       <BaseHeader
-        title="예약 취소 (경고)"
+        title="예약 취소"
         back-label="예약 상세로 돌아가기"
         @back="goToDetail"
       />
@@ -128,8 +128,9 @@ onMounted(() => {
 
       <footer class="grid grid-cols-2 gap-2 bg-canvas px-4 pb-6 pt-3">
         <BaseButton
+          variant="outline"
           :disabled="reservationStore.isCanceling"
-          class="max-w-none text-primary"
+          class="max-w-none border border-primary bg-surface text-primary shadow-none hover:bg-brand-weak"
           @click="goToDetail"
         >
           아니요, 돌아갈래요
