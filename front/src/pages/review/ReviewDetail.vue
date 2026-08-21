@@ -1,14 +1,16 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
-import { Bed, Building2, MapPin, Ticket, UtensilsCrossed } from '@lucide/vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { Bed, Building2, Ticket, UtensilsCrossed } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { useReviewStore } from '@/stores/reviewStore';
 import AtmosphereTagSelector from '@/components/review/AtmosphereTagSelector.vue';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
+import BaseButton from '@/components/common/BaseButton.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import BaseErrorState from '@/components/common/BaseErrorState.vue';
+import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
 
 const route = useRoute();
 const router = useRouter();
@@ -17,17 +19,44 @@ const { reviewDetail, isDetailLoading, detailError, isReviewDeleting, reviewDele
 const reviewId = computed(() => Number(route.params.reviewId));
 const hasReviewImage = computed(() => Boolean(reviewDetail.value?.imageUrl));
 const merchantThumbnailLoadFailed = ref(false);
+const merchantImageIndex = ref(0);
 const merchantCategoryIcons = {
   ACCOMMODATION: Bed,
   OFFICE: Building2,
   RESTAURANT: UtensilsCrossed,
   ACTIVITY: Ticket,
 };
+const merchantThumbnailClasses = {
+  ACCOMMODATION: 'bg-brand-weak text-blue-400',
+  OFFICE: 'bg-emerald-50 text-emerald-400',
+  RESTAURANT: 'bg-warn-weak text-amber-400',
+  ACTIVITY: 'bg-violet-50 text-violet-400',
+};
 const merchantCategoryIcon = computed(
   () => merchantCategoryIcons[reviewDetail.value?.merchant?.category] ?? Ticket,
 );
+const merchantThumbnailClass = computed(
+  () =>
+    merchantThumbnailClasses[reviewDetail.value?.merchant?.category] ??
+    'bg-canvas text-ink-mute',
+);
+const merchantImageCandidates = computed(() =>
+  [
+    reviewDetail.value?.imageUrl,
+    reviewDetail.value?.merchant?.thumbnailUrl,
+    getMerchantDefaultImage({
+      category: reviewDetail.value?.merchant?.category,
+      merchantId: reviewDetail.value?.merchant?.merchantId,
+    }),
+  ]
+    .filter(Boolean)
+    .filter((url, index, urls) => urls.indexOf(url) === index),
+);
+const merchantSummaryImage = computed(
+  () => merchantImageCandidates.value[merchantImageIndex.value] ?? '',
+);
 const hasMerchantThumbnail = computed(
-  () => Boolean(reviewDetail.value?.merchant?.thumbnailUrl) && !merchantThumbnailLoadFailed.value,
+  () => Boolean(merchantSummaryImage.value) && !merchantThumbnailLoadFailed.value,
 );
 const isDeleteModalOpen = ref(false);
 const isModifyPeriodExpired = computed(() => {
@@ -45,6 +74,19 @@ const isModifyPeriodExpired = computed(() => {
 });
 
 onMounted(() => reviewStore.fetchReviewDetails(reviewId.value));
+
+watch(merchantImageCandidates, () => {
+  merchantImageIndex.value = 0;
+  merchantThumbnailLoadFailed.value = false;
+});
+
+function handleMerchantImageError() {
+  if (merchantImageIndex.value < merchantImageCandidates.value.length - 1) {
+    merchantImageIndex.value += 1;
+    return;
+  }
+  merchantThumbnailLoadFailed.value = true;
+}
 
 function formatDate(value) {
   return value.slice(0, 10).replaceAll('-', '. ');
@@ -64,7 +106,7 @@ async function confirmDelete() {
 
 <template>
   <main class="detail-page">
-    <div class="-mx-[29px] px-5 pt-4 mb-4">
+    <div class="pt-4 mb-4">
       <BaseHeader
         title="리뷰 상세보기"
         @back="router.back()"
@@ -76,12 +118,12 @@ async function confirmDelete() {
 
     <div v-else-if="reviewDetail" class="review-content">
       <section class="merchant-summary" aria-label="가맹점 정보">
-        <div class="merchant-thumbnail">
+        <div class="merchant-thumbnail" :class="merchantThumbnailClass">
           <img
             v-if="hasMerchantThumbnail"
-            :src="reviewDetail.merchant.thumbnailUrl"
-            :alt="`${reviewDetail.merchant.merchantName} 썸네일`"
-            @error="merchantThumbnailLoadFailed = true"
+            :src="merchantSummaryImage"
+            :alt="`${reviewDetail.merchant.merchantName} 리뷰 이미지`"
+            @error="handleMerchantImageError"
           />
           <component
             :is="merchantCategoryIcon"
@@ -92,7 +134,7 @@ async function confirmDelete() {
         </div>
         <div class="merchant-info">
           <h2>{{ reviewDetail.merchant.merchantName }}</h2>
-          <p><MapPin :size="20" /> {{ reviewDetail.merchant.address }}</p>
+          <p>{{ reviewDetail.merchant.address }}</p>
         </div>
       </section>
 
@@ -131,10 +173,16 @@ async function confirmDelete() {
 
       <p v-if="reviewDeleteError" class="delete-error">{{ reviewDeleteError }}</p>
       <section v-if="reviewDetail.isMine" class="review-actions" aria-label="내 리뷰 관리">
-        <button type="button" class="modify-button" :disabled="isModifyPeriodExpired" @click="moveToReviewEdit">
-          {{ isModifyPeriodExpired ? '수정 기간 만료' : '수정하기' }}
+        <button
+          type="button"
+          class="h-[52px] w-full rounded-card bg-surface text-body font-bold text-danger shadow-[0_2px_10px_rgba(229,72,77,0.18)] transition-transform active:scale-[0.98]"
+          @click="isDeleteModalOpen = true"
+        >
+          삭제하기
         </button>
-        <button type="button" class="delete-button" @click="isDeleteModalOpen = true">삭제하기</button>
+        <BaseButton :disabled="isModifyPeriodExpired" @click="moveToReviewEdit">
+          {{ isModifyPeriodExpired ? '수정 기간 만료' : '수정하기' }}
+        </BaseButton>
       </section>
     </div>
     <BaseConfirmModal
@@ -151,39 +199,35 @@ async function confirmDelete() {
 </template>
 
 <style scoped>
-@import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
-.detail-page { min-height:871px; padding:0 29px 50px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
+.detail-page { min-height:100vh; padding:0 20px 100px; color:var(--color-ink); background:var(--color-canvas); font-family:var(--font-sans); }
 button { font:inherit; }
-.review-content { display:flex; flex-direction:column; }
-.merchant-summary { display:flex; align-items:flex-start; gap:14px; }
-.merchant-thumbnail { display:flex; width:96px; min-width:96px; max-width:96px; height:94px; min-height:94px; max-height:94px; flex:0 0 96px; align-items:center; justify-content:center; overflow:hidden; border-radius:8px; background:#edf3fa; color:#60a5fa; }
-.merchant-thumbnail img { display:block; width:96px; min-width:96px; max-width:96px; height:94px; min-height:94px; max-height:94px; object-fit:cover; object-position:center; }
+.review-content { display:flex; flex-direction:column; gap:12px; }
+.merchant-summary,.author-field,.rating-field,.atmosphere-field,.photo-field,.text-field { border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); box-shadow:var(--shadow-card); }
+.merchant-summary { display:flex; align-items:flex-start; gap:14px; padding:16px; }
+.merchant-thumbnail { display:flex; width:116px; min-width:116px; max-width:116px; height:116px; min-height:116px; max-height:116px; flex:0 0 116px; align-items:center; justify-content:center; overflow:hidden; border-radius:var(--radius-chip); }
+.merchant-thumbnail img { display:block; width:116px; min-width:116px; max-width:116px; height:116px; min-height:116px; max-height:116px; object-fit:cover; object-position:center; }
 .merchant-thumbnail-placeholder { width:32px; height:32px; }
 .merchant-info { min-width:0; padding-top:7px; }
 .merchant-info h2 { margin:0 0 8px; font-size:16px; font-weight:800; }
-.merchant-info p { display:flex; align-items:center; gap:3px; margin:0 0 7px; color:#7c8ca3; font-size:12px; white-space:nowrap; }
-.merchant-info p svg { flex:none; }
+.merchant-info p { margin:0 0 7px; color:#7c8ca3; font-size:12px; line-height:1.5; white-space:normal; word-break:keep-all; }
 .merchant-info > span { display:inline-block; padding:6px 13px; color:#3087ed; border-radius:14px; background:#eaf3ff; font-size:12px; }
-.author-field { display:grid; grid-template-columns:1fr 1fr; margin-top:27px; padding:14px 15px; border:1.5px solid #d5e1ef; border-radius:17px; }
+.author-field { display:grid; grid-template-columns:1fr 1fr; padding:16px; }
 .author-field > div + div { padding-left:18px; border-left:1px solid #e1e7ee; }
 .author-field h2,.rating-field h2,.atmosphere-field h2,.text-field h2,.photo-field h2 { margin:0 0 9px; font-size:12px; font-weight:800; }
-.author-field strong,.author-field time { color:#52647b; font-size:12px; font-weight:500; }
-.rating-field { margin-top:27px; }
+.author-field h2,.rating-field h2,.text-field h2 { font-size:14px; }
+.author-field strong,.author-field time { color:#52647b; font-size:13px; font-weight:500; }
+.rating-field { padding:16px; }
 .stars { display:flex; gap:2px; height:42px; }
 .stars span { width:38px; color:#ced9e5; font-size:40px; line-height:1; }
 .stars span.selected { color:#ff9500; }
-.atmosphere-field { margin-top:27px; }
-.text-field { margin-top:27px; }
-.text-field > p { min-height:160px; margin:0; padding:14px 15px; color:#42546a; border:1.5px solid #d5e1ef; border-radius:17px; font-size:12px; line-height:1.8; white-space:pre-line; }
-.photo-field { margin-top:27px; }
-.photo-field h2 { margin-bottom:17px; }
+.atmosphere-field { padding:16px; }
+.text-field { padding:16px; }
+.text-field > p { min-height:140px; margin:0; color:#42546a; font-size:13px; line-height:1.8; white-space:pre-line; }
+.photo-field { padding:16px; }
+.photo-field h2 { margin-bottom:12px; }
 .photo-image { width:180px; height:180px; object-fit:cover; border-radius:12px; }
-.review-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:32px; }
-.review-actions button { height:48px; border-radius:12px; font-size:16px; font-weight:600; cursor:pointer; }
-.modify-button { color:#fff; border:1.5px solid #3087ed; background:#3087ed; }
-.modify-button:disabled { color:#94a3b8; border-color:#e2e8f0; background:#e2e8f0; cursor:default; }
-.delete-button { color:#3087ed; border:1.5px solid #3087ed; background:#fff; }
+.review-actions { position:fixed; z-index:10; bottom:0; left:50%; display:grid; width:min(430px,100%); grid-template-columns:1fr 1fr; gap:10px; padding:12px 20px calc(12px + env(safe-area-inset-bottom)); transform:translateX(-50%); border-top:1px solid var(--color-line); background:var(--color-surface); }
 .delete-error { margin:20px 0 0; color:#dc2626; text-align:center; font-size:12px; }
 .status-message { padding:100px 0; color:#8292a8; text-align:center; font-size:12px; }
-@media (max-width:360px) { .detail-page { padding-right:20px; padding-left:20px; }.merchant-info p { white-space:normal; } }
+@media (max-width:360px) { .detail-page { padding-right:16px; padding-left:16px; }.review-actions { padding-right:16px; padding-left:16px; } }
 </style>

@@ -46,8 +46,14 @@ async function submitReview(form) {
 </script>
 
 <template>
-  <main class="form-page">
-    <div class="-mx-[29px] px-5 pt-4 mb-4">
+  <main class="form-page" :class="{ 'form-page--edit': mode === 'edit' }">
+    <div
+      :class="
+        mode === 'edit'
+          ? 'pt-4 mb-4'
+          : '-mx-[29px] px-5 pt-4 mb-4'
+      "
+    >
       <BaseHeader
         :title="title"
         @back="goBack"
@@ -66,8 +72,8 @@ async function submitReview(form) {
 </template>
 
 <style scoped>
-@import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
-.form-page { min-height:871px; padding:0 29px 31px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
+.form-page { min-height:871px; padding:0 29px 31px; color:#172033; background:#fff; font-family:var(--font-sans); }
+.form-page--edit { min-height:100vh; padding:0 20px 100px; color:var(--color-ink); background:var(--color-canvas); }
 .error-message { margin:0 0 10px; color:#dc2626; text-align:center; font-size:12px; }
-@media (max-width:360px) { .form-page { padding-right:20px; padding-left:20px; } }
+@media (max-width:360px) { .form-page { padding-right:20px; padding-left:20px; }.form-page--edit { padding-right:16px; padding-left:16px; } }
 </style>

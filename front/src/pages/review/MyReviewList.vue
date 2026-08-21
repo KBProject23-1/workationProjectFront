@@ -12,7 +12,7 @@ import BaseErrorState from '@/components/common/BaseErrorState.vue';
 const categories = [
   { value: 'ALL', label: '전체' },
   { value: 'ACCOMMODATION', label: '숙소' },
-  { value: 'OFFICE', label: '공유 오피스' },
+  { value: 'OFFICE', label: '공유오피스' },
   { value: 'RESTAURANT', label: '음식점' },
   { value: 'ACTIVITY', label: '여가' },
 ];
@@ -65,32 +65,57 @@ function moveToReviewDetail(reviewId) {
 </script>
 
 <template>
-  <main class="my-review-page">
-    <div class="-mx-[23px] px-5 pt-4 mb-4">
+  <main class="min-h-screen w-full bg-surface pb-6 text-ink">
+    <div class="px-5 pt-4 mb-4">
       <BaseHeader
         title="내 리뷰"
         @back="router.back()"
       />
     </div>
 
-    <nav class="category-tabs" aria-label="리뷰 카테고리">
-      <button
-        v-for="category in categories"
-        :key="category.value"
-        type="button"
-        :class="{ active: myReviewCategory === category.value }"
-        :aria-pressed="myReviewCategory === category.value"
-        @click="selectCategory(category.value)"
+    <section class="px-4">
+      <nav
+        class="grid grid-cols-[.72fr_.85fr_1.4fr_.72fr_.72fr] gap-1.5"
+        aria-label="리뷰 카테고리"
       >
-        {{ category.label }}
-      </button>
-    </nav>
+        <button
+          v-for="category in categories"
+          :key="category.value"
+          type="button"
+          class="min-w-0 truncate whitespace-nowrap rounded-chip border px-1 py-1.5 text-body-sm font-bold"
+          :class="
+            myReviewCategory === category.value
+              ? 'border-brand bg-brand text-white'
+              : 'border-line bg-surface text-ink-sub'
+          "
+          :aria-pressed="myReviewCategory === category.value"
+          @click="selectCategory(category.value)"
+        >
+          {{ category.label }}
+        </button>
+      </nav>
+    </section>
 
-    <LoadingScreen v-if="isMyReviewsLoading" title="리뷰를 불러오고 있어요" :fullscreen="false" />
-    <BaseErrorState v-else-if="myReviewsError && myReviews.length === 0" :title="myReviewsError" @retry="reviewStore.fetchMyReviews(myReviewCategory)" />
-    <BaseEmptyState v-else-if="myReviews.length === 0" title="작성한 리뷰가 없습니다." />
+    <LoadingScreen
+      v-if="isMyReviewsLoading"
+      title="리뷰를 불러오고 있어요"
+      :fullscreen="false"
+    />
+    <BaseErrorState
+      v-else-if="myReviewsError && myReviews.length === 0"
+      :title="myReviewsError"
+      @retry="reviewStore.fetchMyReviews(myReviewCategory)"
+    />
+    <BaseEmptyState
+      v-else-if="myReviews.length === 0"
+      title="작성한 리뷰가 없습니다."
+    />
 
-    <section v-else class="review-list" aria-label="내 리뷰 목록">
+    <section
+      v-else
+      class="flex flex-col gap-3 px-4 pt-4"
+      aria-label="내 리뷰 목록"
+    >
       <MyReviewListItem
         v-for="review in myReviews"
         :key="review.reviewId"
@@ -100,7 +125,7 @@ function moveToReviewDetail(reviewId) {
       <div
         v-if="myReviewHasNext && !myReviewsError"
         ref="loadMoreTrigger"
-        class="load-more-status"
+        class="min-h-10 py-2.5 text-center text-caption text-ink-mute"
         aria-live="polite"
       >
         {{ isMyReviewsLoadingMore ? '리뷰를 더 불러오고 있어요' : '' }}
@@ -111,18 +136,5 @@ function moveToReviewDetail(reviewId) {
         @retry="reviewStore.loadMoreMyReviews()"
       />
     </section>
-
   </main>
 </template>
-
-<style scoped>
-@import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
-.my-review-page { min-height:871px; display:flex; flex-direction:column; padding:0 23px 36px; color:#172033; background:#fff; font-family:'SUIT','SUIT Variable',sans-serif; }
-button { font:inherit; }
-.category-tabs { display:grid; grid-template-columns:53px 72px 96px 54px 54px; justify-content:space-between; gap:4px; margin:0 5px 17px; }
-.category-tabs button { height:36px; padding:0 5px; color:#64748b; border:1px solid #dce5ef; border-radius:19px; background:#fff; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
-.category-tabs button.active { color:#fff; border-color:#3087ed; background:#3087ed; }
-.review-list { display:flex; flex-direction:column; align-items:center; gap:10px; }
-.load-more-status { min-height:40px; padding:10px 0; color:#8493a7; text-align:center; font-size:12px; }
-@media (max-width:380px) { .my-review-page { padding-right:15px; padding-left:15px; }.category-tabs { grid-template-columns:repeat(5,auto); }.category-tabs button { padding:0 8px; } }
-</style>

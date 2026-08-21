@@ -1,7 +1,8 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
-import { MapPin, Plus, X } from '@lucide/vue';
+import { Bed, Building2, Plus, Ticket, UtensilsCrossed, X } from '@lucide/vue';
 import AtmosphereTagSelector from '@/components/review/AtmosphereTagSelector.vue';
+import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
 
 const props = defineProps({
   mode: { type: String, required: true },
@@ -17,11 +18,52 @@ const atmosphere = ref(null);
 const imageFile = ref(null);
 const imagePreview = ref('');
 const fileInput = ref(null);
+const merchantImageLoadFailed = ref(false);
+const merchantImageIndex = ref(0);
 const maxContentLength = 500;
+const merchantCategoryIcons = {
+  ACCOMMODATION: Bed,
+  OFFICE: Building2,
+  RESTAURANT: UtensilsCrossed,
+  ACTIVITY: Ticket,
+};
+const merchantThumbnailClasses = {
+  ACCOMMODATION: 'bg-brand-weak text-blue-400',
+  OFFICE: 'bg-emerald-50 text-emerald-400',
+  RESTAURANT: 'bg-warn-weak text-amber-400',
+  ACTIVITY: 'bg-violet-50 text-violet-400',
+};
 
 const title = computed(() => (props.mode === 'edit' ? '리뷰 수정하기' : '리뷰 등록하기'));
 const submitLabel = computed(() => (props.mode === 'edit' ? '저장하기' : '등록하기'));
 const isOffice = computed(() => ['OFFICE', '공유오피스'].includes(props.merchant.category));
+const merchantImageCandidates = computed(() =>
+  [
+    imagePreview.value,
+    props.initialReview?.merchant?.thumbnailUrl,
+    props.merchant.thumbnailUrl,
+    getMerchantDefaultImage({
+      category: props.merchant.category,
+      merchantId: props.merchant.merchantId,
+    }),
+  ]
+    .filter(Boolean)
+    .filter((url, index, urls) => urls.indexOf(url) === index),
+);
+const merchantSummaryImage = computed(
+  () => merchantImageCandidates.value[merchantImageIndex.value] ?? '',
+);
+const hasMerchantSummaryImage = computed(
+  () => Boolean(merchantSummaryImage.value) && !merchantImageLoadFailed.value,
+);
+const merchantCategoryIcon = computed(
+  () => merchantCategoryIcons[props.merchant.category] ?? Ticket,
+);
+const merchantThumbnailClass = computed(
+  () =>
+    merchantThumbnailClasses[props.merchant.category] ??
+    'bg-canvas text-ink-mute',
+);
 const canSubmit = computed(
   () =>
     rating.value > 0 &&
@@ -41,6 +83,22 @@ watch(
   },
   { immediate: true },
 );
+
+watch(
+  merchantImageCandidates,
+  () => {
+    merchantImageIndex.value = 0;
+    merchantImageLoadFailed.value = false;
+  },
+);
+
+function handleMerchantImageError() {
+  if (merchantImageIndex.value < merchantImageCandidates.value.length - 1) {
+    merchantImageIndex.value += 1;
+    return;
+  }
+  merchantImageLoadFailed.value = true;
+}
 
 function chooseImage() {
   fileInput.value?.click();
@@ -77,23 +135,36 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <form class="review-form" @submit.prevent="submitReview">
+  <form
+    class="review-form"
+    :class="{ 'review-form--edit': mode === 'edit' }"
+    @submit.prevent="submitReview"
+  >
     <h1 class="sr-only">{{ title }}</h1>
 
     <section class="merchant-summary" aria-label="가맹점 정보">
-      <div class="room-image" role="img" aria-label="호텔 객실 이미지">
-        <span class="wall"></span><span class="window"></span>
-        <span class="bed"></span><span class="table"></span>
+      <div class="merchant-thumbnail" :class="merchantThumbnailClass">
+        <img
+          v-if="hasMerchantSummaryImage"
+          :src="merchantSummaryImage"
+          :alt="`${merchant.merchantName} 리뷰 이미지`"
+          @error="handleMerchantImageError"
+        />
+        <component
+          :is="merchantCategoryIcon"
+          v-else
+          class="merchant-thumbnail-placeholder"
+          aria-label="가맹점 이미지 없음"
+        />
       </div>
       <div class="merchant-info">
         <h2>{{ merchant.merchantName }}</h2>
-        <p><MapPin :size="20" /> {{ merchant.address }}</p>
-        <span>{{ merchant.category }}</span>
+        <p>{{ merchant.address }}</p>
       </div>
     </section>
 
-    <fieldset class="rating-field">
-      <legend>평점</legend>
+    <section class="rating-field" aria-labelledby="rating-title">
+      <h2 id="rating-title">평점</h2>
       <div class="star-buttons">
         <button
           v-for="score in 5"
@@ -104,12 +175,12 @@ onBeforeUnmount(() => {
           @click="rating = score"
         >★</button>
       </div>
-    </fieldset>
+    </section>
 
-    <fieldset v-if="isOffice" class="atmosphere-field">
-      <legend>분위기 태그</legend>
+    <section v-if="isOffice" class="atmosphere-field" aria-labelledby="atmosphere-title">
+      <h2 id="atmosphere-title">분위기 태그</h2>
       <AtmosphereTagSelector v-model="atmosphere" />
-    </fieldset>
+    </section>
 
     <section class="photo-field">
       <h2>사진 (선택)</h2>
@@ -137,9 +208,11 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <button type="submit" class="submit-button" :disabled="!canSubmit">
-      {{ isSaving ? '저장 중...' : submitLabel }}
-    </button>
+    <div class="submit-actions">
+      <button type="submit" class="submit-button" :disabled="!canSubmit">
+        {{ isSaving ? '저장 중...' : submitLabel }}
+      </button>
+    </div>
   </form>
 </template>
 
@@ -147,20 +220,36 @@ onBeforeUnmount(() => {
 .sr-only { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 .review-form { display:flex; min-height:738px; flex-direction:column; }
 .merchant-summary { display:flex; align-items:flex-start; gap:14px; }
-.room-image { position:relative; width:96px; height:94px; flex:none; overflow:hidden; border-radius:8px; background:#b99573; }
-.wall { position:absolute; inset:0 0 46%; background:linear-gradient(125deg,#4b4239 0 36%,#d6d4ce 36% 52%,#b7c5cd 52% 100%); }
-.window { position:absolute; top:9%; right:4%; width:43%; height:40%; border:3px solid #332f2b; background:linear-gradient(145deg,#9eb8c4,#dbe3e5); }
-.bed { position:absolute; left:13%; bottom:12%; width:68%; height:34%; border:5px solid #f7f3ed; border-radius:3px; background:#e8e0d6; transform:skewX(-7deg); }
-.bed::before { content:''; position:absolute; left:8%; top:-13px; width:34%; height:12px; border-radius:3px; background:#fff; }
-.table { position:absolute; right:5%; bottom:12%; width:13%; height:28%; background:#594838; }
+.merchant-thumbnail { display:flex; width:116px; min-width:116px; max-width:116px; height:116px; min-height:116px; max-height:116px; flex:0 0 116px; align-items:center; justify-content:center; overflow:hidden; border-radius:var(--radius-chip); }
+.merchant-thumbnail img { display:block; width:116px; min-width:116px; max-width:116px; height:116px; min-height:116px; max-height:116px; object-fit:cover; object-position:center; }
+.merchant-thumbnail-placeholder { width:32px; height:32px; }
 .merchant-info { min-width:0; padding-top:7px; }.merchant-info h2 { margin:0 0 8px; font-size:16px; font-weight:800; }
-.merchant-info p { display:flex; align-items:center; gap:3px; margin:0 0 7px; color:#7c8ca3; font-size:12px; white-space:nowrap; }.merchant-info p svg { flex:none; }
+.merchant-info p { margin:0 0 7px; color:#7c8ca3; font-size:12px; white-space:nowrap; }
 .merchant-info > span { display:inline-block; padding:6px 13px; color:#3087ed; border-radius:14px; background:#eaf3ff; font-size:12px; }
-fieldset { min-width:0; margin:0; padding:0; border:0; }.rating-field { margin-top:28px; }.rating-field legend,.atmosphere-field legend,.content-field label,.photo-field h2 { margin:0 0 9px; color:#172033; font-size:12px; font-weight:800; }
+.rating-field { margin-top:28px; }.rating-field h2,.atmosphere-field h2,.content-field label,.photo-field h2 { margin:0 0 9px; color:#172033; font-size:12px; font-weight:800; }
 .star-buttons { display:flex; gap:2px; }.star-buttons button { width:38px; height:42px; padding:0; color:#ced9e5; border:0; background:transparent; font-size:40px; line-height:1; cursor:pointer; }.star-buttons button.selected { color:#ff9500; }
 .atmosphere-field { margin-top:27px; }
 .content-field { margin-top:27px; }.content-field label { display:block; }.textarea-wrap { position:relative; }.textarea-wrap textarea { width:100%; height:160px; resize:none; padding:14px 15px 35px; color:#42546a; border:1.5px solid #d5e1ef; border-radius:17px; outline:none; background:#fff; font:12px/1.8 inherit; }.textarea-wrap textarea:focus { border-color:#3087ed; }.textarea-wrap > span { position:absolute; right:26px; bottom:17px; color:#6f7e91; font-size:12px; }
 .photo-field { margin-top:27px; }.photo-field h2 { margin-bottom:17px; }.photo-row { display:flex; gap:12px; }.photo-preview { position:relative; }.photo-preview > button { position:absolute; top:6px; right:6px; width:23px; height:23px; display:grid; place-items:center; padding:0; color:#66778c; border:1px solid #b9c7d6; border-radius:50%; background:#fff; cursor:pointer; }.add-photo { width:150px; height:150px; display:grid; place-items:center; padding:0; color:#8fa2b8; border:1.5px dashed #cad8e7; border-radius:14px; background:#fff; cursor:pointer; }.photo-field > p { margin:10px 0 0; color:#76879c; font-size:12px; }
 .review-image-preview { width:150px; height:150px; display:block; object-fit:cover; border-radius:14px; }
-.submit-button { width:100%; height:48px; align-self:center; margin-top:auto; color:#fff; border:0; border-radius:12px; background:#3087ed; font-size:16px; font-weight:500; cursor:pointer; }.submit-button:disabled { cursor:default; opacity:.55; }
+.submit-actions { margin-top:auto; }
+.submit-button { width:100%; height:48px; color:#fff; border:0; border-radius:12px; background:#3087ed; font-size:16px; font-weight:500; cursor:pointer; }.submit-button:disabled { cursor:default; opacity:.55; }
+
+.review-form--edit { min-height:0; gap:12px; }
+.review-form--edit .merchant-summary,
+.review-form--edit .rating-field,
+.review-form--edit .atmosphere-field,
+.review-form--edit .photo-field,
+.review-form--edit .content-field { margin-top:0; padding:16px; border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); box-shadow:var(--shadow-card); }
+.review-form--edit .merchant-info p { line-height:1.5; white-space:normal; word-break:keep-all; }
+.review-form--edit .rating-field h2,
+.review-form--edit .atmosphere-field h2,
+.review-form--edit .photo-field h2,
+.review-form--edit .content-field label { font-size:14px; }
+.review-form--edit .textarea-wrap textarea { font-size:13px; }
+.review-form--edit .submit-actions { position:fixed; z-index:10; bottom:0; left:50%; width:min(430px,100%); padding:12px 20px calc(12px + env(safe-area-inset-bottom)); transform:translateX(-50%); border-top:1px solid var(--color-line); background:var(--color-surface); }
+.review-form--edit .submit-button { height:52px; border-radius:14px; font-size:15px; font-weight:700; box-shadow:var(--shadow-cta); transition:transform .15s,background .15s; }
+.review-form--edit .submit-button:active { transform:scale(.99); }
+
+@media (max-width:360px) { .review-form--edit .submit-actions { padding-right:16px; padding-left:16px; } }
 </style>

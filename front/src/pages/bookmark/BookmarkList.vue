@@ -13,7 +13,7 @@ const bookmarkStore = useBookmarkStore();
 const categories = [
   { label: '전체', value: '' },
   { label: '숙소', value: 'ACCOMMODATION' },
-  { label: '공유 오피스', value: 'OFFICE' },
+  { label: '공유오피스', value: 'OFFICE' },
   { label: '음식점', value: 'RESTAURANT' },
   { label: '여가', value: 'ACTIVITY' },
 ];
@@ -55,7 +55,7 @@ function observeLoadMoreTrigger(element) {
 </script>
 
 <template>
-  <main class="bookmark-page">
+  <main class="min-h-screen w-full bg-surface pb-6 text-ink">
     <div class="px-5 pt-4 mb-4">
       <BaseHeader
         title="내 장소"
@@ -63,17 +63,27 @@ function observeLoadMoreTrigger(element) {
       />
     </div>
 
-    <nav class="category-tabs" aria-label="장소 유형">
-      <button
-        v-for="category in categories"
-        :key="category.value"
-        type="button"
-        :class="{ active: bookmarkStore.selectedCategory === category.value }"
-        @click="bookmarkStore.selectCategory(category.value)"
+    <section class="px-4">
+      <nav
+        class="grid grid-cols-[.72fr_.85fr_1.4fr_.72fr_.72fr] gap-1.5"
+        aria-label="장소 유형"
       >
-        {{ category.label }}
-      </button>
-    </nav>
+        <button
+          v-for="category in categories"
+          :key="category.value"
+          type="button"
+          class="min-w-0 truncate whitespace-nowrap rounded-chip border px-1 py-1.5 text-body-sm font-bold"
+          :class="
+            bookmarkStore.selectedCategory === category.value
+              ? 'border-brand bg-brand text-white'
+              : 'border-line bg-surface text-ink-sub'
+          "
+          @click="bookmarkStore.selectCategory(category.value)"
+        >
+          {{ category.label }}
+        </button>
+      </nav>
+    </section>
 
     <LoadingScreen
       v-if="bookmarkStore.isLoading"
@@ -86,7 +96,11 @@ function observeLoadMoreTrigger(element) {
       @retry="bookmarkStore.fetchBookmarks()"
     />
 
-    <section v-else class="bookmark-list" aria-live="polite">
+    <section
+      v-else
+      class="flex flex-col gap-3 px-4 pt-4"
+      aria-live="polite"
+    >
       <ReservationMerchantCard
         v-for="bookmark in bookmarkStore.filteredBookmarks"
         :key="bookmark.bookmarkId"
@@ -102,7 +116,7 @@ function observeLoadMoreTrigger(element) {
       <div
         v-if="bookmarkStore.hasNext && !bookmarkStore.error"
         ref="loadMoreTrigger"
-        class="load-more-status"
+        class="min-h-10 py-2.5 text-center text-caption text-ink-mute"
         aria-live="polite"
       >
         {{ bookmarkStore.isLoadingMore ? '장소를 더 불러오고 있어요' : '' }}
@@ -115,14 +129,3 @@ function observeLoadMoreTrigger(element) {
     </section>
   </main>
 </template>
-
-<style scoped>
-@import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
-.bookmark-page { min-height:min(871px,100vh); padding-bottom:24px; color:#172033; background:#fff; font-family:'SUIT Variable','SUIT',sans-serif; }
-button { font:inherit; }
-.category-tabs { width:100%; height:50px; display:grid; grid-template-columns:.72fr .85fr 1.4fr .72fr .72fr; align-items:center; gap:5px; padding:0 25px; }
-.category-tabs button { min-width:0; height:36px; padding:0 4px; overflow:hidden; color:#667085; border:1.5px solid #e1e8f0; border-radius:999px; background:#fff; font-size:12px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; cursor:pointer; }.category-tabs button.active { color:#fff; border-color:#3087ed; background:#3087ed; }
-.bookmark-list { display:flex; flex-direction:column; gap:8px; padding:10px 25px; }
-.load-more-status { min-height:40px; padding:10px 0; color:#8493a7; text-align:center; font-size:12px; }
-@media (max-width:370px) { .category-tabs,.bookmark-list { padding-left:16px; padding-right:16px; }.category-tabs { gap:4px; }.category-tabs button { font-size:11px; } }
-</style>

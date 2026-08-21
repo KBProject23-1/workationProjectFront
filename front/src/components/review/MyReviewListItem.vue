@@ -1,22 +1,13 @@
 <script setup>
 import AtmosphereTagSelector from '@/components/review/AtmosphereTagSelector.vue';
-import { Bed, Building2, Ticket, UtensilsCrossed } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 const emit = defineEmits(['open']);
 
 const props = defineProps({
   review: { type: Object, required: true },
 });
-
-const imageLoadFailed = ref(false);
-
-const categoryIcons = {
-  ACCOMMODATION: Bed,
-  OFFICE: Building2,
-  RESTAURANT: UtensilsCrossed,
-  ACTIVITY: Ticket,
-};
 
 const thumbnailClasses = {
   ACCOMMODATION: 'bg-brand-weak text-blue-400',
@@ -29,9 +20,12 @@ const thumbnailUrl = computed(
   () => props.review.imageUrl || props.review.merchantThumbnailUrl,
 );
 
-const categoryIcon = computed(
-  () => categoryIcons[props.review.category] ?? Ticket,
-);
+const { imageSource, handleImageError } = useMerchantImage({
+  thumbnailUrl,
+  category: () => props.review.category,
+  merchantId: () => props.review.merchantId,
+  activityType: () => props.review.activityType,
+});
 
 const thumbnailClass = computed(
   () => thumbnailClasses[props.review.category] ?? 'bg-canvas text-ink-mute',
@@ -54,12 +48,10 @@ function formatDate(value) {
   >
     <div class="review-thumbnail" :class="thumbnailClass">
       <img
-        v-if="thumbnailUrl && !imageLoadFailed"
-        :src="thumbnailUrl"
+        :src="imageSource"
         :alt="`${review.merchantName} 이미지`"
-        @error="imageLoadFailed = true"
+        @error="handleImageError"
       />
-      <component :is="categoryIcon" v-else class="h-8 w-8" />
     </div>
 
     <div class="review-info">
@@ -79,18 +71,18 @@ function formatDate(value) {
 </template>
 
 <style scoped>
-.review-card { width:100%; max-width:350px; min-height:140px; cursor:pointer; }
+.review-card { width:100%; min-height:140px; cursor:pointer; }
 .review-card:hover { border-color:#84b9ff; background:#f5f9ff; box-shadow:0 6px 18px rgb(48 135 237 / 10%); }
 .review-card:focus-visible { outline:2px solid #3087ed; outline-offset:2px; }
 .review-thumbnail { display:flex; width:116px; min-width:116px; max-width:116px; height:116px; min-height:116px; max-height:116px; flex:0 0 116px; align-items:center; justify-content:center; overflow:hidden; border-radius:var(--radius-chip); }
 .review-thumbnail img { display:block; width:116px; min-width:116px; max-width:116px; height:116px; min-height:116px; max-height:116px; object-fit:cover; object-position:center; }
-.review-info { min-width:0; flex:1; }
+.review-info { display:flex; min-width:0; flex:1; flex-direction:column; }
 .review-heading { display:flex; align-items:center; justify-content:space-between; gap:5px; }
 .review-heading strong { overflow:hidden; color:#16233a; font-size:16px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
 .rating { flex:none; color:#172033; font-size:12px; font-weight:700; }
 .rating span { color:#ff9500; }
 .atmosphere-tags { margin-top:6px; }
 .review-info > p { display:-webkit-box; overflow:hidden; margin:6px 0 3px; color:#3f5066; font-size:12px; line-height:1.55; white-space:pre-line; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
-.review-footer { display:flex; align-items:end; justify-content:space-between; gap:6px; }
-time { margin-left:auto; padding-top:3px; color:#8493a7; font-size:12px; }
+.review-footer { display:flex; align-items:end; justify-content:space-between; gap:6px; margin-top:auto; }
+time { margin-left:auto; color:#8493a7; font-size:12px; line-height:1; }
 </style>
