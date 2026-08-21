@@ -13,13 +13,11 @@
       :class="thumbnailClass"
     >
       <img
-        v-if="merchant.thumbnailUrl && !imageLoadFailed"
-        :src="merchant.thumbnailUrl"
+        :src="imageSource"
         :alt="`${merchant.name} 대표 이미지`"
         class="h-full w-full object-cover"
-        @error="imageLoadFailed = true"
+        @error="handleImageError"
       />
-      <component :is="categoryIcon" v-else class="h-8 w-8" :class="iconClass" />
     </div>
 
     <div class="relative min-w-0 flex-1">
@@ -44,7 +42,7 @@
 
       <p class="mt-2 text-body-sm font-bold text-ink">
         <span class="text-warn">★</span>
-        {{ merchant.rating }}
+        {{ Number(merchant.rating ?? 0).toFixed(1) }}
         <span class="font-medium text-ink-mute">
           · 리뷰 {{ merchant.reviewCount }}개
         </span>
@@ -54,9 +52,9 @@
         예약 하루 전까지 무료 취소
       </p>
 
-      <p class="mt-1.5 text-right text-body-sm text-ink-sub">
+      <p v-if="showPrice" class="mt-1.5 text-right text-body-sm text-ink-sub">
         <strong class="text-heading font-bold text-ink">
-          {{ Number(merchant.price ?? 0).toLocaleString() }}원
+          {{ Number(merchant.price ?? 0).toLocaleString() }}원{{ priceSuffix }}
         </strong>
         {{ priceUnit }}
       </p>
@@ -65,28 +63,15 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
-import { Bed, Building2, Heart, Ticket, UtensilsCrossed } from '@lucide/vue';
-
-const CATEGORY_ICONS = {
-  ACCOMMODATION: Bed,
-  OFFICE: Building2,
-  RESTAURANT: UtensilsCrossed,
-  ACTIVITY: Ticket,
-};
+import { computed } from 'vue';
+import { Heart } from '@lucide/vue';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 const THUMBNAIL_CLASSES = {
   ACCOMMODATION: 'bg-brand-weak',
   OFFICE: 'bg-emerald-50',
   RESTAURANT: 'bg-warn-weak',
   ACTIVITY: 'bg-violet-50',
-};
-
-const ICON_CLASSES = {
-  ACCOMMODATION: 'text-blue-400',
-  OFFICE: 'text-emerald-400',
-  RESTAURANT: 'text-amber-400',
-  ACTIVITY: 'text-violet-400',
 };
 
 // 1박·1일 단가는 예약 상품이 있는 숙소와 공유오피스에만 해당한다
@@ -97,11 +82,17 @@ const PRICE_UNITS = {
 
 const props = defineProps({
   merchant: { type: Object, required: true },
+  showPrice: { type: Boolean, default: true },
 });
 
 defineEmits(['select', 'toggle-bookmark']);
 
-const imageLoadFailed = ref(false);
+const { imageSource, handleImageError } = useMerchantImage({
+  thumbnailUrl: () => props.merchant.thumbnailUrl,
+  category: () => props.merchant.category,
+  merchantId: () => props.merchant.merchantId,
+  activityType: () => props.merchant.activityType,
+});
 
 const reservable = computed(
   () =>
@@ -109,17 +100,13 @@ const reservable = computed(
     props.merchant.category === 'OFFICE',
 );
 
-const categoryIcon = computed(
-  () => CATEGORY_ICONS[props.merchant.category] ?? Ticket,
-);
-
 const thumbnailClass = computed(
   () => THUMBNAIL_CLASSES[props.merchant.category] ?? 'bg-canvas',
 );
 
-const iconClass = computed(
-  () => ICON_CLASSES[props.merchant.category] ?? 'text-ink-mute',
-);
-
 const priceUnit = computed(() => PRICE_UNITS[props.merchant.category] ?? '');
+
+const priceSuffix = computed(() =>
+  props.merchant.category === 'RESTAURANT' ? '~' : '',
+);
 </script>

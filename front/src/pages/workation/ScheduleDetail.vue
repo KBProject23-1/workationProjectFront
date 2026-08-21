@@ -30,22 +30,11 @@
           @click="goMerchant"
         >
           <img
-            v-if="detail.thumbnailUrl"
-            :src="detail.thumbnailUrl"
+            :src="imageSource"
             :alt="detail.merchantName"
             class="bg-canvas h-[202px] w-full object-cover"
+            @error="handleImageError"
           />
-          <div
-            v-else
-            class="flex h-[202px] w-full items-center justify-center"
-            :class="categoryStyle.background"
-          >
-            <component
-              :is="categoryIcon"
-              :size="46"
-              :class="categoryStyle.icon"
-            />
-          </div>
 
           <div class="flex items-center justify-between gap-3 px-[18px] py-4">
             <h2 class="text-title flex min-w-0 flex-1 items-center gap-1 font-bold -tracking-[0.01em] text-ink">
@@ -152,13 +141,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import {
-  Bed,
-  Building2,
-  ChevronRight,
-  Ticket,
-  UtensilsCrossed,
-} from '@lucide/vue';
+import { ChevronRight } from '@lucide/vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import { useScheduleStore } from '@/stores/scheduleStore';
@@ -167,6 +150,7 @@ import { getSchedules } from '@/api/schedule';
 import { hourMinute, shortRange, weekday } from '@/components/workation/format';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import ScheduleTimePicker from '@/components/workation/ScheduleTimePicker.vue';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 const CATEGORY_LABELS = {
   RESTAURANT: '음식점',
@@ -177,18 +161,6 @@ const CATEGORY_LABELS = {
 const MERCHANT_ROUTES = {
   RESTAURANT: 'restaurants',
   ACTIVITY: 'activities',
-};
-
-const CATEGORY_ICONS = {
-  ACCOMMODATION: Bed,
-  OFFICE: Building2,
-  RESTAURANT: UtensilsCrossed,
-  ACTIVITY: Ticket,
-};
-
-const CATEGORY_STYLES = {
-  RESTAURANT: { background: 'bg-amber-50', icon: 'text-amber-500' },
-  ACTIVITY: { background: 'bg-emerald-50', icon: 'text-emerald-500' },
 };
 
 const route = useRoute();
@@ -220,6 +192,12 @@ const unavailableTimes = computed(() => [
 ]);
 
 const detail = computed(() => scheduleStore.detail);
+const { imageSource, handleImageError, resetImageError } = useMerchantImage({
+  thumbnailUrl: () => detail.value?.thumbnailUrl,
+  category: () => detail.value?.merchantCategory,
+  merchantId: () => detail.value?.merchantId,
+  activityType: () => detail.value?.activityType,
+});
 
 // scheduledAt 은 2026-08-15T18:00:00 형태로 온다
 const visitDate = computed(() => detail.value?.scheduledAt?.slice(0, 10) ?? '');
@@ -246,19 +224,6 @@ const infoRows = computed(() => [
   { label: '주소', value: detail.value?.address || '-' },
   { label: '구분', value: '직접 등록한 일정' },
 ]);
-
-const categoryIcon = computed(
-  () => CATEGORY_ICONS[detail.value?.merchantCategory] ?? Ticket,
-);
-
-const categoryStyle = computed(
-  () =>
-    CATEGORY_STYLES[detail.value?.merchantCategory] ?? {
-      background: 'bg-canvas',
-      icon: 'text-ink-mute',
-    },
-);
-
 // 지난 일정인지 오늘인지 남았는지를 배지로 보여준다
 const dayGap = computed(() => {
   if (!visitDate.value) return null;
@@ -308,6 +273,7 @@ const loadSameDay = async () => {
 const load = async () => {
   loading.value = true;
   errorMessage.value = '';
+  resetImageError();
   try {
     await scheduleStore.fetchDetail(workationId, scheduleId.value);
     await loadSameDay();

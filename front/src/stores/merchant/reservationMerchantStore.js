@@ -24,6 +24,7 @@ const toMerchantItem = (item, category) => ({
   name: item.name ?? item.merchantName,
   address: item.address,
   thumbnailUrl: item.thumbnailUrl,
+  activityType: item.activityType,
   price: Number(item.price ?? 0),
   rating: item.rating,
   reviewCount: item.reviewCount ?? 0,

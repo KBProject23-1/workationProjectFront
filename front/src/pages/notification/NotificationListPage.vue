@@ -4,10 +4,10 @@
 // - 커서 기반 페이지네이션 + 무한 스크롤
 // - 카테고리 필터 (전체, 예산, 입출금, 결제, 워케이션, 정산, 일정)
 // - 단건 읽음 처리 (알림 클릭 시) / 전체 읽음 처리 (상단 버튼)
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { Bell, CheckCheck } from '@lucide/vue';
+import { CheckCheck } from '@lucide/vue';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { useErrorToast } from '@/composables/useErrorToast';
 import BaseHeader from '@/components/common/BaseHeader.vue';
@@ -32,7 +32,6 @@ const isDetailModalOpen = ref(false);
 const {
   notifications,
   selectedCategory,
-  nextCursor,
   hasNext,
   isLoading,
   isAppending,

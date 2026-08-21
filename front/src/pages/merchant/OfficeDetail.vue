@@ -2,7 +2,7 @@
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { Building2, Heart, MapPin, Phone, Star } from '@lucide/vue';
+import { Heart, MapPin, Phone, Star } from '@lucide/vue';
 import OfficeProductCard from '@/components/merchant/OfficeProductCard.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
@@ -12,6 +12,7 @@ import ReservationDateModal from '@/components/reservation/ReservationDateModal.
 import ReservationOccupancyModal from '@/components/reservation/ReservationOccupancyModal.vue';
 import { useOfficeStore } from '@/stores/merchant/officeStore';
 import { useErrorToast } from '@/composables/useErrorToast';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 const officeStore = useOfficeStore();
 const route = useRoute();
@@ -34,7 +35,11 @@ const { showError } = useErrorToast();
 const dateModalMode = ref('');
 const isOccupancyModalOpen = ref(false);
 const isDescriptionOpen = ref(false);
-const heroImageLoadFailed = ref(false);
+const { imageSource, handleImageError, resetImageError } = useMerchantImage({
+  thumbnailUrl: () => office.value.thumbnailUrl,
+  category: 'OFFICE',
+  merchantId: () => office.value.merchantId,
+});
 
 const PRODUCT_TYPE_LABELS = {
   OFFICE_SEAT: '좌석',
@@ -74,7 +79,7 @@ const formattedDescription = computed(() =>
 );
 
 const fetchOffice = async (showLoading = true) => {
-  heroImageLoadFailed.value = false;
+  resetImageError();
   await officeStore.fetchOffice(Number(route.params.merchantId), { showLoading });
 };
 
@@ -167,22 +172,11 @@ onMounted(async () => {
         <section class="rounded-sheet bg-surface shadow-card overflow-hidden">
           <div class="bg-brand-weak relative h-[190px]">
             <img
-              v-if="office.thumbnailUrl && !heroImageLoadFailed"
               class="h-full w-full object-cover"
-              :src="office.thumbnailUrl"
+              :src="imageSource"
               :alt="`${office.name} 대표 이미지`"
-              @error="heroImageLoadFailed = true"
+              @error="handleImageError"
             />
-
-            <!-- 사진이 없거나 링크가 끊긴 경우 -->
-            <div
-              v-else
-              class="text-brand/40 flex h-full w-full items-center justify-center"
-              role="img"
-              aria-label="공유오피스 기본 이미지"
-            >
-              <Building2 :size="48" />
-            </div>
 
             <button
               type="button"
@@ -215,7 +209,7 @@ onMounted(async () => {
             >
               <p class="text-body flex items-center gap-1.5 font-bold text-ink">
                 <Star :size="15" class="text-warn" fill="currentColor" />
-                {{ office.rating }}
+                {{ Number(office.rating ?? 0).toFixed(1) }}
                 <span class="text-body-sm font-medium text-ink-mute">
                   리뷰 {{ office.reviewCount }}개
                 </span>
@@ -234,7 +228,7 @@ onMounted(async () => {
         <section class="rounded-card bg-surface shadow-card mt-3 px-[18px] py-4">
           <div v-if="office.description">
             <p
-              class="text-body whitespace-pre-line leading-relaxed text-ink-sub"
+              class="description-copy text-body leading-relaxed text-ink-sub"
               :class="{ 'description-clamp': !isDescriptionOpen }"
             >
               {{ formattedDescription }}
@@ -382,13 +376,17 @@ onMounted(async () => {
     />
   </main>
 </template>
-
 <style scoped>
+.description-copy {
+  white-space: pre-line;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
 .description-clamp {
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
-  white-space: normal;
 }
 </style>
