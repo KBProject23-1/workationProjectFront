@@ -130,7 +130,7 @@ onMounted(fetchDetail);
 </script>
 
 <template>
-  <div class="flex min-h-screen w-full flex-col bg-white">
+  <div class="flex min-h-screen w-full flex-col bg-canvas">
     <div class="px-5 pt-4">
       <BaseHeader
         title="예약 내역 상세"
@@ -139,9 +139,9 @@ onMounted(fetchDetail);
     </div>
 
     <main v-if="reservationStore.isDetailLoading" class="flex-1 px-4 pb-8">
-      <div class="h-[202px] animate-pulse rounded-xl bg-slate-100"></div>
-      <div class="mt-4 h-12 animate-pulse rounded-lg bg-slate-100"></div>
-      <div class="mt-3 h-[245px] animate-pulse rounded-xl bg-slate-100"></div>
+      <div class="h-[202px] animate-pulse rounded-card bg-canvas"></div>
+      <div class="mt-4 h-12 animate-pulse rounded-chip bg-canvas"></div>
+      <div class="mt-3 h-[245px] animate-pulse rounded-card bg-canvas"></div>
     </main>
 
     <main
@@ -159,7 +159,7 @@ onMounted(fetchDetail);
       <main class="flex-1 px-4 pb-8">
         <button
           type="button"
-          class="block h-[202px] w-full overflow-hidden rounded-xl bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          class="block h-[202px] w-full overflow-hidden rounded-card bg-brand-weak focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           :aria-label="`${detail.merchant.name} 상세 보기`"
           @click="goToMerchantDetail"
         >
@@ -171,7 +171,7 @@ onMounted(fetchDetail);
         </button>
 
         <div class="flex items-end justify-between gap-3 px-2 py-3">
-          <h2 class="min-w-0 flex-1 truncate text-[17px] font-extrabold text-slate-800">
+          <h2 class="min-w-0 flex-1 truncate text-title font-bold text-ink">
             <button
               type="button"
               class="max-w-full truncate text-left hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -180,48 +180,48 @@ onMounted(fetchDetail);
               {{ detail.merchant.name }}
             </button>
           </h2>
-          <p class="shrink-0 text-[10px] text-slate-400">
+          <p class="shrink-0 text-caption text-ink-mute">
             예약 번호 {{ detail.reservationCode }}
           </p>
         </div>
 
-        <section class="rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-4">
+        <section class="rounded-card border border-line bg-brand-weak/70 px-4 py-4">
           <dl class="space-y-4">
             <div class="flex items-start justify-between gap-4">
-              <dt class="text-[12px] font-medium text-slate-400">이용 시작일</dt>
-              <dd class="text-right text-[13px] font-bold text-slate-700">
+              <dt class="text-body-sm font-medium text-ink-mute">이용 시작일</dt>
+              <dd class="text-right text-body-sm font-bold text-ink">
                 {{ formatDate(detail.startDate) }}
               </dd>
             </div>
             <div class="flex items-start justify-between gap-4">
-              <dt class="text-[12px] font-medium text-slate-400">이용 종료일</dt>
-              <dd class="text-right text-[13px] font-bold text-slate-700">
+              <dt class="text-body-sm font-medium text-ink-mute">이용 종료일</dt>
+              <dd class="text-right text-body-sm font-bold text-ink">
                 {{ formatDate(detail.endDate) }}
               </dd>
             </div>
             <div class="flex items-start justify-between gap-4">
-              <dt class="text-[12px] font-medium text-slate-400">
+              <dt class="text-body-sm font-medium text-ink-mute">
                 {{ quantityLabel }} 정보 / 개수
               </dt>
-              <dd class="text-right text-[13px] font-bold text-slate-700">
+              <dd class="text-right text-body-sm font-bold text-ink">
                 {{ detail.reservationProduct.productName }} / {{ detail.quantity }}개
               </dd>
             </div>
             <div class="flex items-start justify-between gap-4">
-              <dt class="text-[12px] font-medium text-slate-400">이용 인원</dt>
-              <dd class="text-right text-[13px] font-bold text-slate-700">
+              <dt class="text-body-sm font-medium text-ink-mute">이용 인원</dt>
+              <dd class="text-right text-body-sm font-bold text-ink">
                 {{ detail.headcount }}인
               </dd>
             </div>
             <div class="flex items-start justify-between gap-4">
-              <dt class="text-[12px] font-medium text-slate-400">총 금액</dt>
-              <dd class="text-right text-[13px] font-bold text-slate-700">
+              <dt class="text-body-sm font-medium text-ink-mute">총 금액</dt>
+              <dd class="text-right text-body-sm font-bold text-ink">
                 {{ formatAmount(detail.totalAmount) }}
               </dd>
             </div>
             <div class="flex items-start justify-between gap-4">
-              <dt class="text-[12px] font-medium text-slate-400">결제 수단</dt>
-              <dd class="text-right text-[13px] font-bold text-slate-700">
+              <dt class="text-body-sm font-medium text-ink-mute">결제 수단</dt>
+              <dd class="text-right text-body-sm font-bold text-ink">
                 {{ detail.paymentMethod || '-' }}
               </dd>
             </div>
@@ -230,8 +230,8 @@ onMounted(fetchDetail);
 
         <p
           v-if="isConfirmed"
-          class="mt-3 px-1 text-[11px] font-medium"
-          :class="detail.cancelable ? 'text-primary' : 'text-rose-500'"
+          class="mt-3 px-1 text-caption font-medium"
+          :class="detail.cancelable ? 'text-primary' : 'text-danger'"
         >
           {{
             detail.cancelable
@@ -239,15 +239,15 @@ onMounted(fetchDetail);
               : '이용 당일부터는 취소가 불가능합니다.'
           }}
         </p>
-        <BaseButton v-if="detail.reviewDeadline" :disabled="!canWriteOrEditReview" class="mt-5 max-w-none rounded-lg py-3.5 text-[16px] font-bold disabled:bg-slate-200 disabled:text-slate-400" @click="goToReview">
+        <BaseButton v-if="detail.reviewDeadline" :disabled="!canWriteOrEditReview" class="mt-5 max-w-none disabled:bg-slate-200 disabled:text-ink-mute" @click="goToReview">
           {{ reviewButtonLabel }}
         </BaseButton>
       </main>
 
-      <footer v-if="isConfirmed" class="sticky bottom-0 bg-white px-4 pb-6 pt-3">
+      <footer v-if="isConfirmed" class="sticky bottom-0 bg-canvas px-4 pb-6 pt-3">
         <BaseButton
           :disabled="!detail.cancelable"
-          class="max-w-none rounded-lg bg-rose-500 py-3.5 text-[16px] font-bold hover:bg-rose-500 disabled:bg-slate-200 disabled:text-slate-400"
+          class="max-w-none disabled:bg-slate-200 disabled:text-ink-mute"
           @click="goToCancellation"
         >
           예약 취소

@@ -276,74 +276,74 @@ onMounted(initialize);
 </script>
 
 <template>
-  <div class="flex min-h-screen w-full flex-col bg-white text-slate-900">
+  <div class="flex min-h-screen w-full flex-col bg-canvas text-ink">
     <div class="px-5 pt-4">
       <BaseHeader title="예약 정보 확인" @back="router.back()" />
     </div>
 
     <main class="flex-1 px-4 pb-5">
       <div v-if="isInitializing" class="space-y-4">
-        <div class="h-24 animate-pulse rounded-xl bg-slate-100"></div>
-        <div class="h-56 animate-pulse rounded-xl bg-slate-100"></div>
-        <div class="h-16 animate-pulse rounded-xl bg-slate-100"></div>
+        <div class="h-24 animate-pulse rounded-card bg-canvas"></div>
+        <div class="h-56 animate-pulse rounded-card bg-canvas"></div>
+        <div class="h-16 animate-pulse rounded-card bg-canvas"></div>
       </div>
 
-      <div v-else-if="sourceError" class="rounded-xl bg-rose-50 px-5 py-8 text-center">
-        <p class="text-[14px] font-semibold text-rose-600">예약 상품 정보를 불러오지 못했어요.</p>
-        <p class="mt-2 text-[12px] text-rose-400">{{ sourceError }}</p>
-        <button type="button" class="mt-4 text-[13px] font-bold text-primary" @click="initialize">다시 시도</button>
+      <div v-else-if="sourceError" class="rounded-card bg-danger/10 px-5 py-8 text-center">
+        <p class="text-body font-semibold text-danger">예약 상품 정보를 불러오지 못했어요.</p>
+        <p class="mt-2 text-body-sm text-rose-400">{{ sourceError }}</p>
+        <button type="button" class="mt-4 text-body-sm font-bold text-primary" @click="initialize">다시 시도</button>
       </div>
 
       <template v-else>
-        <section class="flex gap-3 border-b border-slate-100 pb-5">
+        <section class="flex gap-3 border-b border-line pb-5">
           <img
             :src="product?.thumbnailUrl || merchant?.thumbnailUrl"
             :alt="product?.productName || '예약 상품'"
-            class="size-20 shrink-0 rounded-xl bg-blue-100 object-cover"
+            class="size-20 shrink-0 rounded-card bg-brand-weak object-cover"
           />
           <div class="min-w-0 py-1">
-            <p class="truncate text-[16px] font-extrabold">{{ merchant?.name || '-' }}</p>
-            <p class="mt-2 line-clamp-2 text-[13px] font-medium text-slate-500">
+            <p class="truncate text-title font-bold">{{ merchant?.name || '-' }}</p>
+            <p class="mt-2 line-clamp-2 text-body-sm font-medium text-ink-sub">
               {{ product?.productName || '-' }} · {{ quantity }}개
             </p>
           </div>
         </section>
 
-        <section class="mt-5 rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-5">
+        <section class="mt-5 rounded-card border border-line bg-brand-weak/70 px-4 py-5">
           <dl class="space-y-4">
-            <div class="flex justify-between gap-4"><dt class="text-[12px] text-slate-400">이용 시작일</dt><dd class="text-right text-[13px] font-bold">{{ formatDate(startDate) }}</dd></div>
-            <div class="flex justify-between gap-4"><dt class="text-[12px] text-slate-400">이용 종료일</dt><dd class="text-right text-[13px] font-bold">{{ formatDate(endDate) }}</dd></div>
-            <div class="flex justify-between gap-4"><dt class="text-[12px] text-slate-400">이용 인원</dt><dd class="text-right text-[13px] font-bold">{{ headcount }}명</dd></div>
-            <div class="flex justify-between gap-4"><dt class="text-[12px] text-slate-400">요금</dt><dd class="text-right text-[13px] font-bold">{{ formatAmount(totalAmount) }}</dd></div>
+            <div class="flex justify-between gap-4"><dt class="text-body-sm text-ink-mute">이용 시작일</dt><dd class="text-right text-body-sm font-bold">{{ formatDate(startDate) }}</dd></div>
+            <div class="flex justify-between gap-4"><dt class="text-body-sm text-ink-mute">이용 종료일</dt><dd class="text-right text-body-sm font-bold">{{ formatDate(endDate) }}</dd></div>
+            <div class="flex justify-between gap-4"><dt class="text-body-sm text-ink-mute">이용 인원</dt><dd class="text-right text-body-sm font-bold">{{ headcount }}명</dd></div>
+            <div class="flex justify-between gap-4"><dt class="text-body-sm text-ink-mute">요금</dt><dd class="text-right text-body-sm font-bold">{{ formatAmount(totalAmount) }}</dd></div>
           </dl>
         </section>
 
-        <section class="flex items-center justify-between border-b border-slate-100 px-1 py-6">
-          <h2 class="text-[18px] font-extrabold">총 결제 금액</h2>
-          <strong class="text-[22px] font-extrabold text-primary">{{ formatAmount(totalAmount) }}</strong>
+        <section class="flex items-center justify-between border-b border-line px-1 py-6">
+          <h2 class="text-heading font-bold">총 결제 금액</h2>
+          <strong class="text-display font-bold text-primary">{{ formatAmount(totalAmount) }}</strong>
         </section>
 
         <button
           type="button"
-          class="flex w-full items-center gap-3 border-b border-slate-100 px-1 py-5 text-left disabled:cursor-not-allowed disabled:opacity-50"
+          class="flex w-full items-center gap-3 border-b border-line px-1 py-5 text-left disabled:cursor-not-allowed disabled:opacity-50"
           @click="isPaymentMethodModalOpen = true"
         >
-          <span class="grid size-10 shrink-0 place-items-center rounded-full bg-blue-100 text-primary">
+          <span class="grid size-10 shrink-0 place-items-center rounded-full bg-brand-weak text-primary">
             <WalletCards v-if="selectedPaymentSourceType === 'WALLET'" :size="21" />
             <CreditCard v-else :size="21" />
           </span>
-          <span class="min-w-0 flex-1"><span class="block text-[12px] text-slate-400">결제 수단</span><strong class="mt-1 block truncate text-[14px]">{{ paymentMethodLabel }}</strong></span>
-          <ChevronRight class="shrink-0 text-slate-400" :size="20" />
+          <span class="min-w-0 flex-1"><span class="block text-body-sm text-ink-mute">결제 수단</span><strong class="mt-1 block truncate text-body">{{ paymentMethodLabel }}</strong></span>
+          <ChevronRight class="shrink-0 text-ink-mute" :size="20" />
         </button>
 
-        <p class="mt-4 text-[11px] font-semibold text-rose-500">예약 하루 전까지 취소할 수 있습니다.</p>
-        <p v-if="validationError" class="mt-2 text-[12px] font-medium text-rose-500">{{ validationError }}</p>
+        <p class="mt-4 text-caption font-semibold text-danger">예약 하루 전까지 취소할 수 있습니다.</p>
+        <p v-if="validationError" class="mt-2 text-body-sm font-medium text-danger">{{ validationError }}</p>
       </template>
     </main>
 
-    <footer class="sticky bottom-0 bg-white px-4 pb-6 pt-3">
+    <footer class="sticky bottom-0 bg-canvas px-4 pb-6 pt-3">
       <BaseButton
-        class="max-w-none rounded-xl py-3.5 text-[16px] font-bold disabled:bg-slate-200 disabled:text-slate-400"
+        class="max-w-none disabled:bg-slate-200 disabled:text-ink-mute"
         :disabled="!canPay"
         @click="openPinAuthentication"
       >

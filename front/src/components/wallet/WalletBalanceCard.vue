@@ -24,16 +24,16 @@ const displayBalance = computed(() =>
 
 <template>
   <div
-    class="w-full rounded-[20px] bg-white p-4 text-left border border-gray-100 shadow-[0_12px_40px_rgba(0,0,0,0.03)]"
+    class="w-full rounded-[20px] bg-white p-4 text-left border border-line shadow-[0_12px_40px_rgba(0,0,0,0.03)]"
   >
     <div class="flex items-center justify-between mb-2">
       <div class="flex items-center gap-1.5">
-        <span class="text-[13px] font-bold text-gray-500 tracking-tight"
+        <span class="text-body-sm font-bold text-ink-sub tracking-tight"
           >페이머니</span
         >
         <button
           type="button"
-          class="text-gray-500 hover:text-gray-500 transition-colors"
+          class="text-ink-sub hover:text-ink-sub transition-colors"
           :aria-label="isHidden ? '잔액 표시' : '잔액 숨기기'"
           @click="isHidden = !isHidden"
         >
@@ -44,7 +44,7 @@ const displayBalance = computed(() =>
 
       <button
         type="button"
-        class="text-[12px] font-medium text-gray-500 hover:text-gray-600 flex items-center gap-0.5 transition-colors"
+        class="text-body-sm font-medium text-ink-sub hover:text-ink-sub flex items-center gap-0.5 transition-colors"
         @click="$emit('edit-accounts')"
       >
         연결계좌
@@ -55,16 +55,16 @@ const displayBalance = computed(() =>
     <div class="flex items-center justify-between mb-5">
       <div>
         <p
-          class="text-[28px] font-extrabold tracking-tight text-gray-900 leading-none"
+          class="text-display font-bold tracking-tight text-ink leading-none"
         >
           {{ displayBalance
-          }}<span class="text-[20px] font-bold text-gray-800 ml-1">원</span>
+          }}<span class="text-heading font-bold text-ink ml-1">원</span>
         </p>
       </div>
 
       <button
         type="button"
-        class="w-11 h-11 rounded-2xl bg-gray-900 text-white flex items-center justify-center hover:bg-gray-800 active:scale-95 transition-all shadow-md"
+        class="w-11 h-11 rounded-sheet bg-gray-900 text-white flex items-center justify-center hover:bg-gray-800 active:scale-95 transition-all shadow-md"
         aria-label="QR 결제"
         @click="$emit('pay')"
       >
@@ -75,22 +75,22 @@ const displayBalance = computed(() =>
     <div class="mb-6 pt-1">
       <button
         type="button"
-        class="inline-flex items-center gap-1.5 text-[13px] font-semibold text-gray-600 hover:text-gray-900 transition-colors group"
+        class="inline-flex items-center gap-1.5 text-body-sm font-semibold text-ink-sub hover:text-ink transition-colors group"
         @click="$emit('history')"
       >
-        <History :size="15" class="text-gray-500 group-hover:text-gray-600" />
+        <History :size="15" class="text-ink-sub group-hover:text-ink-sub" />
         <span>이용내역 보기</span>
         <ChevronRight
           :size="14"
-          class="text-gray-500 group-hover:translate-x-0.5 transition-transform"
+          class="text-ink-sub group-hover:translate-x-0.5 transition-transform"
         />
       </button>
     </div>
 
-    <div class="flex gap-2 pt-2 border-t border-gray-100">
+    <div class="flex gap-2 pt-2 border-t border-line">
       <button
         type="button"
-        class="flex-1 py-3.5 rounded-2xl bg-blue-50 text-blue-600 font-bold text-[14px] flex items-center justify-center gap-1.5 hover:bg-blue-100/70 active:scale-[0.98] transition-all"
+        class="flex-1 py-3.5 rounded-sheet bg-brand-weak text-brand font-bold text-body flex items-center justify-center gap-1.5 hover:bg-brand-weak/70 active:scale-[0.98] transition-all"
         @click="$emit('charge')"
       >
         <Plus :size="16" />
@@ -99,7 +99,7 @@ const displayBalance = computed(() =>
 
       <button
         type="button"
-        class="flex-1 py-3.5 rounded-2xl bg-gray-50 text-gray-700 font-semibold text-[14px] flex items-center justify-center gap-1.5 hover:bg-gray-100 active:scale-[0.98] transition-all"
+        class="flex-1 py-3.5 rounded-sheet bg-canvas text-ink font-semibold text-body flex items-center justify-center gap-1.5 hover:bg-canvas active:scale-[0.98] transition-all"
         @click="$emit('refund')"
       >
         <RotateCcw :size="15" />

@@ -1,24 +1,24 @@
 <template>
   <button
-    class="flex w-full items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-left"
+    class="rounded-card bg-danger/8 flex w-full items-center gap-3 px-4 py-3.5 text-left transition-transform active:scale-[0.99]"
     @click="$emit('click')"
   >
     <span
-      class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-500 text-[11px] font-bold text-white"
+      class="text-caption bg-danger flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-bold text-white"
     >
       !
     </span>
 
-    <span class="flex-1">
-      <span class="block text-sm font-bold text-slate-900"
-        >확인이 필요한 지출 {{ count }}건</span
-      >
-      <span class="block text-xs text-slate-500"
-        >자동 분류한 카테고리가 맞는지 확인해 주세요</span
-      >
+    <span class="min-w-0 flex-1">
+      <span class="text-body-sm block font-bold text-ink">
+        확인이 필요한 지출 {{ count }}건
+      </span>
+      <span class="text-caption mt-0.5 block text-ink-sub">
+        자동 분류한 카테고리가 맞는지 확인해 주세요
+      </span>
     </span>
 
-    <span class="text-red-400">›</span>
+    <span class="text-caption text-danger shrink-0 font-bold">확인 ›</span>
   </button>
 </template>
 

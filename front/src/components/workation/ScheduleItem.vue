@@ -1,29 +1,29 @@
 <template>
   <button
-    class="flex w-full items-center gap-3 px-4 py-3 text-left transition-opacity"
-    :class="{ 'opacity-40': state === 'past' }"
+    class="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-opacity"
+    :class="{ 'opacity-45': state === 'past' }"
     @click="$emit('click', item)"
   >
     <span
-      class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+      class="rounded-chip flex h-9 w-9 shrink-0 items-center justify-center"
       :class="iconClass"
     >
-      <component :is="icon" class="h-4 w-4" />
+      <component :is="icon" :size="17" />
     </span>
 
     <span class="min-w-0 flex-1">
-      <span class="block truncate text-sm font-bold text-slate-900">
+      <span class="text-body block truncate font-semibold text-ink">
         {{ item.merchantName }}
       </span>
       <span
-        class="block truncate text-xs"
-        :class="state === 'now' ? 'font-bold text-blue-600' : 'text-slate-400'"
+        class="text-body-sm mt-0.5 block truncate"
+        :class="state === 'now' ? 'text-brand font-bold' : 'text-ink-mute'"
       >
         {{ subText }}
       </span>
     </span>
 
-    <ChevronRight class="h-4 w-4 shrink-0 text-slate-300" />
+    <ChevronRight :size="16" class="shrink-0 text-ink-mute" />
   </button>
 </template>
 

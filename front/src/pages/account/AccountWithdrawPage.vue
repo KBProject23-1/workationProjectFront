@@ -114,7 +114,7 @@ async function handleWithdraw() {
 </script>
 
 <template>
-  <main class="flex min-h-screen flex-col bg-white px-5 pt-4 pb-8">
+  <main class="flex min-h-screen flex-col bg-canvas px-5 pt-4 pb-8">
     <!-- 헤더 -->
     <div class="mb-6">
       <BaseHeader
@@ -124,12 +124,12 @@ async function handleWithdraw() {
     </div>
 
     <!-- ① 탈퇴 경고 안내 -->
-    <section class="rounded-xl border border-red-200 bg-red-50 p-4">
+    <section class="rounded-card border border-danger bg-danger/10 p-4">
       <div class="flex items-center gap-1.5">
-        <AlertTriangle :size="17" class="shrink-0 text-red-500" />
-        <p class="text-[15px] font-bold text-red-600">회원 탈퇴 안내</p>
+        <AlertTriangle :size="17" class="shrink-0 text-danger" />
+        <p class="text-body font-bold text-danger">회원 탈퇴 안내</p>
       </div>
-      <p class="mt-2 text-[13px] font-medium leading-relaxed text-red-600/90">
+      <p class="mt-2 text-body-sm font-medium leading-relaxed text-danger/90">
         탈퇴하면 워킷 서비스 이용이 중단되고, 계정 정보는 삭제되어
         다시 복구할 수 없어요.
       </p>
@@ -137,19 +137,19 @@ async function handleWithdraw() {
 
     <!-- ② 현재 지갑 잔액 — 0원이 아닐 때 탈퇴 불가 안내 + 동의 체크 비활성 -->
     <section
-      class="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white"
+      class="mt-3 overflow-hidden rounded-card border border-line bg-white"
     >
       <div class="flex items-center justify-between px-5 py-4">
-        <p class="text-[13px] font-medium text-slate-500">현재 지갑 잔액</p>
-        <p class="text-[16px] font-bold text-slate-900">
+        <p class="text-body-sm font-medium text-ink-sub">현재 지갑 잔액</p>
+        <p class="text-title font-bold text-ink">
           {{ walletStore.isLoading ? '—' : formattedBalance }}원
         </p>
       </div>
       <div
         v-if="hasRemainingBalance"
-        class="border-t border-red-100 bg-red-50 px-5 py-3.5"
+        class="border-t border-red-100 bg-danger/10 px-5 py-3.5"
       >
-        <p class="text-[13px] font-medium leading-relaxed text-red-600">
+        <p class="text-body-sm font-medium leading-relaxed text-danger">
           잔액이 남아있어 회원 탈퇴를 진행할 수 없습니다.
           잔액을 모두 사용하거나 환불한 후 다시 시도해주세요.
         </p>
@@ -158,30 +158,30 @@ async function handleWithdraw() {
 
     <!-- ③ 탈퇴 시 처리되는 내용 -->
     <section class="mt-3">
-      <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-        <p class="px-5 pt-3.5 text-xs font-medium text-slate-400">
+      <div class="overflow-hidden rounded-card border border-line bg-white">
+        <p class="px-5 pt-3.5 text-body-sm font-medium text-ink-mute">
           탈퇴 시 처리되는 내용
         </p>
         <ul class="mt-1 space-y-3 px-5 py-4">
-          <li class="flex gap-2 text-[13px] font-medium leading-relaxed text-slate-600">
+          <li class="flex gap-2 text-body-sm font-medium leading-relaxed text-ink-sub">
             <span class="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-slate-300" />
             <span>
               모든 로그인 세션(다른 기기 포함)이 종료되고 로그인 Cookie가 만료돼요
             </span>
           </li>
-          <li class="flex gap-2 text-[13px] font-medium leading-relaxed text-slate-600">
+          <li class="flex gap-2 text-body-sm font-medium leading-relaxed text-ink-sub">
             <span class="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-slate-300" />
             <span>
               계정 정보(이름·이메일·휴대폰 번호·프로필)는 삭제되고 복구할 수 없어요
             </span>
           </li>
-          <li class="flex gap-2 text-[13px] font-medium leading-relaxed text-slate-600">
+          <li class="flex gap-2 text-body-sm font-medium leading-relaxed text-ink-sub">
             <span class="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-slate-300" />
             <span>
               탈퇴한 계정으로는 다시 로그인할 수 없어요
             </span>
           </li>
-          <li class="flex gap-2 text-[13px] font-medium leading-relaxed text-slate-600">
+          <li class="flex gap-2 text-body-sm font-medium leading-relaxed text-ink-sub">
             <span class="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-slate-300" />
             <span>
               전자지갑에 잔액이 남아 있으면 탈퇴할 수 없어요 (잔액을 모두
@@ -194,24 +194,24 @@ async function handleWithdraw() {
 
     <!-- ④ 법령에 따라 보관되는 정보 -->
     <section class="mt-3">
-      <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-        <p class="px-5 pt-3.5 text-xs font-medium text-slate-400">
+      <div class="overflow-hidden rounded-card border border-line bg-white">
+        <p class="px-5 pt-3.5 text-body-sm font-medium text-ink-mute">
           법령에 따라 보관되는 정보
         </p>
-        <p class="px-5 pt-2 text-[13px] font-medium leading-relaxed text-slate-500">
+        <p class="px-5 pt-2 text-body-sm font-medium leading-relaxed text-ink-sub">
           탈퇴 후에도 금융 거래·결제 내역 등은 관련 법령에 따라
           일정 기간 보관될 수 있어요.
         </p>
-        <div class="mt-1 divide-y divide-slate-100">
+        <div class="mt-1 divide-y divide-line">
           <div
             v-for="item in retentionItems"
             :key="item.label"
             class="flex items-center justify-between gap-3 px-5 py-3"
           >
-            <span class="text-[13px] font-medium leading-relaxed text-slate-600">
+            <span class="text-body-sm font-medium leading-relaxed text-ink-sub">
               {{ item.label }}
             </span>
-            <span class="shrink-0 text-[13px] font-semibold text-slate-900">
+            <span class="shrink-0 text-body-sm font-semibold text-ink">
               {{ item.period }}
             </span>
           </div>
@@ -230,16 +230,16 @@ async function handleWithdraw() {
       @click="isNoticeChecked = !isNoticeChecked"
     >
       <span
-        class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors"
+        class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-chip border transition-colors"
         :class="
           isNoticeChecked
-            ? 'border-blue-600 bg-blue-600 text-white'
-            : 'border-slate-300 bg-white text-transparent'
+            ? 'border-brand bg-brand text-white'
+            : 'border-line bg-white text-transparent'
         "
       >
         <Check :size="14" :stroke-width="3" />
       </span>
-      <span class="text-[13px] font-medium leading-relaxed text-slate-700">
+      <span class="text-body-sm font-medium leading-relaxed text-ink">
         위 안내를 모두 확인했으며, 탈퇴에 동의합니다.
       </span>
     </button>
@@ -248,11 +248,11 @@ async function handleWithdraw() {
     <div class="mt-6">
       <label
         for="withdraw-password"
-        class="mb-1 block text-[13px] font-bold text-slate-900"
+        class="mb-1 block text-body-sm font-bold text-ink"
       >
         현재 비밀번호
       </label>
-      <p class="mb-2 text-[12px] font-medium text-slate-400">
+      <p class="mb-2 text-body-sm font-medium text-ink-mute">
         본인 확인을 위해 현재 비밀번호를 입력해 주세요.
       </p>
       <div class="relative">
@@ -263,12 +263,12 @@ async function handleWithdraw() {
           inputmode="text"
           placeholder="현재 비밀번호를 입력해 주세요"
           autocomplete="current-password"
-          class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 pr-12 text-[15px] font-medium text-slate-900 placeholder:text-slate-400"
+          class="h-12 rounded-card border-line bg-canvas px-4 pr-12 text-body font-medium text-ink placeholder:text-ink-mute"
           @keyup.enter="openConfirm"
         />
         <button
           type="button"
-          class="absolute right-2 top-6 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-blue-600"
+          class="absolute right-2 top-6 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-ink-mute transition-colors hover:bg-canvas hover:text-brand"
           :aria-label="isPasswordVisible ? '비밀번호 숨기기' : '비밀번호 보기'"
           :aria-pressed="isPasswordVisible"
           aria-controls="withdraw-password"
@@ -289,7 +289,7 @@ async function handleWithdraw() {
         type="button"
         variant="destructive"
         :disabled="!canWithdraw"
-        class="w-full rounded-2xl py-3.5 text-[15px] font-bold"
+        class="w-full"
         @click="openConfirm"
       >
         회원 탈퇴

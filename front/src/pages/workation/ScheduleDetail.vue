@@ -1,16 +1,13 @@
 <template>
-  <div class="flex min-h-screen w-full flex-col bg-white">
+  <div class="bg-canvas flex min-h-screen w-full flex-col">
     <div class="px-5 pt-4">
-      <BaseHeader
-        title="일정 상세"
-        @back="goBack"
-      />
+      <BaseHeader title="일정 상세" @back="goBack" />
     </div>
 
-    <main v-if="loading" class="flex-1 px-4 pb-8">
-      <div class="h-[202px] animate-pulse rounded-xl bg-slate-100"></div>
-      <div class="mt-4 h-12 animate-pulse rounded-lg bg-slate-100"></div>
-      <div class="mt-3 h-[180px] animate-pulse rounded-xl bg-slate-100"></div>
+    <main v-if="loading" class="flex-1 px-4 pt-4 pb-8">
+      <div class="rounded-card bg-line/60 h-[202px] animate-pulse"></div>
+      <div class="rounded-card bg-line/60 mt-4 h-12 animate-pulse"></div>
+      <div class="rounded-card bg-line/60 mt-3 h-[180px] animate-pulse"></div>
     </main>
 
     <main
@@ -25,25 +22,27 @@
     </main>
 
     <template v-else-if="detail">
-      <main class="flex-1 px-4 pb-8">
+      <main class="flex-1 px-4 pt-4 pb-8">
         <!-- 이미지와 이름이 장소 상세로 가는 진입점이다 -->
-        <button type="button" class="block w-full text-left" @click="goMerchant">
+        <button
+          type="button"
+          class="rounded-sheet bg-surface shadow-card block w-full overflow-hidden text-left"
+          @click="goMerchant"
+        >
           <img
-            :src="detail.thumbnailUrl && !imageLoadFailed
-              ? detail.thumbnailUrl
-              : defaultThumbnail"
+            :src="imageSource"
             :alt="detail.merchantName"
-            class="h-[202px] w-full rounded-xl bg-slate-100 object-cover"
-            @error="imageLoadFailed = true"
+            class="bg-canvas h-[202px] w-full object-cover"
+            @error="handleImageError"
           />
 
-          <div class="flex items-end justify-between gap-3 px-2 py-3">
-            <h2 class="flex min-w-0 flex-1 items-center gap-1 text-[17px] font-extrabold text-slate-800">
+          <div class="flex items-center justify-between gap-3 px-[18px] py-4">
+            <h2 class="text-title flex min-w-0 flex-1 items-center gap-1 font-bold -tracking-[0.01em] text-ink">
               <span class="truncate">{{ detail.merchantName }}</span>
-              <ChevronRight class="h-4 w-4 shrink-0 text-slate-300" />
+              <ChevronRight :size="16" class="text-ink-mute shrink-0" />
             </h2>
             <span
-              class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold"
+              class="text-caption shrink-0 rounded-full px-2.5 py-1 font-bold"
               :class="statusStyle"
             >
               {{ statusLabel }}
@@ -51,36 +50,16 @@
           </div>
         </button>
 
-        <section class="rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-4">
-          <dl class="space-y-4">
-            <div class="flex items-start justify-between gap-4">
-              <dt class="text-[12px] font-medium text-slate-400">방문 예정일</dt>
-              <dd class="text-right text-[13px] font-bold text-slate-700">
-                {{ formattedDate }}
-              </dd>
-            </div>
-            <div class="flex items-start justify-between gap-4">
-              <dt class="text-[12px] font-medium text-slate-400">방문 시간</dt>
-              <dd class="text-right text-[13px] font-bold text-slate-700">
-                {{ visitTime }}
-              </dd>
-            </div>
-            <div class="flex items-start justify-between gap-4">
-              <dt class="text-[12px] font-medium text-slate-400">분류</dt>
-              <dd class="text-right text-[13px] font-bold text-slate-700">
-                {{ categoryLabel }}
-              </dd>
-            </div>
-            <div class="flex items-start justify-between gap-4">
-              <dt class="text-[12px] font-medium text-slate-400">주소</dt>
-              <dd class="text-right text-[13px] font-bold text-slate-700">
-                {{ detail.address || '-' }}
-              </dd>
-            </div>
-            <div class="flex items-start justify-between gap-4">
-              <dt class="text-[12px] font-medium text-slate-400">구분</dt>
-              <dd class="text-right text-[13px] font-bold text-slate-700">
-                직접 등록한 일정
+        <section class="rounded-card bg-surface shadow-card mt-3 px-[18px] py-2">
+          <dl>
+            <div
+              v-for="row in infoRows"
+              :key="row.label"
+              class="border-line flex items-start justify-between gap-4 border-b py-3 last:border-b-0"
+            >
+              <dt class="text-body-sm shrink-0 text-ink-sub">{{ row.label }}</dt>
+              <dd class="text-body-sm min-w-0 text-right font-semibold text-ink">
+                {{ row.value }}
               </dd>
             </div>
           </dl>
@@ -88,51 +67,53 @@
 
         <button
           type="button"
-          class="mt-3 w-full rounded-lg border border-slate-200 py-3 text-[14px] font-bold text-slate-700 active:bg-slate-50"
+          class="rounded-card bg-surface shadow-card text-body mt-3 w-full py-3.5 font-bold text-ink transition-transform active:scale-[0.99] disabled:opacity-50"
           :disabled="saving || removing"
           @click="timePickerOpen = true"
         >
           시간 변경
         </button>
 
-        <p class="mt-3 px-1 text-[11px] font-medium text-slate-400">
+        <p class="text-body-sm mt-3 px-1 text-ink-mute">
           예약이 아니라 직접 정해 둔 일정이에요. 결제나 취소 수수료가 없어요.
         </p>
 
         <section v-if="sameDayItems.length > 0" class="mt-6">
-          <h3 class="mb-2 px-1 text-[13px] font-bold text-slate-900">
+          <h3 class="text-title mb-2.5 px-1 font-bold -tracking-[0.01em] text-ink">
             같은 날 일정
           </h3>
-          <div class="divide-y divide-slate-100 rounded-xl border border-slate-200">
+          <div
+            class="divide-line rounded-card bg-surface shadow-card divide-y px-[18px]"
+          >
             <button
               v-for="item in sameDayItems"
               :key="`${item.itemType}-${item.reservationId ?? item.scheduleId}`"
               type="button"
-              class="flex w-full items-center justify-between px-4 py-3 text-left"
+              class="flex w-full items-center justify-between gap-3 py-3.5 text-left"
               @click="goItem(item)"
             >
               <span class="min-w-0 flex-1">
-                <span class="block truncate text-[13px] font-bold text-slate-800">
+                <span class="text-body block truncate font-semibold text-ink">
                   {{ item.merchantName }}
                 </span>
-                <span class="block text-[11px] text-slate-400">
+                <span class="text-body-sm mt-0.5 block text-ink-mute">
                   {{ itemSubText(item) }}
                 </span>
               </span>
-              <ChevronRight class="h-4 w-4 shrink-0 text-slate-300" />
+              <ChevronRight :size="16" class="text-ink-mute shrink-0" />
             </button>
           </div>
         </section>
       </main>
 
-      <footer class="sticky bottom-0 bg-white px-4 pb-6 pt-3">
-        <BaseButton
-          class="max-w-none rounded-lg bg-rose-500 py-3.5 text-[16px] font-bold hover:bg-rose-500"
+      <footer class="bg-canvas sticky bottom-0 px-4 pt-3 pb-6">
+        <button
+          class="rounded-card bg-surface shadow-card text-body text-danger h-[52px] w-full font-bold transition-transform active:scale-[0.99] disabled:opacity-50"
           :disabled="saving || removing"
           @click="confirmOpen = true"
         >
           일정 삭제
-        </BaseButton>
+        </button>
       </footer>
     </template>
 
@@ -161,7 +142,6 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ChevronRight } from '@lucide/vue';
-import BaseButton from '@/components/common/BaseButton.vue';
 import BaseHeader from '@/components/common/BaseHeader.vue';
 import BaseErrorState from '@/components/common/BaseErrorState.vue';
 import { useScheduleStore } from '@/stores/scheduleStore';
@@ -170,7 +150,7 @@ import { getSchedules } from '@/api/schedule';
 import { hourMinute, shortRange, weekday } from '@/components/workation/format';
 import BaseConfirmModal from '@/components/common/BaseConfirmModal.vue';
 import ScheduleTimePicker from '@/components/workation/ScheduleTimePicker.vue';
-import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 const CATEGORY_LABELS = {
   RESTAURANT: '음식점',
@@ -201,7 +181,6 @@ const confirmOpen = ref(false);
 const timePickerOpen = ref(false);
 const errorMessage = ref('');
 const sameDayItems = ref([]);
-const imageLoadFailed = ref(false);
 
 const unavailableTimes = computed(() => [
   ...new Set(
@@ -213,11 +192,12 @@ const unavailableTimes = computed(() => [
 ]);
 
 const detail = computed(() => scheduleStore.detail);
-const defaultThumbnail = computed(() => getMerchantDefaultImage({
-  category: detail.value?.merchantCategory,
-  merchantId: detail.value?.merchantId,
-  activityType: detail.value?.activityType,
-}));
+const { imageSource, handleImageError, resetImageError } = useMerchantImage({
+  thumbnailUrl: () => detail.value?.thumbnailUrl,
+  category: () => detail.value?.merchantCategory,
+  merchantId: () => detail.value?.merchantId,
+  activityType: () => detail.value?.activityType,
+});
 
 // scheduledAt 은 2026-08-15T18:00:00 형태로 온다
 const visitDate = computed(() => detail.value?.scheduledAt?.slice(0, 10) ?? '');
@@ -236,6 +216,14 @@ const categoryLabel = computed(
   () => CATEGORY_LABELS[detail.value?.merchantCategory] ?? '일정',
 );
 
+// 항목이 늘거나 줄어도 표는 그대로 두고 이 배열만 고치면 된다
+const infoRows = computed(() => [
+  { label: '방문 예정일', value: formattedDate.value },
+  { label: '방문 시간', value: visitTime.value },
+  { label: '분류', value: categoryLabel.value },
+  { label: '주소', value: detail.value?.address || '-' },
+  { label: '구분', value: '직접 등록한 일정' },
+]);
 // 지난 일정인지 오늘인지 남았는지를 배지로 보여준다
 const dayGap = computed(() => {
   if (!visitDate.value) return null;
@@ -255,9 +243,9 @@ const statusLabel = computed(() => {
 
 const statusStyle = computed(() => {
   const gap = dayGap.value;
-  if (gap === null || gap < 0) return 'bg-slate-100 text-slate-400';
-  if (gap === 0) return 'bg-rose-50 text-rose-500';
-  return 'bg-blue-50 text-blue-600';
+  if (gap === null || gap < 0) return 'bg-canvas text-ink-mute';
+  if (gap === 0) return 'bg-danger/10 text-danger';
+  return 'bg-brand-weak text-brand';
 });
 
 const itemSubText = (item) => {
@@ -285,7 +273,7 @@ const loadSameDay = async () => {
 const load = async () => {
   loading.value = true;
   errorMessage.value = '';
-  imageLoadFailed.value = false;
+  resetImageError();
   try {
     await scheduleStore.fetchDetail(workationId, scheduleId.value);
     await loadSameDay();

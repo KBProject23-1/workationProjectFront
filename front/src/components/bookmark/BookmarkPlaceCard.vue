@@ -1,7 +1,6 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
 import { Heart, MapPin } from '@lucide/vue';
-import { getMerchantDefaultImage } from '@/config/merchantDefaultImages';
+import { useMerchantImage } from '@/composables/useMerchantImage';
 
 const props = defineProps({
   bookmark: {
@@ -12,34 +11,20 @@ const props = defineProps({
 
 defineEmits(['remove', 'details']);
 
-const imageLoadFailed = ref(false);
-const defaultThumbnail = computed(
-  () => getMerchantDefaultImage({
-    category: props.bookmark.category,
-    merchantId: props.bookmark.merchantId,
-    activityType: props.bookmark.activityType,
-  }),
-);
-const thumbnailSource = computed(
-  () => props.bookmark.thumbnailUrl && !imageLoadFailed.value
-    ? props.bookmark.thumbnailUrl
-    : defaultThumbnail.value,
-);
-
-watch(
-  () => [props.bookmark.thumbnailUrl, props.bookmark.category],
-  () => {
-    imageLoadFailed.value = false;
-  },
-);
+const { imageSource, handleImageError } = useMerchantImage({
+  thumbnailUrl: () => props.bookmark.thumbnailUrl,
+  category: () => props.bookmark.category,
+  merchantId: () => props.bookmark.merchantId,
+  activityType: () => props.bookmark.activityType,
+});
 </script>
 
 <template>
   <article class="place-card">
     <img
-      :src="thumbnailSource"
+      :src="imageSource"
       :alt="`${bookmark.name} 대표 이미지`"
-      @error="imageLoadFailed = true"
+      @error="handleImageError"
     />
     <div class="place-info">
       <h2>{{ bookmark.name }}</h2>

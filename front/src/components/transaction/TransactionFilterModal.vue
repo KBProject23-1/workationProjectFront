@@ -122,27 +122,27 @@ function handleOpenChange(open) {
 <template>
   <Dialog :open="visible" @update:open="handleOpenChange">
     <DialogContent
-      class="max-w-sm rounded-[24px] p-5 bg-white border border-gray-100 shadow-2xl text-left"
+      class="max-w-sm rounded-[24px] p-5 bg-white border border-line shadow-2xl text-left"
     >
       <DialogHeader class="mb-2">
-        <DialogTitle class="text-[17px] font-bold text-gray-900 text-left"
+        <DialogTitle class="text-title font-bold text-ink text-left"
           >거래내역 필터</DialogTitle
         >
       </DialogHeader>
 
       <div class="flex flex-col gap-5 py-1">
         <div>
-          <p class="text-[12px] font-semibold text-gray-500 mb-2">조회 기간</p>
+          <p class="text-body-sm font-semibold text-ink-sub mb-2">조회 기간</p>
           <div class="flex gap-1.5 mb-2.5">
             <button
               v-for="preset in periodPresets"
               :key="preset.value"
               type="button"
-              class="px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-95"
+              class="px-3.5 py-2 rounded-card text-body-sm font-bold transition-all active:scale-95"
               :class="
                 activePeriod === preset.value
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200/60'
+                  ? 'bg-brand text-white shadow-xs'
+                  : 'bg-canvas/80 text-ink-sub hover:bg-gray-200/60'
               "
               @click="selectPeriod(preset)"
             >
@@ -150,11 +150,11 @@ function handleOpenChange(open) {
             </button>
             <button
               type="button"
-              class="px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-95"
+              class="px-3.5 py-2 rounded-card text-body-sm font-bold transition-all active:scale-95"
               :class="
                 activePeriod === 'custom'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200/60'
+                  ? 'bg-brand text-white shadow-xs'
+                  : 'bg-canvas/80 text-ink-sub hover:bg-gray-200/60'
               "
               @click="selectCustom"
             >
@@ -169,27 +169,27 @@ function handleOpenChange(open) {
             <input
               v-model="localFilters.startDate"
               type="date"
-              class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-[12px] font-medium text-gray-800 focus:outline-hidden focus:border-blue-500 bg-gray-50/50"
+              class="flex-1 border border-line rounded-card px-3 py-2 text-body-sm font-medium text-ink focus:outline-hidden focus:border-brand bg-canvas/50"
             />
-            <span class="text-gray-500 text-[12px] font-bold">~</span>
+            <span class="text-ink-sub text-body-sm font-bold">~</span>
             <input
               v-model="localFilters.endDate"
               type="date"
-              class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-[12px] font-medium text-gray-800 focus:outline-hidden focus:border-blue-500 bg-gray-50/50"
+              class="flex-1 border border-line rounded-card px-3 py-2 text-body-sm font-medium text-ink focus:outline-hidden focus:border-brand bg-canvas/50"
             />
           </div>
         </div>
 
         <div>
-          <p class="text-[12px] font-semibold text-gray-500 mb-2">결제 수단</p>
+          <p class="text-body-sm font-semibold text-ink-sub mb-2">결제 수단</p>
           <div class="flex gap-1.5">
             <button
               type="button"
-              class="px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-95"
+              class="px-3.5 py-2 rounded-card text-body-sm font-bold transition-all active:scale-95"
               :class="
                 !localFilters.paymentSourceType
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200/60'
+                  ? 'bg-brand text-white shadow-xs'
+                  : 'bg-canvas/80 text-ink-sub hover:bg-gray-200/60'
               "
               @click="handlePaymentSourceChange(null)"
             >
@@ -197,11 +197,11 @@ function handleOpenChange(open) {
             </button>
             <button
               type="button"
-              class="px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-95"
+              class="px-3.5 py-2 rounded-card text-body-sm font-bold transition-all active:scale-95"
               :class="
                 localFilters.paymentSourceType === 'CARD'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200/60'
+                  ? 'bg-brand text-white shadow-xs'
+                  : 'bg-canvas/80 text-ink-sub hover:bg-gray-200/60'
               "
               @click="handlePaymentSourceChange('CARD')"
             >
@@ -209,11 +209,11 @@ function handleOpenChange(open) {
             </button>
             <button
               type="button"
-              class="px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-95"
+              class="px-3.5 py-2 rounded-card text-body-sm font-bold transition-all active:scale-95"
               :class="
                 localFilters.paymentSourceType === 'WALLET'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200/60'
+                  ? 'bg-brand text-white shadow-xs'
+                  : 'bg-canvas/80 text-ink-sub hover:bg-gray-200/60'
               "
               @click="handlePaymentSourceChange('WALLET')"
             >
@@ -234,29 +234,29 @@ function handleOpenChange(open) {
                 <SelectTrigger as-child>
                   <button
                     type="button"
-                    class="flex items-center justify-between w-full p-3 rounded-2xl bg-gray-50/80 border border-gray-100 hover:bg-gray-100/60 transition-colors cursor-pointer text-left"
+                    class="flex items-center justify-between w-full p-3 rounded-sheet bg-canvas/80 border border-line hover:bg-canvas/60 transition-colors cursor-pointer text-left"
                   >
                     <div class="flex items-center gap-2.5">
                       <div
-                        class="w-8 h-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center text-blue-600 shadow-xs"
+                        class="w-8 h-8 rounded-chip bg-white border border-line flex items-center justify-center text-brand shadow-xs"
                       >
                         <CreditCard :size="16" />
                       </div>
                       <div>
-                        <p class="text-[13px] font-bold text-gray-800">
+                        <p class="text-body-sm font-bold text-ink">
                           {{ getSelectedCardName() }}
                         </p>
                       </div>
                     </div>
-                    <ChevronRight :size="16" class="text-gray-500" />
+                    <ChevronRight :size="16" class="text-ink-sub" />
                   </button>
                 </SelectTrigger>
                 <SelectContent
-                  class="rounded-2xl border border-gray-100 bg-white p-1 shadow-xl"
+                  class="rounded-sheet border border-line bg-white p-1 shadow-xl"
                 >
                   <SelectItem
                     :value="ALL_CARDS"
-                    class="rounded-xl text-[13px] font-medium py-2"
+                    class="rounded-card text-body-sm font-medium py-2"
                   >
                     전체 카드
                   </SelectItem>
@@ -264,7 +264,7 @@ function handleOpenChange(open) {
                     v-for="card in cards"
                     :key="card.cardId"
                     :value="card.cardId"
-                    class="rounded-xl text-[13px] font-medium py-2"
+                    class="rounded-card text-body-sm font-medium py-2"
                   >
                     {{ formatCardLabel(card) }}
                   </SelectItem>
@@ -275,15 +275,15 @@ function handleOpenChange(open) {
         </div>
 
         <div>
-          <p class="text-[12px] font-semibold text-gray-500 mb-2">거래 유형</p>
+          <p class="text-body-sm font-semibold text-ink-sub mb-2">거래 유형</p>
           <div class="flex gap-1.5 flex-wrap">
             <button
               type="button"
-              class="px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-95"
+              class="px-3.5 py-2 rounded-card text-body-sm font-bold transition-all active:scale-95"
               :class="
                 !localFilters.transactionType
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200/60'
+                  ? 'bg-brand text-white shadow-xs'
+                  : 'bg-canvas/80 text-ink-sub hover:bg-gray-200/60'
               "
               @click="localFilters.transactionType = null"
             >
@@ -291,11 +291,11 @@ function handleOpenChange(open) {
             </button>
             <button
               type="button"
-              class="px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-95"
+              class="px-3.5 py-2 rounded-card text-body-sm font-bold transition-all active:scale-95"
               :class="
                 localFilters.transactionType === 'PAYMENT'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200/60'
+                  ? 'bg-brand text-white shadow-xs'
+                  : 'bg-canvas/80 text-ink-sub hover:bg-gray-200/60'
               "
               @click="localFilters.transactionType = 'PAYMENT'"
             >
@@ -303,11 +303,11 @@ function handleOpenChange(open) {
             </button>
             <button
               type="button"
-              class="px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-95"
+              class="px-3.5 py-2 rounded-card text-body-sm font-bold transition-all active:scale-95"
               :class="
                 localFilters.transactionType === 'DEPOSIT'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200/60'
+                  ? 'bg-brand text-white shadow-xs'
+                  : 'bg-canvas/80 text-ink-sub hover:bg-gray-200/60'
               "
               @click="localFilters.transactionType = 'DEPOSIT'"
             >
@@ -315,11 +315,11 @@ function handleOpenChange(open) {
             </button>
             <button
               type="button"
-              class="px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-95"
+              class="px-3.5 py-2 rounded-card text-body-sm font-bold transition-all active:scale-95"
               :class="
                 localFilters.transactionType === 'WITHDRAWAL'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200/60'
+                  ? 'bg-brand text-white shadow-xs'
+                  : 'bg-canvas/80 text-ink-sub hover:bg-gray-200/60'
               "
               @click="localFilters.transactionType = 'WITHDRAWAL'"
             >
@@ -331,7 +331,7 @@ function handleOpenChange(open) {
 
       <DialogFooter class="mt-4">
         <BaseButton
-          class="w-full py-3.5 text-[14px] font-bold rounded-2xl"
+          class="w-full"
           @click="handleApply"
         >
           적용하기

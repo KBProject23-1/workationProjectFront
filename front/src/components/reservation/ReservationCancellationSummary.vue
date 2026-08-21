@@ -42,8 +42,8 @@ function formatDateTime(value) {
 
 const summaryClass = computed(() =>
   props.highlighted
-    ? 'border-blue-100 bg-blue-50/70'
-    : 'border-slate-200 bg-white',
+    ? 'border-line bg-brand-weak/70'
+    : 'border-line bg-white',
 );
 </script>
 
@@ -51,35 +51,35 @@ const summaryClass = computed(() =>
   <section class="w-full">
     <h2
       v-if="showMerchantName"
-      class="mb-4 text-center text-[17px] font-extrabold text-slate-800"
+      class="mb-4 text-center text-title font-bold text-ink"
     >
       {{ merchantName }}
     </h2>
 
-    <dl class="space-y-4 rounded-xl border px-4 py-5" :class="summaryClass">
+    <dl class="space-y-4 rounded-card border px-4 py-5" :class="summaryClass">
       <div v-if="canceledAt" class="flex items-start justify-between gap-4">
-        <dt class="text-[12px] font-medium text-slate-400">취소 일시</dt>
-        <dd class="text-right text-[13px] font-bold text-slate-700">
+        <dt class="text-body-sm font-medium text-ink-mute">취소 일시</dt>
+        <dd class="text-right text-body-sm font-bold text-ink">
           {{ formatDateTime(canceledAt) }}
         </dd>
       </div>
       <div class="flex items-start justify-between gap-4">
-        <dt class="text-[12px] font-medium text-slate-400">이용 시작일</dt>
-        <dd class="text-right text-[13px] font-bold text-slate-700">
+        <dt class="text-body-sm font-medium text-ink-mute">이용 시작일</dt>
+        <dd class="text-right text-body-sm font-bold text-ink">
           {{ formatDate(startDate) }}
         </dd>
       </div>
       <div class="flex items-start justify-between gap-4">
-        <dt class="text-[12px] font-medium text-slate-400">이용 종료일</dt>
-        <dd class="text-right text-[13px] font-bold text-slate-700">
+        <dt class="text-body-sm font-medium text-ink-mute">이용 종료일</dt>
+        <dd class="text-right text-body-sm font-bold text-ink">
           {{ formatDate(endDate) }}
         </dd>
       </div>
       <div class="flex items-start justify-between gap-4">
-        <dt class="text-[12px] font-medium text-slate-400">
+        <dt class="text-body-sm font-medium text-ink-mute">
           {{ showQuantity ? '결제 정보 / 개수' : '상품 정보' }}
         </dt>
-        <dd class="text-right text-[13px] font-bold text-slate-700">
+        <dd class="text-right text-body-sm font-bold text-ink">
           {{ productName
           }}<template v-if="showQuantity && quantity !== null">
             / {{ quantity }}개</template
@@ -87,22 +87,22 @@ const summaryClass = computed(() =>
         </dd>
       </div>
       <div class="flex items-start justify-between gap-4">
-        <dt class="text-[12px] font-medium text-slate-400">최초 결제 금액</dt>
-        <dd class="text-right text-[13px] font-bold text-slate-700">
+        <dt class="text-body-sm font-medium text-ink-mute">최초 결제 금액</dt>
+        <dd class="text-right text-body-sm font-bold text-ink">
           {{ formatAmount(totalAmount) }}
         </dd>
       </div>
       <div class="flex items-start justify-between gap-4">
-        <dt class="text-[12px] font-medium text-slate-400">수수료</dt>
-        <dd class="text-right text-[13px] font-bold text-slate-700">
+        <dt class="text-body-sm font-medium text-ink-mute">수수료</dt>
+        <dd class="text-right text-body-sm font-bold text-ink">
           {{ formatAmount(cancelFee) }}
         </dd>
       </div>
       <div class="flex items-start justify-between gap-4">
-        <dt class="text-[12px] font-medium text-slate-400">
+        <dt class="text-body-sm font-medium text-ink-mute">
           {{ refundAmountLabel }}
         </dt>
-        <dd class="text-right text-[13px] font-bold text-slate-700">
+        <dd class="text-right text-body-sm font-bold text-ink">
           {{ formatAmount(refundAmount) }}
         </dd>
       </div>
@@ -110,8 +110,8 @@ const summaryClass = computed(() =>
         v-if="showPaymentMethod"
         class="flex items-start justify-between gap-4"
       >
-        <dt class="text-[12px] font-medium text-slate-400">결제 수단</dt>
-        <dd class="text-right text-[13px] font-bold text-slate-700">
+        <dt class="text-body-sm font-medium text-ink-mute">결제 수단</dt>
+        <dd class="text-right text-body-sm font-bold text-ink">
           {{ paymentMethod || '-' }}
         </dd>
       </div>

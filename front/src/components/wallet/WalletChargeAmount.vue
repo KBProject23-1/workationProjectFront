@@ -67,25 +67,25 @@ function handleNext() {
 </script>
 
 <template>
-  <div class="flex flex-col w-full min-h-screen px-5 pt-4 pb-5 bg-white text-left">
+  <div class="flex flex-col w-full min-h-screen px-5 pt-4 pb-5 bg-canvas text-left">
     <div class="mb-6">
       <BaseHeader title="충전하기" @back="$emit('back')" />
     </div>
 
     <div class="mb-6">
-      <p class="text-[12px] font-semibold text-gray-500 mb-1">
+      <p class="text-body-sm font-semibold text-ink-sub mb-1">
         얼마나 충전할까요?
       </p>
       <div class="flex items-baseline gap-1">
         <span
-          class="text-[32px] font-extrabold tracking-tight transition-colors"
-          :class="amount > 0 ? 'text-gray-900' : 'text-gray-500'"
+          class="text-[32px] font-bold tracking-tight transition-colors"
+          :class="amount > 0 ? 'text-ink' : 'text-ink-sub'"
         >
           {{ amount.toLocaleString('ko-KR') }}
         </span>
         <span
-          class="text-[20px] font-bold"
-          :class="amount > 0 ? 'text-gray-800' : 'text-gray-500'"
+          class="text-heading font-bold"
+          :class="amount > 0 ? 'text-ink' : 'text-ink-sub'"
           >원</span
         >
       </div>
@@ -96,7 +96,7 @@ function handleNext() {
         v-for="preset in presets"
         :key="preset"
         type="button"
-        class="rounded-xl py-2.5 text-[12px] font-bold bg-blue-50/80 text-blue-600 hover:bg-blue-100/70 active:scale-95 transition-all"
+        class="rounded-card py-2.5 text-body-sm font-bold bg-brand-weak/80 text-brand hover:bg-brand-weak/70 active:scale-95 transition-all"
         @click="addPreset(preset)"
       >
         +{{ preset / 10000 }}만원
@@ -113,7 +113,7 @@ function handleNext() {
       <button
         v-if="amountInput"
         type="button"
-        class="absolute right-3 top-3.5 text-gray-500 hover:text-gray-600 p-0.5 rounded-full bg-gray-100"
+        class="absolute right-3 top-3.5 text-ink-sub hover:text-ink-sub p-0.5 rounded-full bg-canvas"
         aria-label="입력 지우기"
         @click="clearAmount"
       >
@@ -134,7 +134,7 @@ function handleNext() {
     <div class="mt-auto pt-4 pb-2 text-center">
       <BaseButton
         :disabled="isLoading"
-        class="w-full py-3.5 text-[15px] font-bold rounded-2xl"
+        class="w-full"
         @click="handleNext"
       >
         {{ isLoading ? '충전 중...' : '다음' }}

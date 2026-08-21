@@ -16,16 +16,16 @@ const selectedId = ref(null);
 </script>
 
 <template>
-  <div class="flex flex-col w-full min-h-screen px-5 pt-4 pb-5 bg-white text-left">
+  <div class="flex flex-col w-full min-h-screen px-5 pt-4 pb-5 bg-canvas text-left">
     <div class="mb-6">
       <BaseHeader title="주 카드 선택" @back="$emit('back')" />
     </div>
 
     <div class="mb-5">
-      <h2 class="text-[20px] font-bold text-gray-900 leading-snug">
+      <h2 class="text-heading font-bold text-ink leading-snug">
         주로 사용하는 카드를<br />선택해 주세요
       </h2>
-      <p class="text-[13px] font-medium text-gray-500 mt-1">
+      <p class="text-body-sm font-medium text-ink-sub mt-1">
         주 카드는 기본 결제 수단으로 지정돼요
       </p>
     </div>
@@ -44,11 +44,11 @@ const selectedId = ref(null);
         class="flex flex-col items-center justify-center py-16 text-center"
       >
         <div
-          class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-3 text-gray-500"
+          class="w-12 h-12 rounded-sheet bg-canvas flex items-center justify-center mb-3 text-ink-sub"
         >
           <CreditCard :size="24" />
         </div>
-        <p class="text-[14px] font-medium text-gray-500">
+        <p class="text-body font-medium text-ink-sub">
           연동 가능한 카드가 없습니다
         </p>
       </div>
@@ -57,7 +57,7 @@ const selectedId = ref(null);
     <div class="w-full pt-4 pb-2 mt-auto text-center">
       <BaseButton
         :disabled="!selectedId || isLoading"
-        class="w-full py-3.5 text-[15px] font-bold rounded-2xl"
+        class="w-full"
         @click="emit('select', selectedId)"
       >
         {{ isLoading ? '연동하는 중...' : '주 카드로 설정하기' }}

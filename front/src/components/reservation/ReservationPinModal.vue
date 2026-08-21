@@ -61,7 +61,7 @@ function submit(pin) {
         :disabled="loading"
         @complete="submit"
       />
-      <p v-if="loading" class="mt-4 text-center text-[13px] font-semibold text-primary">
+      <p v-if="loading" class="mt-4 text-center text-body-sm font-semibold text-primary">
         예약과 결제를 처리하고 있어요.
       </p>
     </DialogContent>

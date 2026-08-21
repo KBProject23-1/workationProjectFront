@@ -29,35 +29,35 @@ const signedAmount = computed(() => {
 
 const amountColor = computed(() =>
   isInactive.value
-    ? 'text-gray-500 line-through'
+    ? 'text-ink-sub line-through'
     : isDeposit.value
-      ? 'text-blue-600'
-      : 'text-gray-900',
+      ? 'text-brand'
+      : 'text-ink',
 );
 </script>
 
 <template>
   <button
     type="button"
-    class="flex items-center justify-between w-full py-3.5 text-left transition-colors active:bg-gray-50/80 rounded-xl px-1 -mx-1 border-b border-gray-100/80"
+    class="flex items-center justify-between w-full py-3.5 text-left transition-colors active:bg-canvas/80 rounded-card px-1 -mx-1 border-b border-line/80"
     @click="$emit('select', transaction.transactionId)"
   >
     <div class="min-w-0 flex-1 pr-3">
-      <p class="text-[15px] font-bold text-gray-900 truncate leading-snug">
+      <p class="text-body font-bold text-ink truncate leading-snug">
         {{ transaction.merchantName }}
       </p>
       <div class="flex items-center gap-1.5 mt-0.5">
-        <span class="text-[12px] font-medium text-gray-500">
+        <span class="text-body-sm font-medium text-ink-sub">
           {{ categoryLabel }}
         </span>
         <span
           v-if="transaction.transactionTime"
-          class="text-[10px] text-gray-500"
+          class="text-caption text-ink-sub"
           >•</span
         >
         <span
           v-if="transaction.transactionTime"
-          class="text-[11px] text-gray-500"
+          class="text-caption text-ink-sub"
         >
           {{ transaction.transactionTime }}
         </span>
@@ -65,12 +65,12 @@ const amountColor = computed(() =>
     </div>
 
     <div class="text-right shrink-0">
-      <p class="text-[15px] font-extrabold tracking-tight" :class="amountColor">
+      <p class="text-body font-bold tracking-tight" :class="amountColor">
         {{ signedAmount }}
       </p>
       <p
         v-if="showStatusBadge"
-        class="text-[11px] font-semibold mt-0.5"
+        class="text-caption font-semibold mt-0.5"
         :class="statusMeta.textClass"
       >
         {{ statusMeta.label }}

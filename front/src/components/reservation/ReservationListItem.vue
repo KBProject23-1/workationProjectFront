@@ -99,7 +99,7 @@ const statusLabel = computed(() => {
 });
 
 const statusClass = computed(() => {
-  if (isCanceled.value) return 'border-rose-300 text-rose-500';
+  if (isCanceled.value) return 'border-rose-300 text-danger';
   return props.reservation.status === 'COMPLETED'
     ? 'border-emerald-400 text-emerald-600'
     : 'border-blue-400 text-primary';
@@ -109,23 +109,23 @@ const statusClass = computed(() => {
 <template>
   <button
     type="button"
-    class="w-full rounded-xl border border-slate-200 bg-white p-3 text-left shadow-[0_1px_3px_rgba(15,23,42,0.06)] transition-colors active:bg-slate-50"
+    class="w-full rounded-card border border-line bg-white p-3 text-left shadow-[0_1px_3px_rgba(15,23,42,0.06)] transition-colors active:bg-canvas"
     @click="$emit('select', reservation.reservationId)"
   >
     <div class="flex gap-3">
       <img
         :src="reservation.thumbnailUrl"
         :alt="reservation.productName"
-        class="h-[94px] w-[94px] shrink-0 rounded-lg bg-blue-100 object-cover"
+        class="h-[94px] w-[94px] shrink-0 rounded-chip bg-brand-weak object-cover"
       />
 
       <div class="min-w-0 flex-1 pt-0.5">
         <div class="flex items-center justify-between gap-2">
-          <span class="text-[12px] font-medium text-slate-400">
+          <span class="text-body-sm font-medium text-ink-mute">
             {{ categoryLabel }}
           </span>
           <span
-            class="shrink-0 rounded-full border px-3 py-0.5 text-[11px] font-bold"
+            class="shrink-0 rounded-full border px-3 py-0.5 text-caption font-bold"
             :class="statusClass"
           >
             {{ statusLabel }}
@@ -133,31 +133,31 @@ const statusClass = computed(() => {
         </div>
 
         <div class="mt-1 flex items-center gap-1">
-          <p class="min-w-0 flex-1 truncate text-[15px] font-extrabold text-slate-900">
+          <p class="min-w-0 flex-1 truncate text-body font-bold text-ink">
             {{ reservation.merchantName }}
           </p>
-          <ChevronRight :size="20" class="shrink-0 text-slate-400" />
+          <ChevronRight :size="20" class="shrink-0 text-ink-mute" />
         </div>
 
-        <p class="mt-1 text-[11px] leading-snug text-slate-500">
+        <p class="mt-1 text-caption leading-snug text-ink-sub">
           {{ dateRangeLabel }}
         </p>
       </div>
     </div>
 
-    <div class="mt-3 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2.5">
-      <p class="truncate text-[13px] font-bold text-slate-800">
+    <div class="mt-3 rounded-chip border border-line bg-canvas px-3 py-2.5">
+      <p class="truncate text-body-sm font-bold text-ink">
         {{ reservation.productName }}
       </p>
-      <p class="mt-0.5 text-[11px] text-slate-400">
+      <p class="mt-0.5 text-caption text-ink-mute">
         {{ reservationCompositionLabel }}
       </p>
     </div>
 
     <div v-if="isCanceled" class="mt-3 flex justify-end">
       <div class="min-w-0 text-right">
-        <p class="text-[11px] text-slate-400">취소 일시</p>
-        <p class="mt-0.5 truncate text-[11px] font-medium text-slate-600">
+        <p class="text-caption text-ink-mute">취소 일시</p>
+        <p class="mt-0.5 truncate text-caption font-medium text-ink-sub">
           {{ canceledAtLabel }}
         </p>
       </div>
@@ -166,14 +166,14 @@ const statusClass = computed(() => {
     <div v-else class="mt-3 flex items-end justify-between gap-3">
       <p
         v-if="cancellationPolicyLabel"
-        class="text-[11px] font-semibold"
-        :class="reservation.cancelable === true ? 'text-primary' : 'text-rose-500'"
+        class="text-caption font-semibold"
+        :class="reservation.cancelable === true ? 'text-primary' : 'text-danger'"
       >
         {{ cancellationPolicyLabel }}
       </p>
       <div class="ml-auto shrink-0 text-right">
-        <p class="text-[11px] text-slate-400">결제 금액</p>
-        <p class="mt-0.5 text-[18px] font-extrabold leading-none text-slate-900">
+        <p class="text-caption text-ink-mute">결제 금액</p>
+        <p class="mt-0.5 text-heading font-bold leading-none text-ink">
           {{ amountLabel }}
         </p>
       </div>

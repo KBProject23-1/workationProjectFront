@@ -158,7 +158,7 @@ onUnmounted(() => {
 
         <div class="flex items-start justify-between relative z-10">
           <div
-            class="w-9 h-6 rounded-md bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-600 p-[1px] shadow-inner relative overflow-hidden"
+            class="w-9 h-6 rounded-chip bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-600 p-[1px] shadow-inner relative overflow-hidden"
           >
             <div
               class="w-full h-full border border-amber-800/20 rounded-[5px] grid grid-cols-2 gap-0.5 p-0.5 opacity-60"
@@ -190,12 +190,12 @@ onUnmounted(() => {
         <div class="flex items-end justify-between gap-1 relative z-10">
           <div class="flex flex-col min-w-0 flex-1">
             <span
-              class="text-[11px] font-medium text-white/90 tracking-wider uppercase truncate"
+              class="text-caption font-medium text-white/90 tracking-wider uppercase truncate"
             >
               {{ card.cardName || card.cardCompanyName }}
             </span>
             <span
-              class="text-[13px] font-bold tracking-widest text-white/95 whitespace-nowrap mt-0.5"
+              class="text-body-sm font-bold tracking-widest text-white/95 whitespace-nowrap mt-0.5"
             >
               {{ formatCardNumber(card.maskedNumber) }}
             </span>
@@ -214,16 +214,16 @@ onUnmounted(() => {
 
       <button
         type="button"
-        class="shrink-0 snap-center rounded-[20px] border-2 border-dashed border-gray-200 bg-gray-50/50 flex flex-col items-center justify-center gap-1.5 text-gray-500 transition-all hover:border-gray-300 hover:bg-gray-50 hover:text-gray-500 active:scale-95"
+        class="shrink-0 snap-center rounded-[20px] border-2 border-dashed border-line bg-canvas/50 flex flex-col items-center justify-center gap-1.5 text-ink-sub transition-all hover:border-line hover:bg-canvas hover:text-ink-sub active:scale-95"
         style="width: 15rem; height: 9.2rem"
         @click="$emit('add')"
       >
         <div
-          class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-500"
+          class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-ink-sub"
         >
           <Plus :size="18" />
         </div>
-        <span class="text-[12px] font-medium">새 카드 추가</span>
+        <span class="text-body-sm font-medium">새 카드 추가</span>
       </button>
     </div>
 
@@ -243,11 +243,11 @@ onUnmounted(() => {
 
     <div v-if="activeCard" class="flex justify-center mt-2.5">
       <div
-        class="inline-flex items-center gap-0.5 p-0.5 bg-gray-100/80 backdrop-blur-sm rounded-full border border-gray-200/60 shadow-sm"
+        class="inline-flex items-center gap-0.5 p-0.5 bg-canvas/80 backdrop-blur-sm rounded-full border border-line/60 shadow-sm"
       >
         <button
           type="button"
-          class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-gray-600 transition-colors hover:bg-white hover:text-gray-900 active:scale-95"
+          class="flex items-center gap-1 px-2.5 py-1 rounded-full text-caption font-medium text-ink-sub transition-colors hover:bg-white hover:text-ink active:scale-95"
           @click="$emit('edit-nickname', activeCard.cardId)"
         >
           <Pencil :size="11" />
@@ -256,7 +256,7 @@ onUnmounted(() => {
         <span class="w-px h-2.5 bg-gray-300/60"></span>
         <button
           type="button"
-          class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-red-700 transition-colors hover:bg-white hover:text-red-800 active:scale-95"
+          class="flex items-center gap-1 px-2.5 py-1 rounded-full text-caption font-medium text-red-700 transition-colors hover:bg-white hover:text-red-800 active:scale-95"
           @click="$emit('request-delete', activeCard.cardId)"
         >
           <Trash2 :size="11" />

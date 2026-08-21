@@ -28,7 +28,7 @@
       <DialogFooter class="flex-row gap-2 sm:justify-center">
         <BaseButton
           variant="outline"
-          class="h-11 flex-1 rounded-xl"
+          class="flex-1"
           :disabled="loading"
           @click="$emit('cancel')"
         >
@@ -36,7 +36,7 @@
         </BaseButton>
         <BaseButton
           variant="default"
-          class="h-11 flex-1 rounded-xl"
+          class="flex-1"
           :disabled="loading || !selected || isTimeDisabled(selected)"
           @click="$emit('confirm', selected)"
         >

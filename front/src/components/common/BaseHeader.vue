@@ -7,7 +7,7 @@ import { ChevronLeft } from '@lucide/vue';
 defineProps({
   title: { type: String, required: true },
   backLabel: { type: String, default: '뒤로 가기' },
-  titleClass: { type: [String, Array, Object], default: 'text-[18px] font-bold text-gray-900' },
+  titleClass: { type: [String, Array, Object], default: 'text-heading font-bold text-ink' },
 });
 
 defineEmits(['back']);
@@ -17,7 +17,7 @@ defineEmits(['back']);
   <header class="relative flex h-14 shrink-0 items-center justify-center">
     <button
       type="button"
-      class="absolute left-0 top-1/2 -translate-y-1/2 p-1 -ml-1 text-gray-700 hover:text-gray-900 rounded-full active:bg-gray-100 transition-colors"
+      class="absolute left-0 top-1/2 -translate-y-1/2 p-1 -ml-1 text-ink hover:text-ink rounded-full active:bg-canvas transition-colors"
       :aria-label="backLabel"
       @click="$emit('back')"
     >

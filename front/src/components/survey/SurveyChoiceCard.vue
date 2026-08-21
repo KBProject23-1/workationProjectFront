@@ -1,7 +1,7 @@
 <template>
   <button
     type="button"
-    class="relative flex min-h-[68px] items-center gap-3 rounded-xl border-2 px-3 py-3 text-left transition"
+    class="relative flex min-h-[68px] items-center gap-3 rounded-card border-2 px-3 py-3 text-left transition"
     :class="[
       theme.background,
       selected ? `${theme.border} shadow-sm` : 'border-transparent',
@@ -16,12 +16,12 @@
     />
 
     <span class="min-w-0 flex-1 text-center">
-      <span class="block text-sm font-bold text-slate-900">
+      <span class="block text-body font-bold text-ink">
         {{ option.optionText }}
       </span>
       <span
         v-if="optionDescription"
-        class="mt-1 block text-[10px] leading-4 text-slate-400"
+        class="mt-1 block text-caption leading-4 text-ink-mute"
       >
         {{ optionDescription }}
       </span>
@@ -29,7 +29,7 @@
 
     <span
       v-if="selected"
-      class="absolute top-2 right-2 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold text-white"
+      class="absolute top-2 right-2 flex h-4 w-4 items-center justify-center rounded-full text-caption font-bold text-white"
       :class="theme.check"
     >
       ✓
@@ -65,9 +65,9 @@ const iconSrc = computed(() => {
 
 const themeByText = {
   예산: {
-    background: 'bg-blue-50',
-    border: 'border-blue-500',
-    check: 'bg-blue-500',
+    background: 'bg-brand-weak',
+    border: 'border-brand',
+    check: 'bg-brand',
   },
   '이동 편의': {
     background: 'bg-teal-50',
@@ -80,7 +80,7 @@ const themeByText = {
     check: 'bg-violet-500',
   },
   '균형 있게': {
-    background: 'bg-amber-50',
+    background: 'bg-warn-weak',
     border: 'border-amber-400',
     check: 'bg-amber-400',
   },

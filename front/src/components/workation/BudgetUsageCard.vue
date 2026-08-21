@@ -1,32 +1,34 @@
 <template>
-  <section>
-    <h3 class="text-sm font-bold text-slate-900">{{ title }} 사용 현황</h3>
-
-    <div class="mt-1 flex items-end justify-between">
-      <span class="text-2xl font-bold text-slate-900">{{
-        won(budget.spentTotal)
-      }}</span>
+  <section class="rounded-card bg-surface shadow-card px-[18px] py-4">
+    <div class="flex items-center justify-between">
+      <h3 class="text-body-sm font-semibold text-ink-sub">
+        {{ title }} 사용 현황
+      </h3>
       <span
-        class="text-xl font-bold"
-        :class="overspent ? 'text-red-500' : 'text-blue-600'"
+        class="text-body-sm font-bold"
+        :class="overspent ? 'text-danger' : 'text-ink-mute'"
       >
-        {{ budget.usageRate }}%
+        {{ rate }}%
       </span>
     </div>
 
-    <div class="mt-2 h-1.5 w-full rounded-full bg-slate-200">
+    <p class="text-heading mt-1.5 font-bold -tracking-[0.02em] text-ink">
+      {{ won(budget.spentTotal) }}
+    </p>
+
+    <div class="bg-canvas mt-3 h-1.5 w-full rounded-full">
       <div
         class="h-1.5 rounded-full"
-        :class="overspent ? 'bg-red-500' : 'bg-blue-600'"
+        :class="overspent ? 'bg-danger' : 'bg-brand'"
         :style="{ width: barWidth + '%' }"
       />
     </div>
 
-    <p class="mt-2 text-xs text-slate-500">
+    <p class="text-body-sm mt-2 text-ink-mute">
       예산 {{ won(budget.budgetTotal) }} ·
-      <span v-if="overspent" class="text-red-500"
-        >{{ won(-budget.remainAmount) }} 초과</span
-      >
+      <span v-if="overspent" class="text-danger font-bold">
+        {{ won(-budget.remainAmount) }} 초과
+      </span>
       <span v-else>{{ won(budget.remainAmount) }} 남음</span>
     </p>
   </section>
@@ -42,8 +44,10 @@ const props = defineProps({
   title: { type: String, required: true },
 });
 
+const rate = computed(() => Math.round(Number(props.budget.usageRate ?? 0)));
+
 // 예산을 초과해도 막대가 카드를 벗어나지 않도록 100 에서 자른다
-const barWidth = computed(() => Math.min(props.budget.usageRate, 100));
+const barWidth = computed(() => Math.min(rate.value, 100));
 
 const overspent = computed(() => props.budget.remainAmount < 0);
 </script>

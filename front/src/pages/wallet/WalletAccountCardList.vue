@@ -60,15 +60,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <main class="flex flex-col w-full min-h-screen px-5 pt-4 pb-5 bg-white text-left">
+  <main class="flex flex-col w-full min-h-screen px-5 pt-4 pb-5 bg-canvas text-left">
     <div class="mb-6">
       <BaseHeader title="연결 계좌" @back="goToWallet" />
     </div>
 
     <div class="flex items-center justify-between mb-3">
-      <p class="text-[12px] font-semibold text-gray-500">
+      <p class="text-body-sm font-semibold text-ink-sub">
         연동된 계좌
-        <span class="text-blue-600 font-bold ml-0.5">{{
+        <span class="text-brand font-bold ml-0.5">{{
           accountStore.accounts.length
         }}</span>
       </p>
@@ -94,10 +94,10 @@ onMounted(() => {
     <div class="w-full pt-4 pb-2 mt-auto">
       <button
         type="button"
-        class="w-full flex items-center justify-center gap-2 border-2 border-dashed border-gray-200 bg-gray-50/50 hover:bg-gray-50 hover:border-gray-300 rounded-2xl py-3.5 text-[14px] font-bold text-gray-600 transition-all active:scale-[0.99]"
+        class="w-full flex items-center justify-center gap-2 border-2 border-dashed border-line bg-canvas/50 hover:bg-canvas hover:border-line rounded-sheet py-3.5 text-body font-bold text-ink-sub transition-all active:scale-[0.99]"
         @click="router.push('/account/link')"
       >
-        <Plus :size="18" class="text-gray-500" />
+        <Plus :size="18" class="text-ink-sub" />
         새 계좌 추가 연동하기
       </button>
     </div>
