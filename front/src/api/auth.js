@@ -1,0 +1,135 @@
+import axios from 'axios';
+import axiosInstance from './axiosInstance';
+import { getCsrfToken } from './csrf';
+
+// 로그인. loginType 에 따라 필요한 필드가 다르다
+// PASSWORD -> loginId(이메일/휴대폰) + password + deviceId(선택) / PIN -> pinNumber + deviceId
+//
+// Cookie 기반 인증 — 백엔드가 accessToken/refreshToken HttpOnly Cookie 를 발급한다.
+// 응답 본문에는 JWT 가 없으며 data: { userId, name, pinSetupRequired } 만 온다.
+// - pinSetupRequired: 기기 최초 로그인(deviceId 미등록) 여부 → 로그인 화면에서 PIN 등록 유도 분기
+export const login = (payload) => {
+  return axiosInstance.post('/auth/login', payload);
+};
+
+// 액세스 토큰 재발급
+// refreshToken 은 HttpOnly 쿠키로만 오가므로 본문이 없다.
+// 새 accessToken/refreshToken Cookie 는 브라우저가 자동 저장한다 — 응답 본문에는 JWT 가 없다.
+//
+// axiosInstance 를 쓰면 이 요청의 401 이 다시 인터셉터를 타서 무한루프가 되므로
+// 인터셉터가 없는 별도 인스턴스로 보낸다.
+//
+// POST(상태 변경)이므로 CSRF 검증 대상 — XSRF-TOKEN 을 X-XSRF-TOKEN Header 로 전송한다.
+// CSRF 토큰이 어긋나 403 이면 토큰을 다시 받아 1회만 재시도한다.
+export const refresh = async () => {
+  const doRefresh = async (forceCsrf) =>
+    axios.post(
+      `${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/refresh`,
+      null,
+      {
+        withCredentials: true,
+        headers: { 'X-XSRF-TOKEN': await getCsrfToken(forceCsrf) },
+      },
+    );
+
+  try {
+    return await doRefresh(false);
+  } catch (err) {
+    if (err?.response?.status === 403) {
+      return doRefresh(true); // CSRF 토큰 갱신 후 1회 재시도
+    }
+    throw err;
+  }
+};
+
+// 로그아웃. 서버가 refreshToken 쿠키를 즉시 만료시킨다
+export const logout = () => {
+  return axiosInstance.post('/auth/logout');
+};
+
+// 회원가입 및 서비스 내에서 사용할 약관 목록과 본문 내용 조회
+// GET /api/v1/auth/terms
+export const getTerms = () => {
+  return axiosInstance.get('/auth/terms');
+};
+
+// 아이디 찾기 — PASS 본인인증 기반 가입 이메일(로그인 ID) 조회
+// POST /api/v1/auth/find-id
+// body: { identityVerificationId }
+// - 이름/휴대폰 번호는 전달하지 않는다 (백엔드가 CI 로 가입 회원 조회)
+// - 이메일은 백엔드가 마스킹하여 반환한다 (프론트 마스킹 불필요)
+// - data: { email: 'user****@example.com', createdAt: '2026-07-24' }
+export const findId = (identityVerificationId) => {
+  return axiosInstance.post('/auth/find-id', { identityVerificationId });
+};
+
+// 회원가입 이메일 중복 확인
+// GET /api/v1/auth/signup/check-email?email=...
+// 중복이어도 200 SUCCESS — data.available 로 판단한다 (false = 사용 불가)
+export const checkEmailAvailability = (email) => {
+  return axiosInstance.get('/auth/signup/check-email', {
+    params: { email },
+  });
+};
+
+// 회원가입 본인인증 검증 및 회원 중복 체크
+// POST /api/v1/auth/signup/verify-identity
+// body: { identityVerificationId }
+// - PASS 인증(POST /auth/pass) 완료 후 계정정보 입력 전에 호출한다.
+// - 동일 휴대폰(CI) 으로 이미 가입한 회원이면 409 DUPLICATE_USER — 가입 진행을 차단한다.
+// - data: { name } (화면 표시용 — 개인정보 미포함)
+export const verifyIdentity = (identityVerificationId) => {
+  return axiosInstance.post('/auth/signup/verify-identity', { identityVerificationId });
+};
+
+// 최종 회원가입 완료 (DB 최종 저장 — 토큰 미발급)
+// POST /api/v1/auth/signup
+// body: { identityVerificationId, email, password, agreedTermsIds }
+// - identityVerificationId 는 POST /auth/pass 에서 백엔드가 발급한 값 (프론트 생성 금지)
+// - name/phoneNumber/ci 는 전송하지 않는다 (백엔드가 Redis 세션에서 복원)
+// - 닉네임은 백엔드가 기본값(워케이너{userId})으로 자동 생성한다 (닉네임 입력 기능 제거)
+// - 자동 로그인 없음 — 백엔드는 토큰을 발급하지 않으며, 완료 후 로그인 화면에서 다시 로그인한다
+// - data: { userId, name }
+export const signup = (payload) => {
+  return axiosInstance.post('/auth/signup', payload);
+};
+
+// PIN 번호 최초 설정 (로그인 사용자 전용 — Cookie 기반 인증)
+// POST /api/v1/auth/me/pin
+// body: { pinNumber, deviceId, deviceName }
+export const setupPin = (payload) => {
+  return axiosInstance.post('/auth/me/pin', payload);
+};
+
+// 비밀번호 재설정 사전 단계 - 아이디 존재 확인
+// POST /api/v1/auth/password/check-id
+// body: { loginId }
+// - 비로그인 공개 API: 비밀번호 찾기 첫 화면에서 입력한 아이디가 DB 에 있는지 확인
+// - 존재하면 200 SUCCESS → PASS 본인인증 단계로 진행
+// - 회원 없음: USER_NOT_FOUND(404), 값 누락: INVALID_PASSWORD_RESET_REQUEST(400)
+export const checkPasswordResetId = (loginId) => {
+  return axiosInstance.post('/auth/password/check-id', { loginId });
+};
+
+// 비밀번호 재설정 1단계 - 본인 확인 및 인증 토큰 발급
+// POST /api/v1/auth/password/verify
+// body: { loginId, identityVerificationId }
+// - 비로그인 공개 API: PASS 본인인증(POST /auth/pass) 완료 후 호출
+// - loginId 는 이메일 또는 하이픈 없는 휴대폰 번호 (백엔드가 판별·정규화)
+// - 회원 없음: USER_NOT_FOUND(404), CI 불일치: VERIFICATION_FAILED(400),
+//   PASS 세션 만료/무효: INVALID_VERIFICATION_ID(400)
+// - data: { passwordResetToken, expiresAt } (Redis 5분 TTL 1회성 UUID — 인메모리로만 보관)
+//   expiresAt: 토큰 만료 시각(epoch millis) — 비밀번호 변경 화면의 남은 시간 카운트다운 기준
+export const verifyPasswordReset = (loginId, identityVerificationId) => {
+  return axiosInstance.post('/auth/password/verify', { loginId, identityVerificationId });
+};
+
+// 비밀번호 재설정 2단계 - 비밀번호 변경
+// PATCH /api/v1/auth/password/reset
+// body: { passwordResetToken, newPassword }
+// - 비로그인 공개 API: 1단계에서 발급받은 passwordResetToken(5분 유효)으로 비밀번호를 변경한다
+// - 토큰 만료·무효: RESET_TIMEOUT_OR_INVALID_TOKEN(400), 약한 비밀번호: WEAK_PASSWORD(422)
+// - 토큰 미발급 구조 — 응답에 JWT 가 없으며 완료 후 로그인 화면에서 새 비밀번호로 다시 로그인한다
+export const resetPassword = (passwordResetToken, newPassword) => {
+  return axiosInstance.patch('/auth/password/reset', { passwordResetToken, newPassword });
+};

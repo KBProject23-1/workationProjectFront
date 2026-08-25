@@ -1,0 +1,100 @@
+<script setup>
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { Landmark } from '@lucide/vue';
+import AccountSelectCard from '@/components/account/AccountSelectCard.vue';
+import BaseButton from '@/components/common/BaseButton.vue';
+import BaseHeader from '@/components/common/BaseHeader.vue';
+
+const props = defineProps({
+  accounts: { type: Array, default: () => [] },
+  isLoading: { type: Boolean, default: false },
+  isAdditional: { type: Boolean, default: false },
+});
+
+const emit = defineEmits(['complete', 'back-to-intro']);
+
+const router = useRouter();
+const selectedIds = ref([]);
+
+function toggleSelect(id) {
+  const index = selectedIds.value.indexOf(id);
+  if (index === -1) {
+    selectedIds.value.push(id);
+  } else {
+    selectedIds.value.splice(index, 1);
+  }
+}
+
+function handleBack() {
+  if (props.isAdditional) {
+    router.push('/wallet');
+  } else {
+    emit('back-to-intro');
+  }
+}
+</script>
+
+<template>
+  <div class="flex flex-col w-full min-h-screen px-5 pt-4 pb-5 bg-canvas text-left">
+    <div class="mb-6">
+      <BaseHeader title="계좌 선택" @back="handleBack" />
+    </div>
+
+    <div class="mb-5 flex items-end justify-between">
+      <div>
+        <h2 class="text-heading font-bold text-ink leading-snug">
+          연동할 계좌를<br />선택해 주세요
+        </h2>
+        <p class="text-body-sm font-medium text-ink-sub mt-1">
+          여러 개의 계좌를 한 번에 선택할 수 있어요
+        </p>
+      </div>
+
+      <span
+        v-if="selectedIds.length > 0"
+        class="text-body-sm font-bold text-brand bg-brand-weak px-2.5 py-1 rounded-chip shrink-0"
+      >
+        {{ selectedIds.length }}개 선택됨
+      </span>
+    </div>
+
+    <div class="flex flex-col gap-3 flex-1 w-full">
+      <AccountSelectCard
+        v-for="account in accounts"
+        :key="account.linkableAccountId"
+        :account="account"
+        :is-selected="selectedIds.includes(account.linkableAccountId)"
+        @select="toggleSelect"
+      />
+
+      <div
+        v-if="accounts.length === 0 && !isLoading"
+        class="flex flex-col items-center justify-center py-16 text-center"
+      >
+        <div
+          class="w-12 h-12 rounded-sheet bg-canvas flex items-center justify-center mb-3 text-ink-sub"
+        >
+          <Landmark :size="24" />
+        </div>
+        <p class="text-body font-medium text-ink-sub">
+          연동 가능한 계좌가 없어요
+        </p>
+      </div>
+    </div>
+
+    <div class="w-full pt-4 pb-2 mt-auto text-center">
+      <BaseButton
+        :disabled="selectedIds.length === 0 || isLoading"
+        class="w-full"
+        @click="$emit('complete', selectedIds)"
+      >
+        {{
+          isLoading
+            ? '연동하는 중...'
+            : `${selectedIds.length > 0 ? selectedIds.length + '개 ' : ''}계좌 연동하기`
+        }}
+      </BaseButton>
+    </div>
+  </div>
+</template>

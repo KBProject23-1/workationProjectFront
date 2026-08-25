@@ -1,0 +1,95 @@
+import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
+import { isPinRegistered } from '@/utils/pinRegistry';
+import splashRouter from './splashRouter';
+import loginRouter from './loginRouter';
+import pinRouter from './pinRouter';
+import onboardingRouter from './onboardingRouter';
+import accountRouter from './accountRouter';
+import cardRouter from './cardRouter';
+import walletRouter from './walletRouter';
+import transactionRouter from './transactionRouter';
+import workationRouter from './workationRouter';
+import surveyRouter from './surveyRouter';
+import merchantRouter from './merchantRouter';
+import reservationRouter from './reservationRouter';
+import recommendationRouter from './recommendationRouter';
+import bookmarkRouter from './bookmarkRouter';
+import reviewRouter from './reviewRouter';
+import notificationRouter from './notificationRouter';
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    ...splashRouter,
+    ...loginRouter,
+    ...pinRouter,
+    ...onboardingRouter,
+    ...accountRouter,
+    ...cardRouter,
+    ...walletRouter,
+    ...transactionRouter,
+    ...workationRouter,
+    ...surveyRouter,
+    ...merchantRouter,
+    ...reservationRouter,
+    ...recommendationRouter,
+    ...bookmarkRouter,
+    ...reviewRouter,
+    ...notificationRouter,
+  ],
+});
+
+// 로그인 없이는 진입할 수 없는 경로를 막고, 로그인했지만 이 기기에 PIN 이 없으면 PIN 설정으로 보낸다.
+//
+// 쿠키 기반 인증이라 새로고침하면 인메모리 상태가 사라지므로, 첫 네비게이션에서 GET /users/me 로
+// 로그인 상태를 1회 복원(restoreSession)한 뒤 판단한다. restorePromise 로 중복 호출을 막는다.
+//
+// - 회원가입 플로우(/signup*)는 비로그인 사용자가 가입을 진행하는 공개 경로이므로 게이트에서 완전히 제외한다.
+// - 비로그인: 공개(스플래시/온보딩/로그인/아이디 찾기)만 허용, 그 외엔 /login.
+// - 로그인 상태에서 스플래시/온보딩/로그인/아이디 찾기 접근 → 서비스 홈(/workation).
+// - PIN 게이트: 이 기기 PIN 미등록이면 /pin/setup (설정 페이지 자체는 통과).
+let restorePromise = null;
+
+router.beforeEach(async (to) => {
+  const authStore = useAuthStore();
+  // 세션 미확정일 때만 복원 시도. 비확정 실패(네트워크/5xx)면 sessionChecked 가 안 서므로
+  // restorePromise 를 비워 다음 네비게이션에서 재시도되게 한다.
+  if (!authStore.sessionChecked) {
+    if (!restorePromise) restorePromise = authStore.restoreSession();
+    await restorePromise;
+    restorePromise = null;
+  }
+
+  const path = to.path;
+
+  if (path.startsWith('/signup')) return true;
+
+  // 비로그인 공개 경로 — 비밀번호 재설정(/password-reset)은 로그인 상태가 아니어도
+  // 전체 플로우(아이디 확인 → PASS 인증 → 새 비밀번호 설정 → 완료)를 진행할 수 있어야 한다.
+  const isEntry =
+    path === '/' ||
+    path.startsWith('/onboarding') ||
+    path === '/login' ||
+    path === '/find-id' ||
+    path === '/password-reset';
+
+  if (!authStore.isAuthenticated) {
+    return isEntry ? true : { path: '/login', query: { redirect: to.fullPath } };
+  }
+
+  if (isEntry) return { path: '/workation' };
+
+  // 온보딩 게이트(로그인 직후 계좌→카드→PIN)의 앞단계인 계좌/카드 연결은 PIN 미등록이어도
+  // 접근을 허용한다. 그렇지 않으면 이 체인이 곧바로 /pin/setup 으로 튕겨 순서가 깨진다.
+  const isOnboardingLink =
+    path.startsWith('/account/link') || path.startsWith('/card/link');
+
+  if (!path.startsWith('/pin') && !isOnboardingLink && !isPinRegistered()) {
+    return { path: '/pin/setup', query: { redirect: to.fullPath } };
+  }
+
+  return true;
+});
+
+export default router;
